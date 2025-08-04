@@ -8,14 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { BatteryIcon } from "./icons/battery-icon";
 import type { Battery } from "@/lib/types";
 import { Badge } from "./ui/badge";
@@ -41,7 +35,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete }: BatteryIn
                         <TableHead className="w-[50px]">Type</TableHead>
                         <TableHead>Brand & Model</TableHead>
                         <TableHead className="text-right">Quantity</TableHead>
-                        <TableHead className="w-[50px] text-right">Actions</TableHead>
+                        <TableHead className="w-[120px] text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -61,24 +55,16 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete }: BatteryIn
                             </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">More actions</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => onEdit(battery)}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => onDelete(battery.id)} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                           <div className="flex justify-end gap-2">
+                                <Button variant="outline" size="icon" onClick={() => onEdit(battery)}>
+                                    <Pencil className="h-4 w-4" />
+                                    <span className="sr-only">Edit</span>
+                                </Button>
+                                <Button variant="destructive" size="icon" onClick={() => onDelete(battery.id)}>
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Delete</span>
+                                </Button>
+                           </div>
                         </TableCell>
                     </TableRow>
                     ))

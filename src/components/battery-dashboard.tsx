@@ -20,6 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { QuickAddBattery } from "./quick-add-battery";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
@@ -77,8 +78,9 @@ export function BatteryDashboard() {
       </header>
       <main className="flex-1 space-y-6 p-4 md:p-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-            <div className="lg:col-span-4">
-                <InventorySummary batteries={batteries} />
+            <div className="lg:col-span-4 grid gap-6">
+              <InventorySummary batteries={batteries} />
+              <QuickAddBattery onSubmit={handleSubmit} />
             </div>
             <div className="lg:col-span-3">
                 <RestockSuggestions batteries={batteries} />
