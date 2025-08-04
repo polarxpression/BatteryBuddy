@@ -20,10 +20,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
+import { InventorySummary } from "./inventory-summary";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
-  const [batteries, setBatteries] = useState<Battery[]>(initialBatteries);
+  const [batteries, setBatteries] = useState<Battery[]>(initialBatteries.sort((a, b) => a.type.localeCompare(b.type) || a.brand.localeCompare(b.brand)));
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [batteryToEdit, setBatteryToEdit] = useState<Battery | null>(null);
   const [batteryToDelete, setBatteryToDelete] = useState<string | null>(null);
@@ -41,7 +42,7 @@ export function BatteryDashboard() {
   const handleSubmit = (data: Battery) => {
     const isEditing = batteries.some(b => b.id === data.id);
     if (isEditing) {
-      setBatteries(batteries.map((b) => (b.id === data.id ? data : b)));
+      setBatteries(batteries.map((b) => (b.id === data.id ? data : b)).sort((a, b) => a.type.localeCompare(b.type) || a.brand.localeCompare(b.brand)));
       toast({ title: "Success!", description: "Battery updated successfully." });
     } else {
       setBatteries([data, ...batteries].sort((a, b) => a.type.localeCompare(b.type) || a.brand.localeCompare(b.brand)));
@@ -59,6 +60,11 @@ export function BatteryDashboard() {
       toast({ title: "Deleted", description: "Battery removed from inventory."});
       setBatteryToDelete(null);
     }
+  };
+
+  const handleQuantityChange = (id: string, newQuantity: number) => {
+    if (newQuantity < 0) return;
+    setBatteries(batteries.map((b) => (b.id === id ? { ...b, quantity: newQuantity } : b)));
   };
 
   const totalBatteries = batteries.reduce((acc, b) => acc + b.quantity, 0);
@@ -80,7 +86,7 @@ export function BatteryDashboard() {
         </div>
       </header>
       <main className="flex-1 space-y-4 p-4 md:p-8">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total Batteries</CardTitle>
@@ -92,6 +98,7 @@ export function BatteryDashboard() {
                 </CardContent>
             </Card>
             <RestockSuggestions batteries={batteries} />
+            <InventorySummary batteries={batteries} />
         </div>
         
         <Card>
@@ -100,7 +107,7 @@ export function BatteryDashboard() {
                 <CardDescription>All batteries in your collection.</CardDescription>
             </CardHeader>
             <CardContent>
-                <BatteryInventoryTable batteries={batteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} />
+                <BatteryInventoryTable batteries={batteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
             </CardContent>
         </Card>
       </main>

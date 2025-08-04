@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Plus, Minus } from "lucide-react";
 import { BatteryIcon } from "./icons/battery-icon";
 import type { Battery } from "@/lib/types";
 import { Badge } from "./ui/badge";
@@ -25,9 +25,10 @@ interface BatteryInventoryTableProps {
     batteries: Battery[];
     onEdit: (battery: Battery) => void;
     onDelete: (id: string) => void;
+    onQuantityChange: (id: string, newQuantity: number) => void;
 }
 
-export function BatteryInventoryTable({ batteries, onEdit, onDelete }: BatteryInventoryTableProps) {
+export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityChange }: BatteryInventoryTableProps) {
     const getQuantityBadgeVariant = (quantity: number): "default" | "destructive" | "secondary" => {
         if (quantity === 0) return "destructive";
         if (quantity < 5) return "secondary";
@@ -59,15 +60,34 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete }: BatteryIn
                         </TableCell>
                         <TableCell className="font-medium">
                             {battery.brand}
-                            <div className="text-sm text-muted-foreground md:hidden">{battery.model}</div>
+                            <div className="text-sm text-muted-foreground">{battery.model}</div>
                         </TableCell>
                         <TableCell>
                             <Badge variant="outline">{battery.type}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                            <Badge variant={getQuantityBadgeVariant(battery.quantity)} className="text-lg">
-                                {battery.quantity}
-                            </Badge>
+                            <div className="flex items-center justify-end gap-2">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={() => onQuantityChange(battery.id, battery.quantity - 1)}
+                                    disabled={battery.quantity === 0}
+                                >
+                                    <Minus className="h-4 w-4" />
+                                </Button>
+                                <Badge variant={getQuantityBadgeVariant(battery.quantity)} className="text-lg w-10 justify-center">
+                                    {battery.quantity}
+                                </Badge>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={() => onQuantityChange(battery.id, battery.quantity + 1)}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </TableCell>
                         <TableCell>
                             <DropdownMenu>
