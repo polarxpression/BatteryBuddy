@@ -9,10 +9,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { BatteryIcon } from "./icons/battery-icon";
 import type { Battery } from "@/lib/types";
 import { Badge } from "./ui/badge";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuTrigger,
+  } from "@/components/ui/dropdown-menu";
 
 interface BatteryInventoryTableProps {
     batteries: Battery[];
@@ -28,49 +35,64 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete }: BatteryIn
     };
     
     return (
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div>
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[50px]">Type</TableHead>
+                        <TableHead className="hidden w-[100px] sm:table-cell">
+                            <span className="sr-only">Icon</span>
+                        </TableHead>
                         <TableHead>Brand & Model</TableHead>
+                        <TableHead>Type</TableHead>
                         <TableHead className="text-right">Quantity</TableHead>
-                        <TableHead className="w-[120px] text-right">Actions</TableHead>
+                        <TableHead>
+                            <span className="sr-only">Actions</span>
+                        </TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                 {batteries.length > 0 ? (
                     batteries.map((battery) => (
                     <TableRow key={battery.id}>
-                        <TableCell>
-                            <BatteryIcon type={battery.type} className="h-8 w-8" />
+                        <TableCell className="hidden sm:table-cell">
+                            <BatteryIcon type={battery.type} className="h-8 w-8 text-muted-foreground" />
+                        </TableCell>
+                        <TableCell className="font-medium">
+                            {battery.brand}
+                            <div className="text-sm text-muted-foreground md:hidden">{battery.model}</div>
                         </TableCell>
                         <TableCell>
-                            <div className="font-medium">{battery.brand}</div>
-                            <div className="text-sm text-muted-foreground">{battery.model} ({battery.type})</div>
+                            <Badge variant="outline">{battery.type}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
                             <Badge variant={getQuantityBadgeVariant(battery.quantity)} className="text-lg">
                                 {battery.quantity}
                             </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
-                           <div className="flex justify-end gap-2">
-                                <Button variant="outline" size="icon" onClick={() => onEdit(battery)}>
-                                    <Pencil className="h-4 w-4" />
-                                    <span className="sr-only">Edit</span>
+                        <TableCell>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                <Button
+                                    aria-haspopup="true"
+                                    size="icon"
+                                    variant="ghost"
+                                >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Toggle menu</span>
                                 </Button>
-                                <Button variant="destructive" size="icon" onClick={() => onDelete(battery.id)}>
-                                    <Trash2 className="h-4 w-4" />
-                                    <span className="sr-only">Delete</span>
-                                </Button>
-                           </div>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem onSelect={() => onEdit(battery)}>Edit</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onDelete(battery.id)}>Delete</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </TableCell>
                     </TableRow>
                     ))
                 ) : (
                     <TableRow>
-                        <TableCell colSpan={4} className="h-24 text-center">
+                        <TableCell colSpan={5} className="h-24 text-center">
                             No batteries in your inventory yet.
                         </TableCell>
                     </TableRow>

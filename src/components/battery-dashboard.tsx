@@ -5,7 +5,6 @@ import type { Battery } from "@/lib/types";
 import { initialBatteries } from "@/lib/initial-data";
 import { AddEditBatterySheet } from "./add-edit-battery-sheet";
 import { BatteryInventoryTable } from "./battery-inventory-table";
-import { InventorySummary } from "./inventory-summary";
 import { RestockSuggestions } from "./restock-suggestions";
 import { Button } from "./ui/button";
 import { PlusCircle, Zap } from "lucide-react";
@@ -20,7 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { QuickAddBattery } from "./quick-add-battery";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
@@ -62,12 +61,16 @@ export function BatteryDashboard() {
     }
   };
 
+  const totalBatteries = batteries.reduce((acc, b) => acc + b.quantity, 0);
+  const batteryTypesCount = new Set(batteries.map(b => b.type)).size;
+
+
   return (
-    <div className="flex min-h-screen w-full flex-col">
-      <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
+    <div className="flex min-h-screen w-full flex-col bg-muted/40">
+      <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
         <div className="flex items-center gap-2 text-lg font-semibold md:text-base">
-          <Zap className="h-6 w-6" style={{color: "hsl(var(--primary))"}} />
-          <h1 className="text-xl font-bold font-headline">Battery Buddy</h1>
+          <Zap className="h-6 w-6 text-primary" />
+          <h1 className="text-xl font-bold">Battery Buddy</h1>
         </div>
         <div className="ml-auto">
           <Button onClick={handleOpenAddSheet}>
@@ -76,20 +79,30 @@ export function BatteryDashboard() {
           </Button>
         </div>
       </header>
-      <main className="flex-1 space-y-6 p-4 md:p-8">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-            <div className="lg:col-span-4 grid gap-6">
-              <InventorySummary batteries={batteries} />
-              <QuickAddBattery onSubmit={handleSubmit} />
-            </div>
-            <div className="lg:col-span-3">
-                <RestockSuggestions batteries={batteries} />
-            </div>
+      <main className="flex-1 space-y-4 p-4 md:p-8">
+        <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium">Total Batteries</CardTitle>
+                    <Zap className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{totalBatteries}</div>
+                    <p className="text-xs text-muted-foreground">across {batteryTypesCount} types</p>
+                </CardContent>
+            </Card>
+            <RestockSuggestions batteries={batteries} />
         </div>
-        <div>
-            <h2 className="text-2xl font-bold font-headline tracking-tight mb-4">Full Inventory</h2>
-            <BatteryInventoryTable batteries={batteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} />
-        </div>
+        
+        <Card>
+            <CardHeader>
+                <CardTitle>Full Inventory</CardTitle>
+                <CardDescription>All batteries in your collection.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <BatteryInventoryTable batteries={batteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} />
+            </CardContent>
+        </Card>
       </main>
 
       <AddEditBatterySheet
