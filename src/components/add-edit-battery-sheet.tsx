@@ -77,9 +77,9 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle className="font-headline">{batteryToEdit ? "Edit Battery" : "Add New Battery"}</SheetTitle>
+          <SheetTitle className="font-headline">{batteryToEdit ? "Editar Bateria" : "Adicionar Nova Bateria"}</SheetTitle>
           <SheetDescription>
-            {batteryToEdit ? "Update the details for this battery." : "Fill in the details for the new battery."}
+            {batteryToEdit ? "Atualize os detalhes desta bateria." : "Preencha os detalhes da nova bateria."}
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
@@ -90,11 +90,11 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Battery Type</FormLabel>
+                    <FormLabel>Tipo de Bateria</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a battery type" />
+                          <SelectValue placeholder="Selecione um tipo de bateria" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -114,9 +114,9 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 name="brand"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Brand</FormLabel>
+                    <FormLabel>Marca</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Panasonic" {...field} />
+                      <Input placeholder="ex: Panasonic" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -127,9 +127,9 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 name="model"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Model / Type</FormLabel>
+                    <FormLabel>Modelo / Tipo</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Eneloop, Alkaline" {...field} />
+                      <Input placeholder="ex: Eneloop, Alcalina" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -140,7 +140,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 name="quantity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Quantity</FormLabel>
+                    <FormLabel>Quantidade</FormLabel>
                     <FormControl>
                       <Input type="number" min="0" {...field} />
                     </FormControl>
@@ -151,10 +151,10 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
             </div>
             <SheetFooter className="mt-8">
               <SheetClose asChild>
-                <Button variant="outline">Cancel</Button>
+                <Button variant="outline">Cancelar</Button>
               </SheetClose>
               <Button type="submit">
-                {batteryToEdit ? "Save Changes" : "Add Battery"}
+                {batteryToEdit ? "Salvar Alterações" : "Adicionar Bateria"}
               </Button>
             </SheetFooter>
           </form>

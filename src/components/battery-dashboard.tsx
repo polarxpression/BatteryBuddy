@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import { InventorySummary } from "./inventory-summary";
+import { ThemeToggle } from "./theme-toggle";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
@@ -43,10 +44,10 @@ export function BatteryDashboard() {
     const isEditing = batteries.some(b => b.id === data.id);
     if (isEditing) {
       setBatteries(batteries.map((b) => (b.id === data.id ? data : b)).sort((a, b) => a.type.localeCompare(b.type) || a.brand.localeCompare(b.brand)));
-      toast({ title: "Success!", description: "Battery updated successfully." });
+      toast({ title: "Sucesso!", description: "Bateria atualizada com sucesso." });
     } else {
       setBatteries([data, ...batteries].sort((a, b) => a.type.localeCompare(b.type) || a.brand.localeCompare(b.brand)));
-      toast({ title: "Success!", description: "New battery added to your inventory." });
+      toast({ title: "Sucesso!", description: "Nova bateria adicionada ao seu inventário." });
     }
   };
 
@@ -57,7 +58,7 @@ export function BatteryDashboard() {
   const confirmDelete = () => {
     if (batteryToDelete) {
       setBatteries(batteries.filter((b) => b.id !== batteryToDelete));
-      toast({ title: "Deleted", description: "Battery removed from inventory."});
+      toast({ title: "Excluído", description: "Bateria removida do inventário."});
       setBatteryToDelete(null);
     }
   };
@@ -73,28 +74,29 @@ export function BatteryDashboard() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
         <div className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <Zap className="h-6 w-6 text-primary" />
-          <h1 className="text-xl font-bold">Battery Buddy</h1>
+          <h1 className="hidden text-xl font-bold sm:block">Battery Buddy</h1>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-4">
+          <ThemeToggle />
           <Button onClick={handleOpenAddSheet}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Add Battery
+            Adicionar Bateria
           </Button>
         </div>
       </header>
       <main className="flex-1 space-y-4 p-4 md:p-8">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Total Batteries</CardTitle>
+                    <CardTitle className="text-sm font-medium">Total de Baterias</CardTitle>
                     <Zap className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{totalBatteries}</div>
-                    <p className="text-xs text-muted-foreground">across {batteryTypesCount} types</p>
+                    <p className="text-xs text-muted-foreground">em {batteryTypesCount} tipos</p>
                 </CardContent>
             </Card>
             <RestockSuggestions batteries={batteries} />
@@ -103,8 +105,8 @@ export function BatteryDashboard() {
         
         <Card>
             <CardHeader>
-                <CardTitle>Full Inventory</CardTitle>
-                <CardDescription>All batteries in your collection.</CardDescription>
+                <CardTitle>Inventário Completo</CardTitle>
+                <CardDescription>Todas as baterias em sua coleção.</CardDescription>
             </CardHeader>
             <CardContent>
                 <BatteryInventoryTable batteries={batteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
@@ -122,15 +124,15 @@ export function BatteryDashboard() {
       <AlertDialog open={!!batteryToDelete} onOpenChange={() => setBatteryToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the battery
-              from your inventory.
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente a bateria
+              do seu inventário.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setBatteryToDelete(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Continue</AlertDialogAction>
+            <AlertDialogCancel onClick={() => setBatteryToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Continuar</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

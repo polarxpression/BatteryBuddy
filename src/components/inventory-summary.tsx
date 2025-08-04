@@ -21,7 +21,7 @@ export function InventorySummary({ batteries }: { batteries: Battery[] }) {
 
   const chartConfig = {
     quantity: {
-      label: "Quantity",
+      label: "Quantidade",
       color: "hsl(var(--primary))",
     },
   } satisfies ChartConfig;
@@ -29,8 +29,8 @@ export function InventorySummary({ batteries }: { batteries: Battery[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Inventory Summary</CardTitle>
-        <CardDescription>Total quantity of each battery type.</CardDescription>
+        <CardTitle className="font-headline">Resumo do Inventário</CardTitle>
+        <CardDescription>Quantidade total de cada tipo de bateria.</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[250px] w-full">

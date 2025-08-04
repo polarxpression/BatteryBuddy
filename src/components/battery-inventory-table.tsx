@@ -41,13 +41,13 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                 <TableHeader>
                     <TableRow>
                         <TableHead className="hidden w-[100px] sm:table-cell">
-                            <span className="sr-only">Icon</span>
+                            <span className="sr-only">Ícone</span>
                         </TableHead>
-                        <TableHead>Brand & Model</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead className="text-right">Quantity</TableHead>
+                        <TableHead>Marca & Modelo</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead className="text-right">Quantidade</TableHead>
                         <TableHead>
-                            <span className="sr-only">Actions</span>
+                            <span className="sr-only">Ações</span>
                         </TableHead>
                     </TableRow>
                 </TableHeader>
@@ -66,7 +66,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                             <Badge variant="outline">{battery.type}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center justify-end gap-1 md:gap-2">
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -76,7 +76,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                                 >
                                     <Minus className="h-4 w-4" />
                                 </Button>
-                                <Badge variant={getQuantityBadgeVariant(battery.quantity)} className="text-lg w-10 justify-center">
+                                <Badge variant={getQuantityBadgeVariant(battery.quantity)} className="min-w-10 justify-center text-base">
                                     {battery.quantity}
                                 </Badge>
                                 <Button
@@ -98,13 +98,13 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                                     variant="ghost"
                                 >
                                     <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Toggle menu</span>
+                                    <span className="sr-only">Menu de alternância</span>
                                 </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onSelect={() => onEdit(battery)}>Edit</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onDelete(battery.id)}>Delete</DropdownMenuItem>
+                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                <DropdownMenuItem onSelect={() => onEdit(battery)}>Editar</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onDelete(battery.id)}>Excluir</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
@@ -113,7 +113,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                 ) : (
                     <TableRow>
                         <TableCell colSpan={5} className="h-24 text-center">
-                            No batteries in your inventory yet.
+                            Nenhuma bateria em seu inventário ainda.
                         </TableCell>
                     </TableRow>
                 )}

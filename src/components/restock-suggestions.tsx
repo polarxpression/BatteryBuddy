@@ -18,27 +18,27 @@ export function RestockSuggestions({ batteries }: { batteries: Battery[] }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">
-          Restock Suggestions
+          Sugestões de Reabastecimento
         </CardTitle>
         <AlertTriangle className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
         {lowStockItems.length === 0 && outOfStockItems.length === 0 ? (
            <div className="text-center text-muted-foreground py-4">
-             <p>All items are well-stocked.</p>
+             <p>Todos os itens estão bem abastecidos.</p>
            </div>
         ) : (
             <div className="space-y-2">
             {outOfStockItems.map((battery) => (
                 <div key={battery.id} className="flex items-center gap-4">
                     <div className="font-medium text-destructive">{battery.brand} {battery.model} ({battery.type})</div>
-                    <div className="ml-auto font-bold text-destructive">Out of stock</div>
+                    <div className="ml-auto font-bold text-destructive">Fora de estoque</div>
                 </div>
             ))}
             {lowStockItems.map((battery) => (
                 <div key={battery.id} className="flex items-center gap-4">
                     <div className="font-medium">{battery.brand} {battery.model} ({battery.type})</div>
-                    <div className="ml-auto font-bold">{battery.quantity} left</div>
+                    <div className="ml-auto font-bold">{battery.quantity} restantes</div>
                 </div>
             ))}
             </div>
