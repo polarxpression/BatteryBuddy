@@ -33,7 +33,7 @@ export function InventorySummary({ batteries }: { batteries: Battery[] }) {
         <CardDescription>Quantidade total de cada tipo de bateria.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[250px] w-full">
+        <ChartContainer config={chartConfig} className="h-[250px] max-w-full">
           <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
               <CartesianGrid vertical={false} />
               <XAxis

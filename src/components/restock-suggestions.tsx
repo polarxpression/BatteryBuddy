@@ -1,9 +1,9 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Battery } from "@/lib/types";
-import { AlertTriangle, Zap } from "lucide-react";
-import { BatteryIcon } from "./icons/battery-icon";
+import { AlertTriangle } from "lucide-react";
+
 
 const LOW_STOCK_THRESHOLD = 5;
 
