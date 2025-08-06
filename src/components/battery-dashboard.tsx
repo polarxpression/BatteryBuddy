@@ -34,12 +34,13 @@ import {
 } from "./ui/card";
 import { InventorySummary } from "./inventory-summary";
 import { ThemeToggle } from "./theme-toggle";
-import Link from "next/link";
+import { SettingsModal } from "./settings-modal";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
   const [batteries, setBatteries] = useState<Battery[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [batteryToEdit, setBatteryToEdit] = useState<Battery | null>(null);
   const [batteryToDelete, setBatteryToDelete] = useState<string | null>(null);
 
@@ -63,6 +64,10 @@ export function BatteryDashboard() {
   const handleOpenEditSheet = (battery: Battery) => {
     setBatteryToEdit(battery);
     setIsSheetOpen(true);
+  };
+
+  const handleOpenSettings = () => {
+    setIsSettingsOpen(true);
   };
 
   const handleSubmit = async (data: Battery) => {
@@ -118,12 +123,10 @@ export function BatteryDashboard() {
         </div>
         <div className="ml-auto flex items-center gap-4">
           <ThemeToggle />
-          <Link href="/settings">
-            <Button variant="outline" size="icon">
-              <Settings className="h-4 w-4" />
-              <span className="sr-only">Configurações</span>
-            </Button>
-          </Link>
+          <Button variant="outline" size="icon" onClick={handleOpenSettings}>
+            <Settings className="h-4 w-4" />
+            <span className="sr-only">Configurações</span>
+          </Button>
           <Button onClick={handleOpenAddSheet}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Adicionar Bateria
@@ -163,6 +166,8 @@ export function BatteryDashboard() {
         batteryToEdit={batteryToEdit}
         onSubmit={handleSubmit}
       />
+
+      <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
       
       <AlertDialog open={!!batteryToDelete} onOpenChange={() => setBatteryToDelete(null)}>
         <AlertDialogContent>

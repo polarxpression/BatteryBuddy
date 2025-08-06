@@ -1,8 +1,8 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, onSnapshot } from "firebase/firestore";
-import { Battery } from "./types";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, onSnapshot, getDoc } from "firebase/firestore";
+import { Battery, AppSettings } from "./types";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -28,6 +28,7 @@ isSupported().then((supported) => {
 export const db = getFirestore(app);
 
 const batteriesCollection = collection(db, "batteries");
+const settingsDoc = doc(db, "settings", "app-settings");
 
 export const getBatteries = async (): Promise<Battery[]> => {
     const snapshot = await getDocs(batteriesCollection);
@@ -54,4 +55,19 @@ export const onBatteriesSnapshot = (callback: (batteries: Battery[]) => void) =>
     const batteries = snapshot.docs.map(doc => doc.data() as Battery);
     callback(batteries);
   });
+};
+
+export const getAppSettings = async (): Promise<AppSettings | null> => {
+    const snapshot = await getDoc(settingsDoc);
+    return snapshot.exists() ? snapshot.data() as AppSettings : null;
+}
+
+export const updateAppSettings = async (settings: AppSettings) => {
+    await setDoc(settingsDoc, settings, { merge: true });
+}
+
+export const onAppSettingsSnapshot = (callback: (settings: AppSettings | null) => void) => {
+    return onSnapshot(settingsDoc, snapshot => {
+        callback(snapshot.exists() ? snapshot.data() as AppSettings : null);
+    });
 };

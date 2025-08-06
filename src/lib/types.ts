@@ -15,3 +15,10 @@ export const BatterySchema = z.object({
 });
 
 export type Battery = z.infer<typeof BatterySchema>;
+
+export const AppSettingsSchema = z.object({
+  batteryTypes: z.array(z.string()),
+  packSizes: z.array(z.number()),
+});
+
+export type AppSettings = z.infer<typeof AppSettingsSchema>;

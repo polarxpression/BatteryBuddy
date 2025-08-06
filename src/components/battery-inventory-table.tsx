@@ -11,10 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Plus, Minus } from "lucide-react";
 import { BatteryIcon } from "./icons/battery-icon";
-import { batteryTypes, type Battery } from "@/lib/types";
+import { type Battery, AppSettings } from "@/lib/types";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Badge } from "./ui/badge";
 import {
     DropdownMenu,
@@ -23,6 +23,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu";
+import { onAppSettingsSnapshot } from "@/lib/firebase";
 
 interface BatteryInventoryTableProps {
     batteries: Battery[];
@@ -34,6 +35,12 @@ interface BatteryInventoryTableProps {
 export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityChange }: BatteryInventoryTableProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [typeFilter, setTypeFilter] = useState<string>("all");
+    const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+
+    useEffect(() => {
+        const unsubscribe = onAppSettingsSnapshot(setAppSettings);
+        return () => unsubscribe();
+    }, []);
 
     const filteredBatteries = useMemo(() => {
         return batteries.filter(battery => {
@@ -64,7 +71,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">Todos os Tipos</SelectItem>
-                        {batteryTypes.map(type => (
+                        {appSettings?.batteryTypes.map(type => (
                             <SelectItem key={type} value={type}>{type}</SelectItem>
                         ))}
                     </SelectContent>

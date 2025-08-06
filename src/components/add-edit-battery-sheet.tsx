@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +31,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BatterySchema, batteryTypes, packSizes, type Battery } from "@/lib/types";
+import { onAppSettingsSnapshot } from "@/lib/firebase";
+import { AppSettings, Battery, BatterySchema } from "@/lib/types";
 
 
 interface AddEditBatterySheetProps {
@@ -42,6 +43,8 @@ interface AddEditBatterySheetProps {
 }
 
 export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmit }: AddEditBatterySheetProps) {
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+
   const form = useForm<z.infer<typeof BatterySchema>>({
     resolver: zodResolver(BatterySchema),
     defaultValues: {
@@ -52,6 +55,11 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       packSize: 1,
     },
   });
+
+  useEffect(() => {
+    const unsubscribe = onAppSettingsSnapshot(setAppSettings);
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -100,7 +108,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {batteryTypes.map((type) => (
+                        {appSettings?.batteryTypes.map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
                           </SelectItem>
@@ -163,7 +171,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {packSizes.map((size) => (
+                        {appSettings?.packSizes.map((size) => (
                           <SelectItem key={size} value={String(size)}>
                             {size}
                           </SelectItem>
