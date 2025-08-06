@@ -13,7 +13,7 @@ import { AddEditBatterySheet } from "./add-edit-battery-sheet";
 import { BatteryInventoryTable } from "./battery-inventory-table";
 import { RestockSuggestions } from "./restock-suggestions";
 import { Button } from "./ui/button";
-import { PlusCircle, Zap } from "lucide-react";
+import { PlusCircle, Settings, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -34,6 +34,7 @@ import {
 } from "./ui/card";
 import { InventorySummary } from "./inventory-summary";
 import { ThemeToggle } from "./theme-toggle";
+import Link from "next/link";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
@@ -117,6 +118,12 @@ export function BatteryDashboard() {
         </div>
         <div className="ml-auto flex items-center gap-4">
           <ThemeToggle />
+          <Link href="/settings">
+            <Button variant="outline" size="icon">
+              <Settings className="h-4 w-4" />
+              <span className="sr-only">Configurações</span>
+            </Button>
+          </Link>
           <Button onClick={handleOpenAddSheet}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Adicionar Bateria
@@ -124,7 +131,7 @@ export function BatteryDashboard() {
         </div>
       </header>
       <main className="flex-1 space-y-4 p-4 md:p-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total de Baterias</CardTitle>
@@ -136,8 +143,8 @@ export function BatteryDashboard() {
                 </CardContent>
             </Card>
             <RestockSuggestions batteries={batteries} />
-            <InventorySummary batteries={batteries} />
         </div>
+        <InventorySummary batteries={batteries} />
         
         <Card>
             <CardHeader>

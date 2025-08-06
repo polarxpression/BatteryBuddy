@@ -11,7 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Plus, Minus } from "lucide-react";
 import { BatteryIcon } from "./icons/battery-icon";
-import type { Battery } from "@/lib/types";
+import { batteryTypes, type Battery } from "@/lib/types";
+import { Input } from "./ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { useState, useMemo } from "react";
 import { Badge } from "./ui/badge";
 import {
     DropdownMenu,
@@ -29,6 +32,17 @@ interface BatteryInventoryTableProps {
 }
 
 export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityChange }: BatteryInventoryTableProps) {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [typeFilter, setTypeFilter] = useState<string>("all");
+
+    const filteredBatteries = useMemo(() => {
+        return batteries.filter(battery => {
+            const brandMatch = battery.brand.toLowerCase().includes(searchTerm.toLowerCase());
+            const typeMatch = typeFilter === "all" || battery.type === typeFilter;
+            return brandMatch && typeMatch;
+        });
+    }, [batteries, searchTerm, typeFilter]);
+
     const getQuantityBadgeVariant = (quantity: number): "default" | "destructive" | "secondary" => {
         if (quantity === 0) return "destructive";
         if (quantity < 5) return "secondary";
@@ -37,6 +51,25 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
     
     return (
         <div>
+            <div className="flex items-center gap-4 mb-4">
+                <Input 
+                    placeholder="Filtrar por marca..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="max-w-sm"
+                />
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filtrar por tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todos os Tipos</SelectItem>
+                        {batteryTypes.map(type => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -54,8 +87,8 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                {batteries.length > 0 ? (
-                    batteries.map((battery) => (
+                {filteredBatteries.length > 0 ? (
+                    filteredBatteries.map((battery) => (
                     <TableRow key={battery.id}>
                         <TableCell className="hidden sm:table-cell">
                             <BatteryIcon type={battery.type} className="h-8 w-8 text-muted-foreground" />
@@ -121,7 +154,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                 ) : (
                     <TableRow>
                         <TableCell colSpan={7} className="h-24 text-center">
-                            Nenhuma bateria em seu inventário ainda.
+                            Nenhuma bateria encontrada.
                         </TableCell>
                     </TableRow>
                 )}
