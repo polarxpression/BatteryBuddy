@@ -149,7 +149,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 )}
               />
             </div>
-            <SheetFooter className="mt-8">
+            <SheetFooter className="mt-8 pt-4 border-t">
               <SheetClose asChild>
                 <Button variant="outline">Cancelar</Button>
               </SheetClose>
