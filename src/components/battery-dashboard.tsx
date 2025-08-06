@@ -1,8 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import {
+  addBattery,
+  deleteBattery,
+  onBatteriesSnapshot,
+  updateBattery,
+} from "@/lib/firebase";
 import type { Battery } from "@/lib/types";
-import { initialBatteries } from "@/lib/initial-data";
+
 import { AddEditBatterySheet } from "./add-edit-battery-sheet";
 import { BatteryInventoryTable } from "./battery-inventory-table";
 import { RestockSuggestions } from "./restock-suggestions";
@@ -19,16 +25,34 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "./ui/card";
 import { InventorySummary } from "./inventory-summary";
 import { ThemeToggle } from "./theme-toggle";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
-  const [batteries, setBatteries] = useState<Battery[]>(initialBatteries.sort((a, b) => a.type.localeCompare(b.type) || a.brand.localeCompare(b.brand)));
+  const [batteries, setBatteries] = useState<Battery[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [batteryToEdit, setBatteryToEdit] = useState<Battery | null>(null);
   const [batteryToDelete, setBatteryToDelete] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onBatteriesSnapshot((newBatteries) => {
+      setBatteries(
+        newBatteries.sort(
+          (a, b) =>
+            a.type.localeCompare(b.type) || a.brand.localeCompare(b.brand)
+        )
+      );
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleOpenAddSheet = () => {
     setBatteryToEdit(null);
@@ -40,14 +64,20 @@ export function BatteryDashboard() {
     setIsSheetOpen(true);
   };
 
-  const handleSubmit = (data: Battery) => {
-    const isEditing = batteries.some(b => b.id === data.id);
+  const handleSubmit = async (data: Battery) => {
+    const isEditing = batteries.some((b) => b.id === data.id);
     if (isEditing) {
-      setBatteries(batteries.map((b) => (b.id === data.id ? data : b)).sort((a, b) => a.type.localeCompare(b.type) || a.brand.localeCompare(b.brand)));
-      toast({ title: "Sucesso!", description: "Bateria atualizada com sucesso." });
+      await updateBattery(data);
+      toast({
+        title: "Sucesso!",
+        description: "Bateria atualizada com sucesso.",
+      });
     } else {
-      setBatteries([data, ...batteries].sort((a, b) => a.type.localeCompare(b.type) || a.brand.localeCompare(b.brand)));
-      toast({ title: "Sucesso!", description: "Nova bateria adicionada ao seu inventário." });
+      await addBattery(data);
+      toast({
+        title: "Sucesso!",
+        description: "Nova bateria adicionada ao seu inventário.",
+      });
     }
   };
 
@@ -55,17 +85,23 @@ export function BatteryDashboard() {
     setBatteryToDelete(id);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (batteryToDelete) {
-      setBatteries(batteries.filter((b) => b.id !== batteryToDelete));
-      toast({ title: "Excluído", description: "Bateria removida do inventário."});
+      await deleteBattery(batteryToDelete);
+      toast({
+        title: "Excluído",
+        description: "Bateria removida do inventário.",
+      });
       setBatteryToDelete(null);
     }
   };
 
-  const handleQuantityChange = (id: string, newQuantity: number) => {
+  const handleQuantityChange = async (id: string, newQuantity: number) => {
     if (newQuantity < 0) return;
-    setBatteries(batteries.map((b) => (b.id === id ? { ...b, quantity: newQuantity } : b)));
+    const battery = batteries.find((b) => b.id === id);
+    if (battery) {
+      await updateBattery({ ...battery, quantity: newQuantity });
+    }
   };
 
   const totalBatteries = batteries.reduce((acc, b) => acc + b.quantity, 0);
@@ -88,7 +124,7 @@ export function BatteryDashboard() {
         </div>
       </header>
       <main className="flex-1 space-y-4 p-4 md:p-8">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total de Baterias</CardTitle>

@@ -33,23 +33,25 @@ export function InventorySummary({ batteries }: { batteries: Battery[] }) {
         <CardDescription>Quantidade total de cada tipo de bateria.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[250px] max-w-full">
-          <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis
-              dataKey="type"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              />
-              <YAxis allowDecimals={false} />
-              <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="dot" />}
-              />
-              <Bar dataKey="quantity" fill="var(--color-quantity)" radius={4} />
-          </BarChart>
-        </ChartContainer>
+        <div className="relative h-[250px] w-full">
+          <ChartContainer config={chartConfig} className="h-[250px] max-w-full">
+            <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                dataKey="type"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                />
+                <YAxis allowDecimals={false} />
+                <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent indicator="dot" />}
+                />
+                <Bar dataKey="quantity" fill="var(--color-quantity)" radius={4} />
+            </BarChart>
+          </ChartContainer>
+        </div>
       </CardContent>
     </Card>
   );
