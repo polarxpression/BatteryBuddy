@@ -18,6 +18,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+console.log("Firebase Config:", firebaseConfig);
 const app = initializeApp(firebaseConfig);
 try {
   getAnalytics(app);
