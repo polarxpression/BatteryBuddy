@@ -9,10 +9,13 @@ const LOW_STOCK_THRESHOLD = 5;
 
 export function RestockSuggestions({ batteries }: { batteries: Battery[] }) {
   const lowStockItems = batteries.filter(
-    (battery) => battery.quantity > 0 && battery.quantity < LOW_STOCK_THRESHOLD
+    (battery) => {
+      const totalQuantity = battery.quantity * battery.packSize;
+      return totalQuantity > 0 && totalQuantity < LOW_STOCK_THRESHOLD;
+    }
   );
 
-  const outOfStockItems = batteries.filter(battery => battery.quantity === 0);
+  const outOfStockItems = batteries.filter(battery => battery.quantity * battery.packSize === 0);
 
   return (
     <Card>
@@ -38,7 +41,7 @@ export function RestockSuggestions({ batteries }: { batteries: Battery[] }) {
             {lowStockItems.map((battery) => (
                 <div key={battery.id} className="flex items-center gap-4">
                     <div className="font-medium break-words">{battery.brand} {battery.model} ({battery.type})</div>
-                    <div className="ml-auto font-bold">{battery.quantity} restantes</div>
+                    <div className="ml-auto font-bold">{battery.quantity * battery.packSize} restantes</div>
                 </div>
             ))}
             </div>

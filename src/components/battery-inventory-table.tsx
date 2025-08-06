@@ -45,7 +45,9 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                         </TableHead>
                         <TableHead>Marca & Modelo</TableHead>
                         <TableHead>Tipo</TableHead>
+                        <TableHead>Embalagem</TableHead>
                         <TableHead className="text-right">Quantidade</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
                         <TableHead>
                             <span className="sr-only">Ações</span>
                         </TableHead>
@@ -64,6 +66,9 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                         </TableCell>
                         <TableCell>
                             <Badge variant="outline">{battery.type}</Badge>
+                        </TableCell>
+                        <TableCell>
+                            <Badge variant="outline">{battery.packSize}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1 md:gap-2">
@@ -89,6 +94,9 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                                 </Button>
                             </div>
                         </TableCell>
+                        <TableCell className="text-right font-medium">
+                            {battery.quantity * battery.packSize}
+                        </TableCell>
                         <TableCell>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -112,7 +120,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                     ))
                 ) : (
                     <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
+                        <TableCell colSpan={7} className="h-24 text-center">
                             Nenhuma bateria em seu inventário ainda.
                         </TableCell>
                     </TableRow>

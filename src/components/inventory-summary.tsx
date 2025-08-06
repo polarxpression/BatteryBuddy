@@ -11,7 +11,7 @@ export function InventorySummary({ batteries }: { batteries: Battery[] }) {
     const dataMap = new Map<string, number>();
     batteries.forEach((battery) => {
       const currentQuantity = dataMap.get(battery.type) || 0;
-      dataMap.set(battery.type, currentQuantity + battery.quantity);
+      dataMap.set(battery.type, currentQuantity + battery.quantity * battery.packSize);
     });
     return Array.from(dataMap.entries()).map(([type, quantity]) => ({
       type,

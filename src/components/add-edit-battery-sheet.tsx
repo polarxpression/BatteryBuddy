@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BatterySchema, batteryTypes, type Battery } from "@/lib/types";
+import { BatterySchema, batteryTypes, packSizes, type Battery } from "@/lib/types";
 
 
 interface AddEditBatterySheetProps {
@@ -49,6 +49,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       brand: "",
       model: "",
       quantity: 0,
+      packSize: 1,
     },
   });
 
@@ -63,6 +64,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           brand: "",
           model: "",
           quantity: 0,
+          packSize: 1,
         });
       }
     }
@@ -140,10 +142,34 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 name="quantity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Quantidade</FormLabel>
+                    <FormLabel>Quantidade de Embalagens</FormLabel>
                     <FormControl>
                       <Input type="number" min="0" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="packSize"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Unidades por Embalagem</FormLabel>
+                    <Select onValueChange={(value) => field.onChange(parseInt(value, 10))} defaultValue={String(field.value)}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tamanho da embalagem" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {packSizes.map((size) => (
+                          <SelectItem key={size} value={String(size)}>
+                            {size}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
