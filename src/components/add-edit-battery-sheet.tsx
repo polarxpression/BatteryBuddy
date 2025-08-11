@@ -99,7 +99,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full max-w-sm sm:max-w-lg">
+      <SheetContent className="w-full max-w-sm sm:max-w-lg overflow-y-auto max-h-[80vh]">
         <SheetHeader>
           <SheetTitle className="font-headline">{batteryToEdit ? "Editar Bateria" : "Adicionar Nova Bateria"}</SheetTitle>
           <SheetDescription>

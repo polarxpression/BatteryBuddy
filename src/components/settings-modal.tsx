@@ -83,7 +83,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-sm">
+      <DialogContent className="w-full max-w-sm overflow-y-auto max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Configurações</DialogTitle>
           <DialogDescription>Gerencie os tipos de bateria, tamanhos de embalagem e marcas.</DialogDescription>
