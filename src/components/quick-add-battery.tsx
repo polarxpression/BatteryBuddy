@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
-import { useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,8 +23,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BatterySchema, batteryTypes, type Battery } from "@/lib/types";
+import { BatterySchema, type Battery, AppSettings } from "@/lib/types";
 import { PlusCircle } from "lucide-react";
+import { onAppSettingsSnapshot } from "@/lib/firebase";
 
 
 interface QuickAddBatteryProps {
@@ -32,31 +33,37 @@ interface QuickAddBatteryProps {
 }
 
 export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+
   const form = useForm<z.infer<typeof BatterySchema>>({
     resolver: zodResolver(BatterySchema),
     defaultValues: {
       type: undefined,
-      brand: "",
+      brand: undefined,
       model: "",
       quantity: 1,
     },
   });
 
-  const brandRef = useRef<HTMLInputElement>(null);
   const modelRef = useRef<HTMLInputElement>(null);
   const quantityRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAppSettingsSnapshot(setAppSettings);
+    return () => unsubscribe();
+  }, []);
 
   const handleFormSubmit = (data: z.infer<typeof BatterySchema>) => {
     onSubmit({ ...data, id: crypto.randomUUID() });
     form.reset({
         id: crypto.randomUUID(),
         type: data.type, // keep type for next entry
-        brand: "",
+        brand: data.brand, // keep brand for next entry
         model: "",
         quantity: 1,
     });
-    // Set focus to brand field after submission
-    brandRef.current?.focus();
+    // Set focus to model field after submission
+    modelRef.current?.focus();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, nextFieldRef?: React.RefObject<HTMLInputElement>) => {
@@ -95,7 +102,7 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {batteryTypes.map((type) => (
+                        {appSettings?.batteryTypes.map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
                           </SelectItem>
@@ -118,7 +125,7 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                         min="0" 
                         {...field}
                         ref={quantityRef}
-                        onKeyDown={(e) => handleKeyDown(e)}
+                        onKeyDown={(e) => handleKeyDown(e, modelRef)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -133,14 +140,20 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Brand</FormLabel>
-                        <FormControl>
-                        <Input 
-                          placeholder="e.g., Panasonic" 
-                          {...field}
-                          ref={brandRef}
-                          onKeyDown={(e) => handleKeyDown(e, modelRef)}
-                        />
-                        </FormControl>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select brand" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {appSettings?.batteryBrands.map((brand) => (
+                              <SelectItem key={brand} value={brand}>
+                                {brand}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                     </FormItem>
                     )}

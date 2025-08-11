@@ -56,7 +56,6 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
     },
   });
 
-  const brandRef = useRef<HTMLInputElement>(null);
   const modelRef = useRef<HTMLInputElement>(null);
   const quantityRef = useRef<HTMLInputElement>(null);
 
@@ -140,14 +139,20 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Marca</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="ex: Panasonic" 
-                        {...field} 
-                        ref={brandRef} 
-                        onKeyDown={(e) => handleKeyDown(e, modelRef)} 
-                      />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma marca" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {appSettings?.batteryBrands.map((brand) => (
+                          <SelectItem key={brand} value={brand}>
+                            {brand}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
