@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -56,6 +56,10 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
     },
   });
 
+  const brandRef = useRef<HTMLInputElement>(null);
+  const modelRef = useRef<HTMLInputElement>(null);
+  const quantityRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     const unsubscribe = onAppSettingsSnapshot(setAppSettings);
     return () => unsubscribe();
@@ -81,6 +85,17 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
   const handleFormSubmit = (data: z.infer<typeof BatterySchema>) => {
     onSubmit(data);
     onOpenChange(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, nextFieldRef?: React.RefObject<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (nextFieldRef?.current) {
+        nextFieldRef.current.focus();
+      } else {
+        form.handleSubmit(handleFormSubmit)();
+      }
+    }
   };
 
   return (
@@ -126,7 +141,12 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                   <FormItem>
                     <FormLabel>Marca</FormLabel>
                     <FormControl>
-                      <Input placeholder="ex: Panasonic" {...field} />
+                      <Input 
+                        placeholder="ex: Panasonic" 
+                        {...field} 
+                        ref={brandRef} 
+                        onKeyDown={(e) => handleKeyDown(e, modelRef)} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -139,7 +159,12 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                   <FormItem>
                     <FormLabel>Modelo / Tipo</FormLabel>
                     <FormControl>
-                      <Input placeholder="ex: Eneloop, Alcalina" {...field} />
+                      <Input 
+                        placeholder="ex: Eneloop, Alcalina" 
+                        {...field} 
+                        ref={modelRef} 
+                        onKeyDown={(e) => handleKeyDown(e, quantityRef)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -152,7 +177,13 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                   <FormItem>
                     <FormLabel>Quantidade de Embalagens</FormLabel>
                     <FormControl>
-                      <Input type="number" min="0" {...field} />
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        {...field} 
+                        ref={quantityRef} 
+                        onKeyDown={(e) => handleKeyDown(e)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

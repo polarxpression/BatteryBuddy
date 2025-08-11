@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
+import { useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +42,10 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
     },
   });
 
+  const brandRef = useRef<HTMLInputElement>(null);
+  const modelRef = useRef<HTMLInputElement>(null);
+  const quantityRef = useRef<HTMLInputElement>(null);
+
   const handleFormSubmit = (data: z.infer<typeof BatterySchema>) => {
     onSubmit({ ...data, id: crypto.randomUUID() });
     form.reset({
@@ -51,8 +56,18 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
         quantity: 1,
     });
     // Set focus to brand field after submission
-    const brandInput = document.getElementsByName('brand')[1] as HTMLInputElement | null;
-    brandInput?.focus();
+    brandRef.current?.focus();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, nextFieldRef?: React.RefObject<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (nextFieldRef?.current) {
+        nextFieldRef.current.focus();
+      } else {
+        form.handleSubmit(handleFormSubmit)();
+      }
+    }
   };
 
   return (
@@ -98,7 +113,13 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                   <FormItem>
                     <FormLabel>Quantity</FormLabel>
                     <FormControl>
-                      <Input type="number" min="0" {...field} />
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        {...field}
+                        ref={quantityRef}
+                        onKeyDown={(e) => handleKeyDown(e, brandRef)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -113,7 +134,12 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                     <FormItem>
                         <FormLabel>Brand</FormLabel>
                         <FormControl>
-                        <Input placeholder="e.g., Panasonic" {...field} />
+                        <Input 
+                          placeholder="e.g., Panasonic" 
+                          {...field}
+                          ref={brandRef}
+                          onKeyDown={(e) => handleKeyDown(e, modelRef)}
+                        />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -126,7 +152,12 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                     <FormItem>
                         <FormLabel>Model</FormLabel>
                         <FormControl>
-                        <Input placeholder="e.g., Eneloop" {...field} />
+                        <Input 
+                          placeholder="e.g., Eneloop" 
+                          {...field}
+                          ref={modelRef}
+                          onKeyDown={(e) => handleKeyDown(e)}
+                        />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
