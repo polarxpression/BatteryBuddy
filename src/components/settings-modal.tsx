@@ -84,7 +84,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
               ))}
             </div>
             <div className="flex gap-2 mt-2">
-              <Input value={newType} onChange={(e) => setNewType(e.target.value)} placeholder="Novo tipo" />
+              <Input value={newType} onChange={(e) => setNewType(e.target.value)} placeholder="Novo tipo" onKeyDown={(e) => e.key === 'Enter' && handleAddType()} />
               <Button onClick={handleAddType}>Adicionar</Button>
             </div>
           </div>
@@ -101,7 +101,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
               ))}
             </div>
             <div className="flex gap-2 mt-2">
-              <Input value={newPackSize} onChange={(e) => setNewPackSize(e.target.value)} type="number" placeholder="Novo tamanho" />
+              <Input value={newPackSize} onChange={(e) => setNewPackSize(e.target.value)} type="number" placeholder="Novo tamanho" onKeyDown={(e) => e.key === 'Enter' && handleAddPackSize()} />
               <Button onClick={handleAddPackSize}>Adicionar</Button>
             </div>
           </div>

@@ -118,7 +118,7 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                         min="0" 
                         {...field}
                         ref={quantityRef}
-                        onKeyDown={(e) => handleKeyDown(e, brandRef)}
+                        onKeyDown={(e) => handleKeyDown(e)}
                       />
                     </FormControl>
                     <FormMessage />
