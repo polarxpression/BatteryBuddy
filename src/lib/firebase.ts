@@ -68,6 +68,16 @@ export const updateAppSettings = async (settings: AppSettings) => {
 
 export const onAppSettingsSnapshot = (callback: (settings: AppSettings | null) => void) => {
     return onSnapshot(settingsDoc, snapshot => {
-        callback(snapshot.exists() ? snapshot.data() as AppSettings : null);
+        if (snapshot.exists()) {
+            const data = snapshot.data();
+            const settings: AppSettings = {
+                batteryTypes: data?.batteryTypes || [],
+                packSizes: data?.packSizes || [],
+                batteryBrands: data?.batteryBrands || [],
+            };
+            callback(settings);
+        } else {
+            callback(null);
+        }
     });
 };
