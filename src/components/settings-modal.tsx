@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useToast } from "@/hooks/use-toast";
 import { X } from "lucide-react";
 import { Badge } from "./ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { onAppSettingsSnapshot, updateAppSettings } from "@/lib/firebase";
 
 interface SettingsModalProps {
@@ -88,90 +89,117 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
           <DialogDescription>Gerencie os tipos de bateria, tamanhos de embalagem e marcas.</DialogDescription>
         </DialogHeader>
         <div className="space-y-6">
-          <div className="grid gap-4">
-            <h3 className="text-lg font-medium">Tipos de Bateria</h3>
-            <div className="flex flex-wrap gap-2">
-              {types.map(type => (
-                <Badge key={type} variant="secondary" className="flex items-center gap-1 pr-1">
-                  {type}
-                  <button
-                    onClick={() => handleRemoveType(type)}
-                    className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
-                    aria-label={`Remover tipo ${type}`}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                value={newType}
-                onChange={(e) => setNewType(e.target.value)}
-                placeholder="Novo tipo de bateria"
-                onKeyDown={(e) => e.key === 'Enter' && handleAddType()}
-                className="flex-grow"
-              />
-              <Button onClick={handleAddType} className="shrink-0">Adicionar</Button>
-            </div>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Tipos de Bateria</CardTitle>
+              <CardDescription>Gerencie os tipos de bateria disponíveis para seus registros.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="flex flex-wrap gap-2">
+                {types.length > 0 ? (
+                  types.map(type => (
+                    <Badge key={type} variant="secondary" className="flex items-center gap-1 pr-1">
+                      {type}
+                      <button
+                        onClick={() => handleRemoveType(type)}
+                        className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                        aria-label={`Remover tipo ${type}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">Nenhum tipo de bateria adicionado ainda.</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  value={newType}
+                  onChange={(e) => setNewType(e.target.value)}
+                  placeholder="Novo tipo de bateria"
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddType()}
+                  className="flex-grow"
+                />
+                <Button onClick={handleAddType} className="shrink-0">Adicionar</Button>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="grid gap-4">
-            <h3 className="text-lg font-medium">Tamanhos de Embalagem</h3>
-            <div className="flex flex-wrap gap-2">
-              {sizes.map(size => (
-                <Badge key={size} variant="secondary" className="flex items-center gap-1 pr-1">
-                  {size}
-                  <button
-                    onClick={() => handleRemovePackSize(size)}
-                    className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
-                    aria-label={`Remover tamanho ${size}`}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                value={newPackSize}
-                onChange={(e) => setNewPackSize(e.target.value)}
-                type="number"
-                placeholder="Novo tamanho de embalagem"
-                onKeyDown={(e) => e.key === 'Enter' && handleAddPackSize()}
-                className="flex-grow"
-              />
-              <Button onClick={handleAddPackSize} className="shrink-0">Adicionar</Button>
-            </div>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Tamanhos de Embalagem</CardTitle>
+              <CardDescription>Defina os tamanhos de embalagem para suas baterias.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="flex flex-wrap gap-2">
+                {sizes.length > 0 ? (
+                  sizes.map(size => (
+                    <Badge key={size} variant="secondary" className="flex items-center gap-1 pr-1">
+                      {size}
+                      <button
+                        onClick={() => handleRemovePackSize(size)}
+                        className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                        aria-label={`Remover tamanho ${size}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">Nenhum tamanho de embalagem adicionado ainda.</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  value={newPackSize}
+                  onChange={(e) => setNewPackSize(e.target.value)}
+                  type="number"
+                  placeholder="Novo tamanho de embalagem"
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddPackSize()}
+                  className="flex-grow"
+                />
+                <Button onClick={handleAddPackSize} className="shrink-0">Adicionar</Button>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="grid gap-4">
-            <h3 className="text-lg font-medium">Marcas de Bateria</h3>
-            <div className="flex flex-wrap gap-2">
-              {brands.map(brand => (
-                <Badge key={brand} variant="secondary" className="flex items-center gap-1 pr-1">
-                  {brand}
-                  <button
-                    onClick={() => handleRemoveBrand(brand)}
-                    className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
-                    aria-label={`Remover marca ${brand}`}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                value={newBrand}
-                onChange={(e) => setNewBrand(e.target.value)}
-                placeholder="Nova marca de bateria"
-                onKeyDown={(e) => e.key === 'Enter' && handleAddBrand()}
-                className="flex-grow"
-              />
-              <Button onClick={handleAddBrand} className="shrink-0">Adicionar</Button>
-            </div>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Marcas de Bateria</CardTitle>
+              <CardDescription>Gerencie as marcas de bateria que você utiliza.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="flex flex-wrap gap-2">
+                {brands.length > 0 ? (
+                  brands.map(brand => (
+                    <Badge key={brand} variant="secondary" className="flex items-center gap-1 pr-1">
+                      {brand}
+                      <button
+                        onClick={() => handleRemoveBrand(brand)}
+                        className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                        aria-label={`Remover marca ${brand}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">Nenhuma marca de bateria adicionada ainda.</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  value={newBrand}
+                  onChange={(e) => setNewBrand(e.target.value)}
+                  placeholder="Nova marca de bateria"
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddBrand()}
+                  className="flex-grow"
+                />
+                <Button onClick={handleAddBrand} className="shrink-0">Adicionar</Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         <DialogFooter>
           <Button onClick={() => onOpenChange(false)}>Fechar</Button>
