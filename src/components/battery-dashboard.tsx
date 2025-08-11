@@ -13,7 +13,7 @@ import { AddEditBatterySheet } from "./add-edit-battery-sheet";
 import { BatteryInventoryTable } from "./battery-inventory-table";
 import { RestockSuggestions } from "./restock-suggestions";
 import { Button } from "./ui/button";
-import { PlusCircle, Settings, Zap } from "lucide-react";
+import { PlusCircle, Settings, Zap, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -35,9 +35,12 @@ import {
 import { InventorySummary } from "./inventory-summary";
 import { ThemeToggle } from "./theme-toggle";
 import { SettingsModal } from "./settings-modal";
+import { useMobile } from "@/hooks/use-mobile";
+import Papa from "papaparse";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
+  const isMobile = useMobile();
   const [batteries, setBatteries] = useState<Battery[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -110,6 +113,22 @@ export function BatteryDashboard() {
     }
   };
 
+  const handleExport = () => {
+    const csv = Papa.unparse(batteries.map(b => ({...b, total: b.quantity * b.packSize})) , {
+      header: true,
+      columns: ["brand", "model", "type", "packSize", "quantity", "total"],
+    });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "battery_inventory.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   const totalBatteries = batteries.reduce((acc, b) => acc + b.quantity, 0);
   const batteryTypesCount = new Set(batteries.map(b => b.type)).size;
 
@@ -119,7 +138,7 @@ export function BatteryDashboard() {
       <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
         <div className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <Zap className="h-6 w-6 text-primary" />
-          <h1 className="hidden text-xl font-bold sm:block">Battery Buddy</h1>
+          <h1 className="text-xl font-bold">Battery Buddy</h1>
         </div>
         <div className="ml-auto flex items-center gap-4">
           <ThemeToggle />
@@ -127,14 +146,18 @@ export function BatteryDashboard() {
             <Settings className="h-4 w-4" />
             <span className="sr-only">Configurações</span>
           </Button>
-          <Button onClick={handleOpenAddSheet}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Adicionar Bateria
+          <Button variant="outline" size="icon" onClick={handleExport}>
+            <Download className="h-4 w-4" />
+            <span className="sr-only">Exportar CSV</span>
+          </Button>
+          <Button onClick={handleOpenAddSheet} size={isMobile ? "icon" : "default"}>
+            <PlusCircle className={isMobile ? "h-4 w-4" : "mr-2 h-4 w-4"} />
+            {isMobile ? null : "Adicionar Bateria"}
           </Button>
         </div>
       </header>
       <main className="flex-1 space-y-4 p-4 md:p-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+        <div className={`grid grid-cols-1 ${isMobile ? "sm:grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-2"} gap-4`}>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total de Baterias</CardTitle>

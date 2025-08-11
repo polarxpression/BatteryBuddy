@@ -24,6 +24,7 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu";
 import { onAppSettingsSnapshot } from "@/lib/firebase";
+import { useMobile } from "@/hooks/use-mobile";
 
 interface BatteryInventoryTableProps {
     batteries: Battery[];
@@ -36,6 +37,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
     const [searchTerm, setSearchTerm] = useState("");
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+    const isMobile = useMobile();
 
     useEffect(() => {
         const unsubscribe = onAppSettingsSnapshot(setAppSettings);
@@ -58,15 +60,15 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
     
     return (
         <div>
-            <div className="flex items-center gap-4 mb-4">
+            <div className={`flex ${isMobile ? "flex-col" : "items-center"} gap-4 mb-4`}>
                 <Input 
                     placeholder="Filtrar por marca..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="max-w-sm"
+                    className={`${isMobile ? "w-full" : "max-w-sm"}`}
                 />
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className={`${isMobile ? "w-full" : "w-[180px]"}`}>
                         <SelectValue placeholder="Filtrar por tipo" />
                     </SelectTrigger>
                     <SelectContent>
@@ -84,10 +86,10 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                             <span className="sr-only">Ícone</span>
                         </TableHead>
                         <TableHead>Marca & Modelo</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Embalagem</TableHead>
+                        <TableHead className={`${isMobile ? "hidden" : ""}`}>Tipo</TableHead>
+                        <TableHead className={`${isMobile ? "hidden" : ""}`}>Embalagem</TableHead>
                         <TableHead className="text-right">Quantidade</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead className={`text-right ${isMobile ? "hidden" : ""}`}>Total</TableHead>
                         <TableHead>
                             <span className="sr-only">Ações</span>
                         </TableHead>
@@ -104,14 +106,14 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                             {battery.brand}
                             <div className="text-sm text-muted-foreground">{battery.model}</div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={`${isMobile ? "hidden" : ""}`}>
                             <Badge variant="outline">{battery.type}</Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={`${isMobile ? "hidden" : ""}`}>
                             <Badge variant="outline">{battery.packSize}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1 md:gap-2">
+                            <div className={`flex items-center justify-end ${isMobile ? "gap-0" : "gap-1 md:gap-2"}`}>
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -134,7 +136,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                                 </Button>
                             </div>
                         </TableCell>
-                        <TableCell className="text-right font-medium">
+                        <TableCell className={`text-right font-medium ${isMobile ? "hidden" : ""}`}>
                             {battery.quantity * battery.packSize}
                         </TableCell>
                         <TableCell>
