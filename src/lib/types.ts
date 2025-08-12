@@ -15,13 +15,7 @@ export const BatterySchema = z.object({
       return 0;
     }
   }),
-  packSize: z.string().transform((val) => {
-    try {
-      return mexp.eval(val);
-    } catch {
-      return 1;
-    }
-  }),
+  packSize: z.coerce.number().int(),
 });
 
 export type Battery = z.infer<typeof BatterySchema>;

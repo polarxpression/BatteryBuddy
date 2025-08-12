@@ -40,7 +40,7 @@ const AddEditBatterySheetSchema = z.object({
   brand: z.string({ required_error: "Selecione uma marca." }),
   model: z.string().min(1, "O modelo é obrigatório."),
   quantity: z.string(),
-  packSize: z.string(),
+  packSize: z.number(),
 });
 
 
@@ -64,7 +64,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       brand: "",
       model: "",
       quantity: "0",
-      packSize: "1",
+      packSize: 1,
     },
   });
 
@@ -82,7 +82,6 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
         form.reset({
           ...batteryToEdit,
           quantity: String(batteryToEdit.quantity),
-          packSize: String(batteryToEdit.packSize),
         });
       } else {
         form.reset({
@@ -91,7 +90,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           brand: "",
           model: "",
           quantity: "0",
-          packSize: "1",
+          packSize: 1,
         });
       }
     }
@@ -216,12 +215,20 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Unidades por Embalagem</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="text" 
-                        {...field} 
-                      />
-                    </FormControl>
+                    <Select onValueChange={(value) => field.onChange(parseInt(value, 10))} defaultValue={String(field.value)}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tamanho da embalagem" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {appSettings?.packSizes.map((size) => (
+                          <SelectItem key={size} value={String(size)}>
+                            {size}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
