@@ -65,8 +65,8 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                             <BatteryIcon type={battery.type} className="h-8 w-8 text-muted-foreground" />
                         </TableCell>
                         <TableCell className="font-medium">
-                            {battery.brand}
-                            <div className="text-sm text-muted-foreground">{battery.model}</div>
+                            <div className="font-bold">{battery.brand}</div>
+                            <div className="text-sm">{battery.model}</div>
                         </TableCell>
                         <TableCell className={`${isMobile ? "hidden" : ""}`}>
                             <Badge variant="outline">{battery.type}</Badge>
