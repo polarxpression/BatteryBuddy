@@ -11,10 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Plus, Minus } from "lucide-react";
 import { BatteryIcon } from "./icons/battery-icon";
-import { type Battery, AppSettings } from "@/lib/types";
-import { Input } from "./ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { useState, useMemo, useEffect } from "react";
+import { type Battery } from "@/lib/types";
 import { Badge } from "./ui/badge";
 import { EditableQuantity } from "./ui/editable-quantity";
 import {
@@ -24,7 +21,6 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu";
-import { onAppSettingsSnapshot } from "@/lib/firebase";
 import { useMobile } from "@/hooks/use-mobile";
 
 interface BatteryInventoryTableProps {
@@ -35,23 +31,7 @@ interface BatteryInventoryTableProps {
 }
 
 export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityChange }: BatteryInventoryTableProps) {
-    const [searchTerm, setSearchTerm] = useState("");
-    const [typeFilter, setTypeFilter] = useState<string>("all");
-    const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
     const isMobile = useMobile();
-
-    useEffect(() => {
-        const unsubscribe = onAppSettingsSnapshot(setAppSettings);
-        return () => unsubscribe();
-    }, []);
-
-    const filteredBatteries = useMemo(() => {
-        return batteries.filter(battery => {
-            const brandMatch = battery.brand.toLowerCase().includes(searchTerm.toLowerCase());
-            const typeMatch = typeFilter === "all" || battery.type === typeFilter;
-            return brandMatch && typeMatch;
-        });
-    }, [batteries, searchTerm, typeFilter]);
 
     const getQuantityBadgeVariant = (quantity: number): "default" | "destructive" | "secondary" => {
         if (quantity === 0) return "destructive";
@@ -61,25 +41,6 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
     
     return (
         <div>
-            <div className={`flex ${isMobile ? "flex-col" : "items-center"} gap-4 mb-4`}>
-                <Input 
-                    placeholder="Filtrar por marca..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`${isMobile ? "w-full" : "max-w-sm"}`}
-                />
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger className={`${isMobile ? "w-full" : "w-[180px]"}`}>
-                        <SelectValue placeholder="Filtrar por tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">Todos os Tipos</SelectItem>
-                        {appSettings?.batteryTypes.map(type => (
-                            <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -97,8 +58,8 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                {filteredBatteries.length > 0 ? (
-                    filteredBatteries.map((battery) => (
+                {batteries.length > 0 ? (
+                    batteries.map((battery) => (
                     <TableRow key={battery.id}>
                         <TableCell className="hidden sm:table-cell">
                             <BatteryIcon type={battery.type} className="h-8 w-8 text-muted-foreground" />

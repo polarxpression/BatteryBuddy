@@ -1,57 +1,101 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
-import type { Battery } from "@/lib/types";
 import { useMemo } from "react";
+import { type Battery } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartConfig,
+} from "@/components/ui/chart";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { useMobile } from "@/hooks/use-mobile";
 
-export function InventorySummary({ batteries }: { batteries: Battery[] }) {
-  const chartData = useMemo(() => {
-    const dataMap = new Map<string, number>();
+interface InventorySummaryProps {
+  batteries: Battery[];
+}
+
+export function InventorySummary({ batteries }: InventorySummaryProps) {
+  const isMobile = useMobile();
+  const { data, chartConfig } = useMemo(() => {
+    const typeMap = new Map<string, number>();
     batteries.forEach((battery) => {
-      const currentQuantity = dataMap.get(battery.type) || 0;
-      dataMap.set(battery.type, currentQuantity + battery.quantity * battery.packSize);
+      const total = battery.quantity * battery.packSize;
+      typeMap.set(battery.type, (typeMap.get(battery.type) || 0) + total);
     });
-    return Array.from(dataMap.entries()).map(([type, quantity]) => ({
-      type,
-      quantity,
-    })).sort((a, b) => b.quantity - a.quantity);
-  }, [batteries]);
 
-  const chartConfig = {
-    quantity: {
-      label: "Quantidade",
-      color: "hsl(var(--primary))",
-    },
-  } satisfies ChartConfig;
+    const sortedData = Array.from(typeMap.entries())
+      .map(([type, total]) => ({ type, total }))
+      .sort((a, b) => b.total - a.total);
+
+    const chartConfig: ChartConfig = {};
+    sortedData.forEach((item, index) => {
+      chartConfig[item.type] = {
+        label: item.type,
+        color: `hsl(var(--chart-${index + 1}))`,
+      };
+    });
+
+    return { data: sortedData, chartConfig };
+  }, [batteries]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Resumo do Inventário</CardTitle>
-        <CardDescription>Quantidade total de cada tipo de bateria.</CardDescription>
+        <CardTitle>Resumo do Inventário</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative h-[250px] w-full">
-          <ChartContainer config={chartConfig} className="h-[250px] max-w-full">
-            <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                dataKey="type"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                />
-                <YAxis allowDecimals={false} />
-                <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
-                />
-                <Bar dataKey="quantity" fill="var(--color-quantity)" radius={4} />
+        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              accessibilityLayer
+              data={data}
+              layout={isMobile ? "vertical" : "horizontal"}
+              margin={{
+                top: 20,
+                right: 20,
+                bottom: 20,
+                left: isMobile ? 0 : -10,
+              }}
+            >
+              <CartesianGrid vertical={false} />
+              {isMobile ? (
+                <>
+                  <YAxis
+                    dataKey="type"
+                    type="category"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    tickFormatter={(value) => value}
+                  />
+                  <XAxis dataKey="total" type="number" hide />
+                </>
+              ) : (
+                <>
+                  <XAxis
+                    dataKey="type"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    tickFormatter={(value) => value}
+                  />
+                  <YAxis dataKey="total" type="number" />
+                </>
+              )}
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Bar dataKey="total" radius={8}>
+                {data.map((entry) => (
+                  <div key={entry.type} style={{ backgroundColor: chartConfig[entry.type]?.color }} />
+                ))}
+              </Bar>
             </BarChart>
-          </ChartContainer>
-        </div>
+          </ResponsiveContainer>
+        </ChartContainer>
       </CardContent>
     </Card>
   );

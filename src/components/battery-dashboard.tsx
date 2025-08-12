@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   addBattery,
   deleteBattery,
   onBatteriesSnapshot,
   updateBattery,
+  onAppSettingsSnapshot,
 } from "@/lib/firebase";
-import type { Battery } from "@/lib/types";
+import type { Battery, AppSettings } from "@/lib/types";
 
 import { AddEditBatterySheet } from "./add-edit-battery-sheet";
 import { BatteryInventoryTable } from "./battery-inventory-table";
@@ -37,6 +38,8 @@ import { ThemeToggle } from "./theme-toggle";
 import { SettingsModal } from "./settings-modal";
 import { useMobile } from "@/hooks/use-mobile";
 import Papa from "papaparse";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Input } from "./ui/input";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
@@ -46,6 +49,9 @@ export function BatteryDashboard() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [batteryToEdit, setBatteryToEdit] = useState<Battery | null>(null);
   const [batteryToDelete, setBatteryToDelete] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const unsubscribe = onBatteriesSnapshot((newBatteries) => {
@@ -58,6 +64,19 @@ export function BatteryDashboard() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = onAppSettingsSnapshot(setAppSettings);
+    return () => unsubscribe();
+  }, []);
+
+  const filteredBatteries = useMemo(() => {
+    return batteries.filter(battery => {
+        const brandMatch = battery.brand.toLowerCase().includes(searchTerm.toLowerCase());
+        const typeMatch = typeFilter === "all" || battery.type === typeFilter;
+        return brandMatch && typeMatch;
+    });
+  }, [batteries, searchTerm, typeFilter]);
 
   const handleOpenAddSheet = () => {
     setBatteryToEdit(null);
@@ -114,7 +133,7 @@ export function BatteryDashboard() {
   };
 
   const handleExport = () => {
-    const csv = Papa.unparse(batteries.map(b => ({...b, total: b.quantity * b.packSize})) , {
+    const csv = Papa.unparse(filteredBatteries.map(b => ({...b, total: b.quantity * b.packSize})) , {
       header: true,
       columns: ["brand", "model", "type", "packSize", "quantity", "total"],
     });
@@ -129,8 +148,8 @@ export function BatteryDashboard() {
     document.body.removeChild(link);
   }
 
-  const totalBatteries = batteries.reduce((acc, b) => acc + b.quantity, 0);
-  const batteryTypesCount = new Set(batteries.map(b => b.type)).size;
+  const totalBatteries = filteredBatteries.reduce((acc, b) => acc + b.quantity, 0);
+  const batteryTypesCount = new Set(filteredBatteries.map(b => b.type)).size;
 
 
   return (
@@ -168,17 +187,38 @@ export function BatteryDashboard() {
                     <p className="text-xs text-muted-foreground">em {batteryTypesCount} tipos</p>
                 </CardContent>
             </Card>
-            <RestockSuggestions batteries={batteries} />
+            <RestockSuggestions batteries={filteredBatteries} />
         </div>
-        <InventorySummary batteries={batteries} />
+        <InventorySummary batteries={filteredBatteries} />
         
         <Card>
-            <CardHeader>
-                <CardTitle>Inventário Completo</CardTitle>
-                <CardDescription>Todas as baterias em sua coleção.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Inventário Completo</CardTitle>
+                    <CardDescription>Todas as baterias em sua coleção.</CardDescription>
+                </div>
+                <div className={`flex ${isMobile ? "flex-col" : "items-center"} gap-4`}>
+                    <Input 
+                        placeholder="Filtrar por marca..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className={`${isMobile ? "w-full" : "max-w-sm"}`}
+                    />
+                    <Select value={typeFilter} onValueChange={setTypeFilter}>
+                        <SelectTrigger className={`${isMobile ? "w-full" : "w-[180px]"}`}>
+                            <SelectValue placeholder="Filtrar por tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos os Tipos</SelectItem>
+                            {appSettings?.batteryTypes.map(type => (
+                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </CardHeader>
             <CardContent>
-                <BatteryInventoryTable batteries={batteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
+                <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
             </CardContent>
         </Card>
       </main>

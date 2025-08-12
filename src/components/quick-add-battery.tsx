@@ -85,14 +85,14 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
   };
 
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle className="font-headline">Quick Add</CardTitle>
         <CardDescription>
           Quickly add a new battery to your inventory.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-grow">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
