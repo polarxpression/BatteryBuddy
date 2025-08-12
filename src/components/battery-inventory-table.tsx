@@ -16,6 +16,7 @@ import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useState, useMemo, useEffect } from "react";
 import { Badge } from "./ui/badge";
+import { EditableQuantity } from "./ui/editable-quantity";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -123,9 +124,11 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                                 >
                                     <Minus className="h-4 w-4" />
                                 </Button>
-                                <Badge variant={getQuantityBadgeVariant(battery.quantity)} className="min-w-10 justify-center text-base">
-                                    {battery.quantity}
-                                </Badge>
+                                <EditableQuantity
+                                    value={battery.quantity}
+                                    onChange={(newQuantity) => onQuantityChange(battery.id, newQuantity)}
+                                    variant={getQuantityBadgeVariant(battery.quantity)}
+                                />
                                 <Button
                                     variant="ghost"
                                     size="icon"
