@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import type { z } from "zod";
+import { z } from "zod";
 import { useEffect, useState, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -27,21 +27,27 @@ import { BatterySchema, type Battery, AppSettings } from "@/lib/types";
 import { PlusCircle } from "lucide-react";
 import { onAppSettingsSnapshot } from "@/lib/firebase";
 
+const QuickAddBatterySchema = BatterySchema.extend({
+  quantity: z.string(),
+});
+
 
 interface QuickAddBatteryProps {
   onSubmit: (data: Battery) => void;
 }
 
+type Type = z.infer<typeof QuickAddBatterySchema>
+
 export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
 
-  const form = useForm<z.infer<typeof BatterySchema>>({
-    resolver: zodResolver(BatterySchema),
+  const form = useForm<Type>({
+    resolver: zodResolver(QuickAddBatterySchema),
     defaultValues: {
       type: undefined,
       brand: undefined,
       model: "",
-      quantity: 1,
+      quantity: "1",
     },
   });
 
@@ -53,14 +59,15 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
     return () => unsubscribe();
   }, []);
 
-  const handleFormSubmit = (data: z.infer<typeof BatterySchema>) => {
-    onSubmit({ ...data, id: crypto.randomUUID() });
+  const handleFormSubmit = (data: z.infer<typeof QuickAddBatterySchema>) => {
+    const parsedData = BatterySchema.parse(data);
+    onSubmit({ ...parsedData, id: crypto.randomUUID() });
     form.reset({
         id: crypto.randomUUID(),
         type: data.type, // keep type for next entry
         brand: data.brand, // keep brand for next entry
         model: "",
-        quantity: 1,
+        quantity: "1",
     });
     // Set focus to model field after submission
     modelRef.current?.focus();
@@ -121,8 +128,7 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                     <FormLabel>Quantity</FormLabel>
                     <FormControl>
                       <Input 
-                        type="number" 
-                        min="0" 
+                        type="text" 
                         {...field}
                         ref={quantityRef}
                         onKeyDown={(e) => handleKeyDown(e, modelRef)}
