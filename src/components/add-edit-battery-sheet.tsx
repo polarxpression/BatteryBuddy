@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import type { z } from "zod";
+import { z } from "zod";
 import { useEffect, useState, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,15 @@ import {
 import { onAppSettingsSnapshot } from "@/lib/firebase";
 import { AppSettings, Battery, BatterySchema } from "@/lib/types";
 
+const AddEditBatterySheetSchema = z.object({
+  id: z.string(),
+  type: z.string({ required_error: "Selecione um tipo de bateria." }),
+  brand: z.string({ required_error: "Selecione uma marca." }),
+  model: z.string().min(1, "O modelo é obrigatório."),
+  quantity: z.string(),
+  packSize: z.string(),
+});
+
 
 interface AddEditBatterySheetProps {
   open: boolean;
@@ -42,17 +51,20 @@ interface AddEditBatterySheetProps {
   onSubmit: (data: Battery) => void;
 }
 
+type Type = z.infer<typeof AddEditBatterySheetSchema>
+
 export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmit }: AddEditBatterySheetProps) {
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
 
-  const form = useForm<z.infer<typeof BatterySchema>>({
-    resolver: zodResolver(BatterySchema),
+  const form = useForm<Type>({
+    resolver: zodResolver(AddEditBatterySheetSchema),
     defaultValues: {
+      id: undefined,
       type: undefined,
       brand: "",
       model: "",
-      quantity: 0,
-      packSize: 1,
+      quantity: "0",
+      packSize: "1",
     },
   });
 
@@ -67,22 +79,27 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
   useEffect(() => {
     if (open) {
       if (batteryToEdit) {
-        form.reset(batteryToEdit);
+        form.reset({
+          ...batteryToEdit,
+          quantity: String(batteryToEdit.quantity),
+          packSize: String(batteryToEdit.packSize),
+        });
       } else {
         form.reset({
           id: crypto.randomUUID(),
           type: undefined,
           brand: "",
           model: "",
-          quantity: 0,
-          packSize: 1,
+          quantity: "0",
+          packSize: "1",
         });
       }
     }
   }, [batteryToEdit, form, open]);
 
-  const handleFormSubmit = (data: z.infer<typeof BatterySchema>) => {
-    onSubmit(data);
+  const handleFormSubmit = (data: z.infer<typeof AddEditBatterySheetSchema>) => {
+    const parsedData = BatterySchema.parse(data);
+    onSubmit(parsedData);
     onOpenChange(false);
   };
 
@@ -183,8 +200,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                     <FormLabel>Quantidade de Embalagens</FormLabel>
                     <FormControl>
                       <Input 
-                        type="number" 
-                        min="0" 
+                        type="text" 
                         {...field} 
                         ref={quantityRef} 
                         onKeyDown={(e) => handleKeyDown(e)}
@@ -200,20 +216,12 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Unidades por Embalagem</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(parseInt(value, 10))} defaultValue={String(field.value)}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tamanho da embalagem" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {appSettings?.packSizes.map((size) => (
-                          <SelectItem key={size} value={String(size)}>
-                            {size}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input 
+                        type="text" 
+                        {...field} 
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

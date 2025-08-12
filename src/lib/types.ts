@@ -1,12 +1,27 @@
 import { z } from "zod";
+import Mexp from 'math-expression-evaluator';
+
+const mexp = new Mexp();
 
 export const BatterySchema = z.object({
   id: z.string(),
   type: z.string({ required_error: "Selecione um tipo de bateria." }),
   brand: z.string({ required_error: "Selecione uma marca." }),
   model: z.string().min(1, "O modelo é obrigatório."),
-  quantity: z.coerce.number().int().min(0, "A quantidade deve ser zero ou mais."),
-  packSize: z.coerce.number().int(),
+  quantity: z.string().transform((val) => {
+    try {
+      return mexp.eval(val);
+    } catch {
+      return 0;
+    }
+  }),
+  packSize: z.string().transform((val) => {
+    try {
+      return mexp.eval(val);
+    } catch {
+      return 1;
+    }
+  }),
 });
 
 export type Battery = z.infer<typeof BatterySchema>;
