@@ -7,7 +7,7 @@ export const BatterySchema = z.object({
   id: z.string(),
   type: z.string({ required_error: "Selecione um tipo de bateria." }),
   brand: z.string({ required_error: "Selecione uma marca." }),
-  model: z.string().min(1, "O modelo é obrigatório."),
+  model: z.string().optional(),
   quantity: z.string().transform((val) => {
     try {
       return mexp.eval(val);

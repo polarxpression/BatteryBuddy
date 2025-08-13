@@ -9,7 +9,7 @@ import {
   ChartTooltipContent,
   ChartConfig,
 } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import { useMobile } from "@/hooks/use-mobile";
 
 interface InventorySummaryProps {
@@ -89,8 +89,8 @@ export function InventorySummary({ batteries }: InventorySummaryProps) {
                 content={<ChartTooltipContent hideLabel />}
               />
               <Bar dataKey="total" radius={8}>
-                {data.map((entry) => (
-                  <div key={entry.type} style={{ backgroundColor: chartConfig[entry.type]?.color }} />
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={chartConfig[entry.type]?.color} />
                 ))}
               </Bar>
             </BarChart>
