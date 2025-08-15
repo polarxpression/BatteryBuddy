@@ -38,9 +38,9 @@ export function InventorySummary({ batteries, appSettings }: InventorySummaryPro
     sortedData.forEach((item) => {
       const lowStockThreshold = appSettings?.lowStockThreshold ?? 5;
       let color = "hsl(var(--primary))"; // Default purple
-      if (item.quantity <= 0) {
+      if (item.total <= 0) {
         color = "hsl(var(--destructive))"; // Red
-      } else if (item.quantity <= lowStockThreshold) {
+      } else if (item.total <= lowStockThreshold) {
         color = "hsl(var(--warning))"; // Yellow
       }
 
