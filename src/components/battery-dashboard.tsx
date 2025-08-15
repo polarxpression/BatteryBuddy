@@ -208,7 +208,7 @@ export function BatteryDashboard() {
                     <CardTitle>Inventário Completo</CardTitle>
                     <CardDescription>Todas as baterias em sua coleção.</CardDescription>
                 </div>
-                <div className={`flex ${isMobile ? "flex-col" : "items-center gap-2"} gap-4`}>
+                <div className={`flex ${isMobile ? "flex-col gap-4" : "items-center gap-4"}`}>
                     <Input 
                         placeholder="Pesquisar..."
                         value={searchTerm}
