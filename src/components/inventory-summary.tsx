@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { type Battery } from "@/lib/types";
+import { type Battery, type AppSettings } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -14,31 +14,44 @@ import { useMobile } from "@/hooks/use-mobile";
 
 interface InventorySummaryProps {
   batteries: Battery[];
+  appSettings: AppSettings | null;
 }
 
-export function InventorySummary({ batteries }: InventorySummaryProps) {
+export function InventorySummary({ batteries, appSettings }: InventorySummaryProps) {
   const isMobile = useMobile();
   const { data, chartConfig } = useMemo(() => {
-    const typeMap = new Map<string, number>();
+    const typeMap = new Map<string, { total: number; quantity: number }>();
     batteries.forEach((battery) => {
       const total = battery.quantity * battery.packSize;
-      typeMap.set(battery.type, (typeMap.get(battery.type) || 0) + total);
+      const existing = typeMap.get(battery.type) || { total: 0, quantity: 0 };
+      typeMap.set(battery.type, {
+        total: existing.total + total,
+        quantity: existing.quantity + battery.quantity,
+      });
     });
 
     const sortedData = Array.from(typeMap.entries())
-      .map(([type, total]) => ({ type, total }))
+      .map(([type, { total, quantity }]) => ({ type, total, quantity }))
       .sort((a, b) => b.total - a.total);
 
     const chartConfig: ChartConfig = {};
-    sortedData.forEach((item, index) => {
+    sortedData.forEach((item) => {
+      const lowStockThreshold = appSettings?.lowStockThreshold ?? 5;
+      let color = "hsl(var(--primary))"; // Default purple
+      if (item.quantity <= 0) {
+        color = "hsl(var(--destructive))"; // Red
+      } else if (item.quantity <= lowStockThreshold) {
+        color = "hsl(var(--warning))"; // Yellow
+      }
+
       chartConfig[item.type] = {
         label: item.type,
-        color: `hsl(var(--chart-${index + 1}))`,
+        color: color,
       };
     });
 
     return { data: sortedData, chartConfig };
-  }, [batteries]);
+  }, [batteries, appSettings]);
 
   return (
     <Card>

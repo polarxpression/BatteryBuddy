@@ -189,7 +189,7 @@ export function BatteryDashboard() {
             </Card>
             <RestockSuggestions batteries={filteredBatteries} />
         </div>
-        <InventorySummary batteries={filteredBatteries} />
+        <InventorySummary batteries={filteredBatteries} appSettings={appSettings} />
         
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
