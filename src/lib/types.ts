@@ -24,6 +24,7 @@ export const AppSettingsSchema = z.object({
   batteryTypes: z.array(z.string()),
   packSizes: z.array(z.number()),
   batteryBrands: z.array(z.string()),
+  batteryModels: z.array(z.string()),
   lowStockThreshold: z.number().optional(),
 });
 

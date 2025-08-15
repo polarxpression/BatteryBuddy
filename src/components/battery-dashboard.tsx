@@ -50,6 +50,8 @@ export function BatteryDashboard() {
   const [batteryToEdit, setBatteryToEdit] = useState<Battery | null>(null);
   const [batteryToDelete, setBatteryToDelete] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [brandFilter, setBrandFilter] = useState<string>("all");
+  const [modelFilter, setModelFilter] = useState<string>("all");
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -71,12 +73,21 @@ export function BatteryDashboard() {
   }, []);
 
   const filteredBatteries = useMemo(() => {
-    return batteries.filter(battery => {
-        const brandMatch = battery.brand.toLowerCase().includes(searchTerm.toLowerCase());
-        const typeMatch = typeFilter === "all" || battery.type === typeFilter;
-        return brandMatch && typeMatch;
+    return batteries.filter((battery) => {
+      const typeMatch = typeFilter === "all" || battery.type === typeFilter;
+      const brandMatch = brandFilter === "all" || battery.brand === brandFilter;
+      const modelMatch = modelFilter === "all" || battery.model === modelFilter;
+
+      const searchTermLower = searchTerm.toLowerCase();
+      const searchMatch =
+        !searchTerm ||
+        battery.brand.toLowerCase().includes(searchTermLower) ||
+        (battery.model || "").toLowerCase().includes(searchTermLower) ||
+        battery.type.toLowerCase().includes(searchTermLower);
+
+      return typeMatch && brandMatch && modelMatch && searchMatch;
     });
-  }, [batteries, searchTerm, typeFilter]);
+  }, [batteries, typeFilter, brandFilter, modelFilter, searchTerm]);
 
   const handleOpenAddSheet = () => {
     setBatteryToEdit(null);
@@ -199,7 +210,7 @@ export function BatteryDashboard() {
                 </div>
                 <div className={`flex ${isMobile ? "flex-col" : "items-center"} gap-4`}>
                     <Input 
-                        placeholder="Filtrar por marca..."
+                        placeholder="Pesquisar..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className={`${isMobile ? "w-full" : "max-w-sm"}`}
@@ -212,6 +223,28 @@ export function BatteryDashboard() {
                             <SelectItem value="all">Todos os Tipos</SelectItem>
                             {appSettings?.batteryTypes.map(type => (
                                 <SelectItem key={type} value={type}>{type}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={brandFilter} onValueChange={setBrandFilter}>
+                        <SelectTrigger className={`${isMobile ? "w-full" : "w-[180px]"}`}>
+                            <SelectValue placeholder="Filtrar por marca" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas as Marcas</SelectItem>
+                            {appSettings?.batteryBrands.map(brand => (
+                                <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={modelFilter} onValueChange={setModelFilter}>
+                        <SelectTrigger className={`${isMobile ? "w-full" : "w-[180px]"}`}>
+                            <SelectValue placeholder="Filtrar por modelo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos os Modelos</SelectItem>
+                            {appSettings?.batteryModels.map(model => (
+                                <SelectItem key={model} value={model}>{model}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>

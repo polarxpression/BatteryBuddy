@@ -74,6 +74,7 @@ export const onAppSettingsSnapshot = (callback: (settings: AppSettings | null) =
                 batteryTypes: data?.batteryTypes || [],
                 packSizes: data?.packSizes || [],
                 batteryBrands: data?.batteryBrands || [],
+                batteryModels: data?.batteryModels || [],
                 lowStockThreshold: data?.lowStockThreshold || 5,
             };
             callback(settings);
