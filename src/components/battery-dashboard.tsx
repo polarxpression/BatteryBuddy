@@ -31,7 +31,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "./ui/card";
 import { InventorySummary } from "./inventory-summary";
 import { ThemeToggle } from "./theme-toggle";
@@ -159,13 +158,16 @@ export function BatteryDashboard() {
     document.body.removeChild(link);
   }
 
+  
+
+
   const totalBatteries = filteredBatteries.reduce((acc, b) => acc + b.quantity, 0);
   const batteryTypesCount = new Set(filteredBatteries.map(b => b.type)).size;
 
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6 w-full max-w-7xl mx-auto">
         <div className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <Zap className="h-6 w-6 text-primary" />
           <h1 className="text-xl font-bold">Battery Buddy</h1>
@@ -186,7 +188,7 @@ export function BatteryDashboard() {
           </Button>
         </div>
       </header>
-      <main className="flex-1 space-y-4 p-4 md:p-8">
+      <main className="flex-1 space-y-4 p-4 md:p-8 max-w-7xl mx-auto">
         <div className={`grid grid-cols-1 ${isMobile ? "sm:grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-2"} gap-4`}>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -202,58 +204,56 @@ export function BatteryDashboard() {
         </div>
         <InventorySummary batteries={filteredBatteries} appSettings={appSettings} />
         
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                    <CardTitle>Inventário Completo</CardTitle>
-                    <CardDescription>Todas as baterias em sua coleção.</CardDescription>
-                </div>
-                <div className={`flex ${isMobile ? "flex-col gap-4" : "items-center gap-4"}`}>
-                    <Input 
-                        placeholder="Pesquisar..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className={`${isMobile ? "w-full" : "max-w-sm"}`}
-                    />
-                    <Select value={typeFilter} onValueChange={setTypeFilter}>
-                        <SelectTrigger className={`${isMobile ? "w-full" : "w-[180px]"}`}>
-                            <SelectValue placeholder="Filtrar por tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todos os Tipos</SelectItem>
-                            {appSettings?.batteryTypes.map(type => (
-                                <SelectItem key={type} value={type}>{type}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Select value={brandFilter} onValueChange={setBrandFilter}>
-                        <SelectTrigger className={`${isMobile ? "w-full" : "w-[180px]"}`}>
-                            <SelectValue placeholder="Filtrar por marca" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todas as Marcas</SelectItem>
-                            {appSettings?.batteryBrands.map(brand => (
-                                <SelectItem key={brand} value={brand}>{brand}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Select value={modelFilter} onValueChange={setModelFilter}>
-                        <SelectTrigger className={`${isMobile ? "w-full" : "w-[180px]"}`}>
-                            <SelectValue placeholder="Filtrar por modelo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todos os Modelos</SelectItem>
-                            {appSettings?.batteryModels.map(model => (
-                                <SelectItem key={model} value={model}>{model}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
-            </CardContent>
-        </Card>
+        <div>
+            <div className="mb-4">
+                <h2 className="text-2xl font-bold">Inventário Completo</h2>
+                <p className="text-muted-foreground">Todas as baterias em sua coleção.</p>
+            </div>
+            <div className="mb-4">
+                <Input 
+                    placeholder="Pesquisar..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="max-w-sm"
+                />
+            </div>
+            <div className={`grid ${isMobile ? "grid-cols-1 gap-4" : "grid-cols-3 gap-4"} mb-4`}>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Filtrar por tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todos os Tipos</SelectItem>
+                        {appSettings?.batteryTypes.map(type => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Select value={brandFilter} onValueChange={setBrandFilter}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Filtrar por marca" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todas as Marcas</SelectItem>
+                        {appSettings?.batteryBrands.map(brand => (
+                            <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Select value={modelFilter} onValueChange={setModelFilter}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Filtrar por modelo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todos os Modelos</SelectItem>
+                        {appSettings?.batteryModels.map(model => (
+                            <SelectItem key={model} value={model}>{model}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
+        </div>
       </main>
 
       <AddEditBatterySheet
