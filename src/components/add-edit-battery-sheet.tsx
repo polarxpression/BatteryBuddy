@@ -68,7 +68,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
     },
   });
 
-  const modelRef = useRef<HTMLInputElement>(null);
+  
   const quantityRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -178,15 +178,21 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 name="model"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Modelo / Tipo</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="ex: Eneloop, Alcalina" 
-                        {...field} 
-                        ref={modelRef} 
-                        onKeyDown={(e) => handleKeyDown(e, quantityRef)}
-                      />
-                    </FormControl>
+                    <FormLabel>Modelo</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione um modelo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {appSettings?.batteryModels.map((model) => (
+                          <SelectItem key={model} value={model}>
+                            {model}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
