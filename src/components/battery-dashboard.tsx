@@ -39,6 +39,8 @@ import { useMobile } from "@/hooks/use-mobile";
 import Papa from "papaparse";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Input } from "./ui/input";
+import { BatteryReport } from "./battery-report";
+import { AiManager } from "./ai-manager";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
@@ -158,7 +160,92 @@ export function BatteryDashboard() {
     document.body.removeChild(link);
   }
 
-  
+  const handleGenerateReport = (outputType: "print" | "download") => {
+    const lowStockItems = batteries.filter(
+      (battery) => {
+        const totalQuantity = battery.quantity * battery.packSize;
+        return totalQuantity > 0 && totalQuantity < 5;
+      }
+    );
+
+    const outOfStockItems = batteries.filter(battery => battery.quantity * battery.packSize === 0);
+
+    const reportContent = `
+      <html>
+        <head>
+          <title>Relatório de Baterias</title>
+          <style>
+            body { font-family: sans-serif; margin: 2rem; }
+            h1 { color: #333; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            .out-of-stock { color: red; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <h1>Relatório de Baterias</h1>
+          
+          <h2>Fora de Estoque</h2>
+          ${outOfStockItems.length > 0 ? `
+            <table>
+              <tr>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Tipo</th>
+              </tr>
+              ${outOfStockItems.map(battery => `
+                <tr>
+                  <td>${battery.brand}</td>
+                  <td>${battery.model}</td>
+                  <td>${battery.type}</td>
+                </tr>
+              `).join('')}
+            </table>
+          ` : "<p>Nenhum item fora de estoque.</p>"}
+
+          <h2>Estoque Baixo</h2>
+          ${lowStockItems.length > 0 ? `
+            <table>
+              <tr>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Tipo</th>
+                <th>Quantidade Restante</th>
+              </tr>
+              ${lowStockItems.map(battery => `
+                <tr>
+                  <td>${battery.brand}</td>
+                  <td>${battery.model}</td>
+                  <td>${battery.type}</td>
+                  <td>${battery.quantity * battery.packSize}</td>
+                </tr>
+              `).join('')}
+            </table>
+          ` : "<p>Nenhum item com estoque baixo.</p>"}
+        </body>
+      </html>
+    `;
+
+    if (outputType === "print") {
+      const reportWindow = window.open("", "_blank");
+      if (!reportWindow) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível abrir uma nova janela para o relatório.",
+          variant: "destructive",
+        });
+        return;
+      }
+      reportWindow.document.write(reportContent);
+      reportWindow.document.close();
+      reportWindow.print();
+    } else {
+      import("html2pdf.js").then(html2pdf => {
+        html2pdf.default().from(reportContent).save("battery_report.pdf");
+      });
+    }
+  };
 
 
   const totalBatteries = filteredBatteries.reduce((acc, b) => acc + b.quantity, 0);
@@ -203,7 +290,18 @@ export function BatteryDashboard() {
             <RestockSuggestions batteries={filteredBatteries} />
         </div>
         <InventorySummary batteries={filteredBatteries} appSettings={appSettings} />
+
+        <AiManager 
+          addBattery={addBattery}
+          deleteBattery={deleteBattery}
+          updateBattery={updateBattery}
+          handleExport={handleExport}
+          handleGenerateReport={handleGenerateReport}
+          batteries={batteries}
+        />
         
+        <BatteryReport onGenerateReport={handleGenerateReport} />
+
         <Card>
             <CardHeader>
                 <h2 className="text-2xl font-bold">Inventário Completo</h2>
