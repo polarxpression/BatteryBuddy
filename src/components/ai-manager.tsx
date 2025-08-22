@@ -68,7 +68,13 @@ export function AiManager({
     }
   };
 
-  const executeCommand = (command: any) => {
+  interface Command {
+  command: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parameters: any;
+}
+
+  const executeCommand = (command: Command) => {
     if (!command || !command.command) return;
 
     switch (command.command) {
