@@ -463,6 +463,7 @@ export function AiManager({
                   e.preventDefault();
                   handleSendMessage(message);
                 } else if ((e.key === 'Enter' && e.ctrlKey) || (e.key === 'Enter' && e.shiftKey)) {
+                  e.preventDefault();
                   setMessage(prev => prev + '\n');
                 } else if (e.key === 'ArrowUp') {
                   e.preventDefault();
