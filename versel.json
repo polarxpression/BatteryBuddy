@@ -2,7 +2,7 @@
   "git": {
     "deploymentEnabled": {
       "github-to-vercel": false,
-      "master": true,
+      "master": true
     }
   }
 }
