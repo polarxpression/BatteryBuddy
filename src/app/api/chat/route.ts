@@ -119,6 +119,8 @@ Notes:
 - Cartela is the Portuguese word for pack or blister pack of batteries (e.g., a cartela of 4 AA batteries).
 `;
 
+let currentModel: 'gemini-2.5-pro' | 'gemini-2.5-flash' = 'gemini-2.5-pro';
+
 export async function POST(request: Request) {
   const { message, history } = await request.json();
 
@@ -130,37 +132,77 @@ export async function POST(request: Request) {
     },
   ];
 
-  // Use the streaming API and place tools inside the request config per SDK
-  const streamIterator = await ai.models.generateContentStream({
-    model: "gemini-2.5-flash",
-    contents,
-    config: {
-      systemInstruction: systemPrompt,
-      tools,
-    },
-  });
+  try {
+    // Use the streaming API and place tools inside the request config per SDK
+    const streamIterator = await ai.models.generateContentStream({
+      model: currentModel,
+      contents,
+      config: {
+        systemInstruction: systemPrompt,
+        tools,
+      },
+    });
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        for await (const chunk of streamIterator) {
-          const data = {
-            text: chunk.text,
-            functionCalls: chunk.functionCalls,
-          };
-          controller.enqueue(JSON.stringify(data) + '\n');
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of streamIterator) {
+            const data = {
+              text: chunk.text,
+              functionCalls: chunk.functionCalls,
+            };
+            controller.enqueue(JSON.stringify(data) + '\n');
+          }
+        } catch (err) {
+          controller.error(err);
+        } finally {
+          controller.close();
         }
-      } catch (err) {
-        controller.error(err);
-      } finally {
-        controller.close();
-      }
-    },
-  });
+      },
+    });
 
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes('quota')) {
+      currentModel = 'gemini-2.5-flash';
+      const streamIterator = await ai.models.generateContentStream({
+        model: currentModel,
+        contents,
+        config: {
+          systemInstruction: systemPrompt,
+          tools,
+        },
+      });
+
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            for await (const chunk of streamIterator) {
+              const data = {
+                text: chunk.text,
+                functionCalls: chunk.functionCalls,
+              };
+              controller.enqueue(JSON.stringify(data) + '\n');
+            }
+          } catch (err) {
+            controller.error(err);
+          } finally {
+            controller.close();
+          }
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } else {
+      throw error;
+    }
+  }
 }

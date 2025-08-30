@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { FileDown, FileUp, Plus, Pencil, Trash2, Send, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -12,6 +11,14 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import React, { useRef } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
+import TextareaAutosize from 'react-textarea-autosize';
+
+declare module '@google/genai' {
+  interface Content {
+    timestamp?: number;
+  }
+}
+
 
 interface AiManagerProps {
   addBattery: (data: Battery) => Promise<void>;
@@ -56,6 +63,9 @@ export function AiManager({
   const [openTool, setOpenTool] = useState<string | null>(null);
   const [thinkingCollapsed, setThinkingCollapsed] = useState<boolean>(true);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const [messageHistory, setMessageHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
 
   const handleToolToggle = (key: string) => {
     setOpenTool(prev => (prev === key ? null : key));
@@ -160,7 +170,12 @@ export function AiManager({
   const handleSendMessage = async (userMessage: string, currentHistory?: Content[], isRecursiveCall = false) => {
     if (!userMessage && !currentHistory) return;
 
-    const historyToSend = currentHistory || [...history, { role: 'user', parts: [{ text: userMessage || '' }] }];
+    if (userMessage) {
+      setMessageHistory(prev => [userMessage, ...prev]);
+      setHistoryIndex(-1);
+    }
+
+    const historyToSend: Content[] = currentHistory || [...history, { role: 'user', parts: [{ text: userMessage || '' }], timestamp: Date.now() }];
     if (!currentHistory) {
       setHistory(historyToSend);
       setMessage('');
@@ -192,7 +207,7 @@ export function AiManager({
         const { done, value } = await reader.read();
         if (done) {
           if (fullResponse) {
-            setHistory(prev => [...prev, { role: 'model', parts: [{ text: fullResponse }] }]);
+            setHistory(prev => [...prev, { role: 'model', parts: [{ text: fullResponse }], timestamp: Date.now() }]);
           }
           setStreamingMessage(null);
           break;
@@ -230,7 +245,7 @@ export function AiManager({
           const output = await executeCommand(call);
           toolOutputs.push({ functionResponse: { name: call.name, response: { content: output } } });
         }
-        const newHistory = [...historyToSend, { role: 'model', parts: [{ functionCall: functionCalls[0] }] }, { role: 'tool', parts: toolOutputs.map(toolOutput => ({ functionResponse: toolOutput.functionResponse })) }];
+        const newHistory: Content[] = [...historyToSend, { role: 'model', parts: [{ functionCall: functionCalls[0] }], timestamp: Date.now() }, { role: 'tool', parts: toolOutputs.map(toolOutput => ({ functionResponse: toolOutput.functionResponse })), timestamp: Date.now() }];
         setHistory(newHistory);
         console.log("New history after tool execution:", newHistory);
         // Resend to the model automatically after tool execution
@@ -241,7 +256,7 @@ export function AiManager({
 
     } catch (error) {
       console.error('Error sending message to AI:', error);
-      setHistory(prev => [...prev, { role: 'model', parts: [{ text: 'Sorry, an unexpected error occurred.' }] }]);
+      setHistory(prev => [...prev, { role: 'model', parts: [{ text: 'Sorry, an unexpected error occurred.' }], timestamp: Date.now() }]);
       setStatus('idle');
     }
   };
@@ -312,11 +327,11 @@ export function AiManager({
                 <div key={index} className="animate-blur-in animate-fade-in-up">
                   {chat.role === 'user' && chat.parts && (
                     <div className='flex flex-col items-end gap-1'>
-                      <div className='rounded-lg bg-blue-500 p-3 text-white hover:bg-blue-600 transition-colors'>
+                      <div className='rounded-lg bg-blue-500 p-3 text-white hover:bg-blue-600 transition-colors break-words'>
                         {chat.parts[0].text}
                       </div>
                       <span className='text-xs text-muted-foreground'>
-                        {new Date().toLocaleTimeString()}
+                                                {new Date(chat.timestamp || 0).toLocaleTimeString()}
                       </span>
                     </div>
                   )}
@@ -351,13 +366,13 @@ export function AiManager({
                     // Only render model text responses. If the model only issued a functionCall (no text), skip rendering.
                     (typeof (chat.parts[0] as { text?: string })?.text === 'string') ? (
                       <div className='flex flex-col items-start gap-1'>
-                        <div className='w-[70%] rounded-lg bg-accent p-3 text-accent-foreground hover:bg-accent/90 transition-colors'>
+                        <div className='w-[70%] rounded-lg bg-accent p-3 text-accent-foreground hover:bg-accent/90 transition-colors break-words'>
                           <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
                             {(chat.parts[0] as { text?: string }).text as string}
                           </ReactMarkdown>
                         </div>
                         <span className='text-xs text-muted-foreground'>
-                          {new Date().toLocaleTimeString()}
+                                                  {new Date(chat.timestamp || 0).toLocaleTimeString()}
                         </span>
                       </div>
                     ) : null
@@ -436,15 +451,36 @@ export function AiManager({
             <div ref={chatEndRef} />
           </div>
           <div className='flex space-x-2'>
-            <Input
+            <TextareaAutosize
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={t('chat:type_message')}
-              className='focus-visible:ring-2'
+              className='w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
+              minRows={1}
+              maxRows={5}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey && message) {
+                if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey && message) {
                   e.preventDefault();
                   handleSendMessage(message);
+                } else if ((e.key === 'Enter' && e.ctrlKey) || (e.key === 'Enter' && e.shiftKey)) {
+                  setMessage(prev => prev + '\n');
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  if (historyIndex < messageHistory.length - 1) {
+                    const newIndex = historyIndex + 1;
+                    setHistoryIndex(newIndex);
+                    setMessage(messageHistory[newIndex]);
+                  }
+                } else if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  if (historyIndex > 0) {
+                    const newIndex = historyIndex - 1;
+                    setHistoryIndex(newIndex);
+                    setMessage(messageHistory[newIndex]);
+                  } else if (historyIndex === 0) {
+                    setHistoryIndex(-1);
+                    setMessage('');
+                  }
                 }
               }}
               disabled={status !== 'idle'}
