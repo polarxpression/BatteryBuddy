@@ -29,3 +29,9 @@ export const AppSettingsSchema = z.object({
 });
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
+
+export type CalculatorResult = {
+  data: [string];
+};
+
+

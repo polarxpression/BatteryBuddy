@@ -41,6 +41,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Input } from "./ui/input";
 import { BatteryReport } from "./battery-report";
 import { AiManager } from "./ai-manager";
+import { AiOrb } from "./ai-orb";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
@@ -48,6 +49,7 @@ export function BatteryDashboard() {
   const [batteries, setBatteries] = useState<Battery[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAiManagerOpen, setIsAiManagerOpen] = useState(false);
   const [batteryToEdit, setBatteryToEdit] = useState<Battery | null>(null);
   const [batteryToDelete, setBatteryToDelete] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -113,7 +115,11 @@ export function BatteryDashboard() {
         description: "Bateria atualizada com sucesso.",
       });
     } else {
-      await addBattery(data);
+      const newBattery = {
+        ...data,
+        id: data.id || crypto.randomUUID(),
+      };
+      await addBattery(newBattery);
       toast({
         title: "Sucesso!",
         description: "Nova bateria adicionada ao seu inventário.",
@@ -133,6 +139,24 @@ export function BatteryDashboard() {
         description: "Bateria removida do inventário.",
       });
       setBatteryToDelete(null);
+    }
+  };
+
+  const updateBatteryQuantity = async (brand: string, model: string, newQuantity: number) => {
+    const battery = batteries.find(b => b.brand === brand && b.model === model);
+    if (battery) {
+      await updateBattery({ ...battery, quantity: newQuantity });
+      toast({
+        title: "Sucesso!",
+        description: `A quantidade da bateria ${brand} ${model} foi atualizada para ${newQuantity}.`,
+      });
+    } else {
+      toast({
+        title: "Erro!",
+        description: `Bateria ${brand} ${model} não encontrada.`, 
+        variant: "destructive",
+      });
+      throw new Error(`Battery ${brand} ${model} not found.`);
     }
   };
 
@@ -160,7 +184,7 @@ export function BatteryDashboard() {
     document.body.removeChild(link);
   }
 
-  const handleGenerateReport = (outputType: "print" | "download") => {
+  const handleGenerateReport = (outputType: "print" | "download", reportContent?: string, suggestions?: string) => {
     const lowStockItems = batteries.filter(
       (battery) => {
         const totalQuantity = battery.quantity * battery.packSize;
@@ -170,7 +194,7 @@ export function BatteryDashboard() {
 
     const outOfStockItems = batteries.filter(battery => battery.quantity * battery.packSize === 0);
 
-    const reportContent = `
+    let finalReportContent = reportContent || `
       <html>
         <head>
           <title>Relatório de Baterias</title>
@@ -227,26 +251,35 @@ export function BatteryDashboard() {
       </html>
     `;
 
+    if (suggestions) {
+        const suggestionHtml = `<h2>Sugestões</h2><p>${suggestions}</p>`;
+        const bodyIndex = finalReportContent.indexOf('</body>');
+        finalReportContent = finalReportContent.slice(0, bodyIndex) + suggestionHtml + finalReportContent.slice(bodyIndex);
+    }
+
     if (outputType === "print") {
       const reportWindow = window.open("", "_blank");
       if (!reportWindow) {
         toast({
-          title: "Erro",
-          description: "Não foi possível abrir uma nova janela para o relatório.",
+          title: "Erro ao abrir o relatório",
+          description: "O bloqueador de pop-ups do seu navegador pode estar impedindo a abertura do relatório. Por favor, desative-o e tente novamente.",
           variant: "destructive",
         });
         return;
       }
-      reportWindow.document.write(reportContent);
+      reportWindow.document.write(finalReportContent);
       reportWindow.document.close();
       reportWindow.print();
     } else {
       import("html2pdf.js").then(html2pdf => {
-        html2pdf.default().from(reportContent).save("battery_report.pdf");
+        html2pdf.default().from(finalReportContent).save("battery_report.pdf");
       });
     }
   };
 
+  const handleGenerateSuggestion = () => {
+    setIsAiManagerOpen(true);
+  };
 
   const totalBatteries = filteredBatteries.reduce((acc, b) => acc + b.quantity, 0);
   const batteryTypesCount = new Set(filteredBatteries.map(b => b.type)).size;
@@ -290,17 +323,8 @@ export function BatteryDashboard() {
             <RestockSuggestions batteries={filteredBatteries} />
         </div>
         <InventorySummary batteries={filteredBatteries} appSettings={appSettings} />
-
-        <AiManager 
-          addBattery={addBattery}
-          deleteBattery={deleteBattery}
-          updateBattery={updateBattery}
-          handleExport={handleExport}
-          handleGenerateReport={handleGenerateReport}
-          batteries={batteries}
-        />
         
-        <BatteryReport onGenerateReport={handleGenerateReport} />
+        <BatteryReport onGenerateReport={handleGenerateReport} onGenerateSuggestion={handleGenerateSuggestion} />
 
         <Card>
             <CardHeader>
@@ -380,6 +404,20 @@ export function BatteryDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AiOrb onClick={() => setIsAiManagerOpen(prev => !prev)} />
+
+      {isAiManagerOpen && (
+        <div className="fixed bottom-24 right-8 z-50">
+          <AiManager 
+            addBattery={handleSubmit}
+            updateBatteryQuantity={updateBatteryQuantity}
+            handleExport={handleExport}
+            handleGenerateReport={handleGenerateReport}
+            batteries={filteredBatteries}
+          />
+        </div>
+      )}
     </div>
   );
 }

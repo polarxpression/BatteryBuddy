@@ -1,73 +1,84 @@
-API name: /run_inference  
-Runs a single turn of inference and yields the output stream for a gr.Chatbot. This function is now a generator.
+### Step 1: Installation ⚙️
 
-```js
-import { Client } from "@gradio/client";
+This step remains the same. If you haven't already, install the **@gradio/client** library in your project.
 
-const response_0 = await fetch("https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png");
-const exampleImage = await response_0.blob();
+```bash
+npm install @gradio/client
+```
 
-const response_1 = await fetch("undefined");
-const exampleVideo = await response_1.blob();
+-----
 
-const client = await Client.connect("AIDC-AI/ovis2.5-9B");
-const result = await client.predict("/run_inference", {
-    chatbot: [["Hello!", null]],
-    image_input: exampleImage,
-    video_input: exampleVideo,
-    do_sample: true,
-    max_new_tokens: 256,
-    enable_thinking: true,
-    enable_thinking_budget: true,
-    thinking_budget: 128,
-});
+### Step 2: Create a Backend Route
 
-console.log(result.data);
-````
+This new method requires multiple API calls to work because it's stateful. First, you send the message to set the state, then you trigger a separate function to get the response.
 
----
+Replace the code in **`app/api/chat/route.ts`** with the following. This new version performs the essential two-step sequence.
 
-### Accepts 8 parameters:
+```typescript
+// File: app/api/chat/route.ts
+import { NextResponse } from "next/server";
+import { client } from "@gradio/client";
 
-**chatbot**
-*Default: \[]*
-The input value that is provided in the "Ovis" Chatbot component. null
+export async function POST(request: Request) {
+  try {
+    const { message } = await request.json();
+    if (!message) {
+      return NextResponse.json({ error: "Message is required" }, { status: 400 });
+    }
 
-**image\_input**
-*Blob | File | Buffer* **Required**
-The input value that is provided in the "Image Input" Image component. For input, either path or url must be provided. For output, path is always provided.
+    // Connect to the Gradio app space
+    const app = await client("smd/gpt-oss-120b-chatbot");
 
-**video\_input**
-*any* **Required**
-The input value that is provided in the "Video Input" Video component. null
+    // STEP 1: Set the user's message in the textbox.
+    // This call updates the state on the backend.
+    await app.predict("/clear_and_save_textbox", {
+      message: message,
+    });
 
-**do\_sample**
-*Boolean*
-*Default: True*
-The input value that is provided in the "Enable Sampling (Do Sample)" Checkbox component.
+    // STEP 2: Trigger the submit function to get the bot's response.
+    // We provide sensible defaults for the parameters.
+    const result = await app.predict("/submit_fn", {
+      system_prompt: "You are a helpful assistant.",
+      temperature: 0.7,
+      reasoning_effort: "eedivs", 
+      enable_browsing: false,
+    });
 
-**max\_new\_tokens**
-*number*
-*Default: 2048*
-The input value that is provided in the "Max New Tokens" Slider component.
+    // The response data is often a representation of the chat history.
+    // We assume the final message in the history is the assistant's reply.
+    // The actual data structure might vary.
+    const chatHistory = result.data[0];
+    const latestResponse = chatHistory[chatHistory.length - 1];
+    const assistantMessage = latestResponse[1]; // Assuming [user, assistant] pairs
 
-**enable\_thinking**
-*Boolean*
-*Default: True*
-The input value that is provided in the "Enable Deep Thinking" Checkbox component.
+    // Send the extracted response back to your frontend
+    return NextResponse.json({ response: assistantMessage });
 
-**enable\_thinking\_budget**
-*Boolean*
-*Default: True*
-The input value that is provided in the "Enable Thinking Budget" Checkbox component.
+  } catch (error) {
+    console.error("API call failed:", error);
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+  }
+}
+```
 
-**thinking\_budget**
-*number*
-*Default: 1024*
-The input value that is provided in the "Thinking Budget" Slider component.
+### A Note on This Method
 
----
+This approach mimics the internal workings of the UI and can be less stable than using a single, dedicated API endpoint. The main takeaway is that you often need to **find the essential functions** (`clear_and_save_textbox` and `submit_fn` in this case) and call them in the correct order.
 
-### Returns 1 element
+-----
 
-The output value that appears in the "Ovis" Chatbot component.
+### Step 3: Build the Frontend Interface 🖥️
+
+**No changes are needed here\!** Your frontend code from **`app/page.tsx`** will work perfectly. It doesn't need to know about the complexity on the backend; it just sends a message to your `/api/chat` route and displays whatever response it gets back.
+
+-----
+
+### Step 4: Run Your App
+
+You're ready to go. Start the development server from your terminal:
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:3000` in your browser to use the chat interface. It will now use the more complex, multi-step API calling method on the backend.

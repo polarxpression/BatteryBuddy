@@ -27,8 +27,13 @@ import { BatterySchema, type Battery, AppSettings } from "@/lib/types";
 import { PlusCircle } from "lucide-react";
 import { onAppSettingsSnapshot } from "@/lib/firebase";
 
-const QuickAddBatterySchema = BatterySchema.extend({
+const QuickAddBatterySchema = z.object({
+  id: z.string().optional(),
+  type: z.string({ required_error: "Selecione um tipo de bateria." }),
+  brand: z.string({ required_error: "Selecione uma marca." }),
+  model: z.string().optional(),
   quantity: z.string(),
+  packSize: z.coerce.number().int().optional(),
 });
 
 
@@ -61,7 +66,7 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
 
   const handleFormSubmit = (data: z.infer<typeof QuickAddBatterySchema>) => {
     const parsedData = BatterySchema.parse(data);
-    onSubmit({ ...parsedData, id: crypto.randomUUID() });
+    onSubmit({ ...parsedData, id: crypto.randomUUID(), packSize: 1 });
     form.reset({
         id: crypto.randomUUID(),
         type: data.type, // keep type for next entry

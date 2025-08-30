@@ -50,3 +50,7 @@ firebase-configuration.json
 *.jpg
 *.jpeg
 *.gif
+
+*.txt
+*.log
+*.rar
