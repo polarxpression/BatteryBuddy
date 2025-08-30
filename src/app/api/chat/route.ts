@@ -90,7 +90,7 @@ Strict function-calling rules (must follow):
 Response format and tone:
 - For function calls: emit the function call only (structured via the SDK). Do not include extra prose in the same response.
 - For conversational replies (no function call): be concise (1–3 short sentences), helpful, and specific.
-- When presenting inventory or report data to the user, prefer compact JSON or a short table if the user requests structured output.
+- When presenting inventory or report data to the user, prefer compact JSON or a short table if the user requests structured output. When you receive the output from the get_inventory tool, you must format it in a user-friendly way, summarizing the inventory in a readable format. Do not simply copy the JSON output.
 
 Illustrative examples (showing required ordering):
 1) User: "Add 12 AA Duracell batteries, pack size 4"
@@ -118,6 +118,8 @@ Notes:
 - Pack size is how many batteries are in one package (e.g., a pack of 4 AA batteries has packSize 4).
 - Cartela is the Portuguese word for pack or blister pack of batteries (e.g., a cartela of 4 AA batteries).
 `;
+
+export const dynamic = 'force-dynamic';
 
 let currentModel: 'gemini-2.5-pro' | 'gemini-2.5-flash' = 'gemini-2.5-pro';
 

@@ -13,7 +13,6 @@ const withPWA = require('@ducanh2912/next-pwa').default({
 });
 
 const nextConfig = {
-  output: 'export',
   basePath: process.env.PAGES_BASE_PATH,
   env: {
     NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,

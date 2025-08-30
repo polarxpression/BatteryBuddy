@@ -146,7 +146,10 @@ export function AiManager({
           return `The quantity for battery ${brand} ${model} has been updated to ${newQuantity}.`;
         }
       case 'get_inventory':
-        return `Here is the current inventory: ${JSON.stringify(batteries, null, 2)}`;
+        if (batteries.length === 0) {
+          return "The inventory is empty.";
+        }
+        return `Here is the current inventory:\n${batteries.map(b => `- ${b.brand} ${b.model} (${b.type}): ${b.quantity * b.packSize}`).join('\n')}`;
       case 'export_csv':
         handleExport();
         return 'The inventory has been exported to CSV.';
@@ -305,23 +308,21 @@ export function AiManager({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>{t('chat:ai_manager')}</CardTitle>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={clearChat}
+          className='hover:bg-destructive/90 hover:text-destructive-foreground'
+          title={t('chat:clear_chat')}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
           <div className='min-h-[16rem] max-h-[32rem] overflow-y-auto rounded-md border p-4 relative'>
-            <div className='absolute top-2 right-2'>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={clearChat}
-                className='hover:bg-destructive/90 hover:text-destructive-foreground'
-                title={t('chat:clear_chat')}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
             <div className='space-y-1 pt-8'>
               {history.map((chat, index) => (
                 <div key={index} className="animate-blur-in animate-fade-in-up">
