@@ -28,6 +28,16 @@ const nextConfig = {
     NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
     NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'polar.is-a.dev',
+        port: '',
+        pathname: '/images/**',
+      },
+    ],
+  },
 };
 
 module.exports = withPWA(nextConfig);

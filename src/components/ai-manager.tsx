@@ -12,6 +12,7 @@ import remarkGfm from 'remark-gfm';
 import React, { useRef } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import TextareaAutosize from 'react-textarea-autosize';
+import Image from 'next/image';
 
 declare module '@google/genai' {
   interface Content {
@@ -19,6 +20,10 @@ declare module '@google/genai' {
   }
 }
 
+interface Part {
+  text?: string;
+  functionCall?: FunctionCall;
+}
 
 interface AiManagerProps {
   addBattery: (data: Battery) => Promise<void>;
@@ -61,7 +66,6 @@ export function AiManager({
   const [status, setStatus] = useState<'idle' | 'thinking' | 'tool_usage'>('idle');
   const [currentTool, setCurrentTool] = useState<string | null>(null);
   const [openTool, setOpenTool] = useState<string | null>(null);
-  const [thinkingCollapsed, setThinkingCollapsed] = useState<boolean>(true);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
@@ -70,14 +74,6 @@ export function AiManager({
   const handleToolToggle = (key: string) => {
     setOpenTool(prev => (prev === key ? null : key));
   };
-
-  // index of last user message in history (for inline thinking indicator placement)
-  const lastUserIndex = (() => {
-    for (let i = history.length - 1; i >= 0; i--) {
-      if (history[i].role === 'user') return i;
-    }
-    return -1;
-  })();
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -95,61 +91,48 @@ export function AiManager({
 
   const executeCommand = async (functionCall: FunctionCall) => {
     if (!functionCall || !functionCall.name || !functionCall.args) return null;
-
+  
     switch (functionCall.name) {
-      case 'add_battery':
-        // If a matching battery (brand+model+type+packSize) already exists, update its quantity
-        try {
-          const payload = functionCall.args as FunctionCallArgs;
-          const incomingQuantity = typeof payload?.quantity === 'string' ? parseInt(payload.quantity, 10) : (payload?.quantity ?? 0);
-          const incomingPackSize = payload?.packSize ?? 1;
-          const incomingBrand = payload?.brand;
-          const incomingModel = payload?.model;
-
-          if (incomingBrand && incomingModel) {
-            const existing = batteries.find(b => b.brand === incomingBrand && b.model === incomingModel && b.type === (payload.type ?? b.type) && b.packSize === incomingPackSize);
-            if (existing) {
-              const newQuantity = (existing.quantity ?? 0) + (Number.isFinite(incomingQuantity) ? incomingQuantity : 0);
-              await updateBatteryQuantity(existing.brand || '', existing.model || '', newQuantity);
-              return `Updated quantity for battery ${existing.brand || ''} ${existing.model || ''} to ${newQuantity}.`;
-            }
-          }
-
-          // No existing match — create a new battery entry. Ensure quantity/packSize are numbers and id exists.
-          const toAdd: Battery = {
-            id: payload.id || crypto.randomUUID(),
-            brand: payload.brand || '',
-            model: payload.model || '',
-            type: payload.type || payload?.category || '',
-            quantity: Number.isFinite(incomingQuantity) ? incomingQuantity : 0,
-            packSize: incomingPackSize,
-          };
-          await addBattery(toAdd);
-          return 'The battery has been added successfully.';
-        } catch (e) {
-          console.error('Error in add_battery handler', e);
-          // fallback to original behavior
-          await addBattery(functionCall.args as Battery);
-          return 'The battery has been added successfully.';
+      case 'add_battery': {
+        const args = functionCall.args as Battery;
+        await addBattery(args);
+        return 'The battery has been added successfully.';
+      }
+      case 'update_battery_quantity': {
+        const args = functionCall.args as FunctionCallArgs;
+        const brand = args.brand;
+        const model = args.model;
+        const rawNewQuantity = args.newQuantity ?? args.quantity ?? args.amount;
+        const newQuantity = typeof rawNewQuantity === 'string' ? parseInt(rawNewQuantity, 10) : (rawNewQuantity ?? 0);
+        
+        if (!brand || !model || !Number.isFinite(newQuantity)) {
+          // Attempt to find the battery in the inventory to provide a better error message
+          const inventoryList = batteries.map(b => `${b.brand} ${b.model}`).join(', ');
+          return `Error: Missing brand, model, or a valid newQuantity for update_battery_quantity. Inventory: [${inventoryList}]`;
         }
-      case 'update_battery_quantity':
-        {
-          const args = functionCall.args as FunctionCallArgs || {};
-          const brand = args.brand;
-          const model = args.model;
-          const rawNewQuantity = args.newQuantity ?? args.quantity ?? args.amount;
-          const newQuantity = typeof rawNewQuantity === 'string' ? parseInt(rawNewQuantity, 10) : (rawNewQuantity ?? 0);
-          if (!brand || !model) {
-            throw new Error('Missing brand or model for update_battery_quantity');
-          }
+        
+        try {
           await updateBatteryQuantity(brand, model, newQuantity);
           return `The quantity for battery ${brand} ${model} has been updated to ${newQuantity}.`;
+        } catch (error) {
+          console.error('Error in update_battery_quantity handler', error);
+          const inventoryList = batteries.map(b => `${b.brand} ${b.model}`).join(', ');
+          return `Error updating quantity for ${brand} ${model}. Make sure the item exists in the inventory. Current inventory: [${inventoryList}]`;
         }
+      }
       case 'get_inventory':
         if (batteries.length === 0) {
           return "The inventory is empty.";
         }
-        return `Here is the current inventory:\n${batteries.map(b => `- ${b.brand} ${b.model} (${b.type}): ${b.quantity * b.packSize}`).join('\n')}`;
+        // Return a structured JSON string for the model to parse easily
+        return JSON.stringify(batteries.map(b => ({
+          brand: b.brand,
+          model: b.model,
+          type: b.type,
+          quantity: b.quantity,
+          packSize: b.packSize,
+          total: b.quantity * b.packSize
+        })));
       case 'export_csv':
         handleExport();
         return 'The inventory has been exported to CSV.';
@@ -158,7 +141,7 @@ export function AiManager({
         return 'The report has been generated.';
       default:
         console.warn('Unknown command:', functionCall.name);
-        return null;
+        return `Unknown command: ${functionCall.name}`;
     }
   };
 
@@ -209,9 +192,6 @@ export function AiManager({
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
-          if (fullResponse) {
-            setHistory(prev => [...prev, { role: 'model', parts: [{ text: fullResponse }], timestamp: Date.now() }]);
-          }
           setStreamingMessage(null);
           break;
         }
@@ -243,17 +223,26 @@ export function AiManager({
       if (functionCalls.length > 0) {
         setStatus('tool_usage');
         const toolOutputs = [];
+        const modelParts: Part[] = [];
+        if (fullResponse) {
+            modelParts.push({ text: fullResponse });
+        }
+        modelParts.push(...functionCalls.map(fc => ({ functionCall: fc })));
+
         for (const call of functionCalls) {
           setCurrentTool(call.name || null);
           const output = await executeCommand(call);
           toolOutputs.push({ functionResponse: { name: call.name, response: { content: output } } });
         }
-        const newHistory: Content[] = [...historyToSend, { role: 'model', parts: [{ functionCall: functionCalls[0] }], timestamp: Date.now() }, { role: 'tool', parts: toolOutputs.map(toolOutput => ({ functionResponse: toolOutput.functionResponse })), timestamp: Date.now() }];
+        const newHistory: Content[] = [...historyToSend, { role: 'model', parts: modelParts, timestamp: Date.now() }, { role: 'tool', parts: toolOutputs.map(toolOutput => ({ functionResponse: toolOutput.functionResponse })), timestamp: Date.now() }];
         setHistory(newHistory);
         console.log("New history after tool execution:", newHistory);
         // Resend to the model automatically after tool execution
         await handleSendMessage('', newHistory, true);
       } else {
+        if (fullResponse) {
+            setHistory(prev => [...prev, { role: 'model', parts: [{ text: fullResponse }], timestamp: Date.now() }]);
+        }
         setStatus('idle');
       }
 
@@ -268,9 +257,7 @@ export function AiManager({
     let text = '';
     let icon = null;
 
-    if (status === 'thinking') {
-        text = t('chat:thinking');
-    } else if (status === 'tool_usage') {
+    if (status === 'tool_usage') {
         text = t('chat:using_tools');
         if (tool) {
             switch (tool) {
@@ -299,7 +286,9 @@ export function AiManager({
     return (
         <div className='flex justify-start'>
             <div className='rounded-lg bg-accent p-2 text-accent-foreground flex items-center'>
-                {icon || <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 mr-2'></div>}
+                                                {icon || <Image src="https://polar.is-a.dev/images/logo-white-animated-css.svg" className="h-8 w-8 mr-2" alt="Loading..." width={32} height={32} />}
+
+
                 {text}
             </div>
         </div>
@@ -334,32 +323,6 @@ export function AiManager({
                       <span className='text-xs text-muted-foreground'>
                                                 {new Date(chat.timestamp || 0).toLocaleTimeString()}
                       </span>
-                    </div>
-                  )}
-
-                  {/* Render the thinking indicator inline right after the last user message */}
-                  {index === lastUserIndex && status === 'thinking' && (
-                    <div className='flex flex-col items-start gap-1'>
-                      <div className='w-[30%] rounded-lg bg-accent p-2 flex items-center justify-between'>
-                        <div className='flex items-center'>
-                          <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 mr-2' />
-                          <div className='text-sm'>{t('chat:composing_response')}</div>
-                        </div>
-                        <div className='flex items-center'>
-                          <button
-                            onClick={() => setThinkingCollapsed(prev => !prev)}
-                            className='p-1 rounded hover:bg-accent/20'
-                            aria-label={thinkingCollapsed ? t('chat:expand_thinking') : t('chat:collapse_thinking')}
-                          >
-                            {thinkingCollapsed ? <ChevronDown className='h-4 w-4' /> : <ChevronUp className='h-4 w-4' />}
-                          </button>
-                        </div>
-                      </div>
-                      {!thinkingCollapsed && (
-                        <div className='rounded-b-lg bg-accent/70 p-2 text-sm text-accent-foreground'>
-                          {t('chat:model_generating_answer')}
-                        </div>
-                      )}
                     </div>
                   )}
 
@@ -445,7 +408,7 @@ export function AiManager({
                   </div>
                 </div>
               )}
-              {(status === 'thinking' || status === 'tool_usage') && 
+              {status === 'tool_usage' && 
                 <StatusIndicator status={status} tool={currentTool} />
               }
             </div>
@@ -505,3 +468,4 @@ export function AiManager({
     </Card>
   );
 }
+
