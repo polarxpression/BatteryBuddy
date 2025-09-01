@@ -34,4 +34,28 @@ export type CalculatorResult = {
   data: [string];
 };
 
+export interface DailyBatteryRecord {
+  date: string;
+  batteries: Array<Pick<Battery, "id" | "brand" | "model" | "type" | "quantity" | "packSize">>;
+}
+
+export interface AggregatedBatteryData {
+  brand: string;
+  model: string;
+  type: string;
+  averageQuantity: number;
+}
+
+export interface WeeklyBatteryAverage {
+  weekStartDate: string;
+  weekEndDate: string;
+  averages: AggregatedBatteryData[];
+}
+
+export interface MonthlyBatteryAverage {
+  month: string;
+  year: number;
+  averages: AggregatedBatteryData[];
+}
+
 

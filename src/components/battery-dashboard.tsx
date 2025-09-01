@@ -10,6 +10,10 @@ import {
   onBatteriesSnapshot,
   updateBattery,
   onAppSettingsSnapshot,
+  saveDailyBatteryRecord,
+  getDailyBatteryRecords,
+  calculateAndSaveWeeklyAverage,
+  calculateAndSaveMonthlyAverage,
 } from "@/lib/firebase";
 import type { Battery, AppSettings } from "@/lib/types";
 
@@ -76,6 +80,43 @@ export function BatteryDashboard() {
   useEffect(() => {
     const unsubscribe = onAppSettingsSnapshot(setAppSettings);
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const saveRecord = async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const records = await getDailyBatteryRecords();
+      const todayRecord = records.find(record => record.date === today);
+
+      if (!todayRecord && batteries.length > 0) {
+        await saveDailyBatteryRecord(batteries);
+        console.log("Daily battery record saved.");
+      }
+    };
+
+    saveRecord();
+  }, [batteries]);
+
+  useEffect(() => {
+    const triggerWeeklyAggregation = async () => {
+      const today = new Date();
+      if (today.getDay() === 0) { // Sunday
+        await calculateAndSaveWeeklyAverage();
+        console.log("Weekly average calculated and saved.");
+      }
+    };
+    triggerWeeklyAggregation();
+  }, []);
+
+  useEffect(() => {
+    const triggerMonthlyAggregation = async () => {
+      const today = new Date();
+      if (today.getDate() === 1) { // 1st of the month
+        await calculateAndSaveMonthlyAverage();
+        console.log("Monthly average calculated and saved.");
+      }
+    };
+    triggerMonthlyAggregation();
   }, []);
 
   const filteredBatteries = useMemo(() => {

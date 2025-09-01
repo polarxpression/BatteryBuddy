@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, onSnapshot, getDoc } from "firebase/firestore";
-import { Battery, AppSettings } from "./types";
+import { Battery, AppSettings, DailyBatteryRecord, WeeklyBatteryAverage, MonthlyBatteryAverage } from "./types";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -82,4 +82,137 @@ export const onAppSettingsSnapshot = (callback: (settings: AppSettings | null) =
             callback(null);
         }
     });
+};
+
+const dailyBatteryRecordsCollection = collection(db, "dailyBatteryRecords");
+
+export const saveDailyBatteryRecord = async (batteries: Battery[]) => {
+  const today = new Date();
+  const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD
+  const recordRef = doc(dailyBatteryRecordsCollection, dateString);
+
+  const recordData = {
+    date: dateString,
+    batteries: batteries.map(battery => ({
+      id: battery.id,
+      brand: battery.brand,
+      model: battery.model,
+      type: battery.type,
+      quantity: battery.quantity,
+      packSize: battery.packSize,
+    })),
+  };
+
+  await setDoc(recordRef, recordData);
+};
+
+export const getDailyBatteryRecords = async (): Promise<DailyBatteryRecord[]> => {
+  const snapshot = await getDocs(dailyBatteryRecordsCollection);
+  return snapshot.docs.map(doc => doc.data() as DailyBatteryRecord);
+};
+
+const weeklyBatteryAveragesCollection = collection(db, "weeklyBatteryAverages");
+const monthlyBatteryAveragesCollection = collection(db, "monthlyBatteryAverages");
+
+export const calculateAndSaveWeeklyAverage = async () => {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // Sunday - 0, Saturday - 6
+  if (dayOfWeek !== 0) return; // Only run on Sundays
+
+  const oneWeekAgo = new Date(today);
+  oneWeekAgo.setDate(today.getDate() - 7);
+
+  const dailyRecords = await getDocs(dailyBatteryRecordsCollection);
+  const recordsInLastWeek = dailyRecords.docs
+    .map(doc => doc.data() as DailyBatteryRecord)
+    .filter(record => new Date(record.date) >= oneWeekAgo);
+
+  const batteryQuantities: { [key: string]: { total: number; count: number } } = {};
+
+  recordsInLastWeek.forEach(record => {
+    record.batteries.forEach(battery => {
+      const key = `${battery.brand}-${battery.model}-${battery.type}`;
+      if (!batteryQuantities[key]) {
+        batteryQuantities[key] = { total: 0, count: 0 };
+      }
+      batteryQuantities[key].total += battery.quantity;
+      batteryQuantities[key].count += 1;
+    });
+  });
+
+  const averages = Object.entries(batteryQuantities).map(([key, data]) => {
+    const [brand, model, type] = key.split("-");
+    return {
+      brand,
+      model,
+      type,
+      averageQuantity: data.total / data.count,
+    };
+  });
+
+  const weekStartDate = new Date(oneWeekAgo).toISOString().split('T')[0];
+  const weekEndDate = new Date(today).toISOString().split('T')[0];
+  const weeklyAverageRef = doc(weeklyBatteryAveragesCollection, `${weekStartDate}_${weekEndDate}`);
+
+  await setDoc(weeklyAverageRef, {
+    weekStartDate,
+    weekEndDate,
+    averages,
+  });
+};
+
+export const calculateAndSaveMonthlyAverage = async () => {
+  const today = new Date();
+  const dayOfMonth = today.getDate();
+  if (dayOfMonth !== 1) return; // Only run on the 1st of the month
+
+  const oneMonthAgo = new Date(today);
+  oneMonthAgo.setMonth(today.getMonth() - 1);
+
+  const weeklyAverages = await getDocs(weeklyBatteryAveragesCollection);
+  const averagesInLastMonth = weeklyAverages.docs
+    .map(doc => doc.data() as WeeklyBatteryAverage)
+    .filter(average => new Date(average.weekStartDate) >= oneMonthAgo);
+
+  const batteryQuantities: { [key: string]: { total: number; count: number } } = {};
+
+  averagesInLastMonth.forEach(week => {
+    week.averages.forEach(battery => {
+      const key = `${battery.brand}-${battery.model}-${battery.type}`;
+      if (!batteryQuantities[key]) {
+        batteryQuantities[key] = { total: 0, count: 0 };
+      }
+      batteryQuantities[key].total += battery.averageQuantity;
+      batteryQuantities[key].count += 1;
+    });
+  });
+
+  const averages = Object.entries(batteryQuantities).map(([key, data]) => {
+    const [brand, model, type] = key.split("-");
+    return {
+      brand,
+      model,
+      type,
+      averageQuantity: data.total / data.count,
+    };
+  });
+
+  const monthString = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+  const monthlyAverageRef = doc(monthlyBatteryAveragesCollection, monthString);
+
+  await setDoc(monthlyAverageRef, {
+    month: monthString,
+    year: today.getFullYear(),
+    averages,
+  });
+};
+
+export const getWeeklyBatteryAverages = async (): Promise<WeeklyBatteryAverage[]> => {
+  const snapshot = await getDocs(weeklyBatteryAveragesCollection);
+  return snapshot.docs.map(doc => doc.data() as WeeklyBatteryAverage);
+};
+
+export const getMonthlyBatteryAverages = async (): Promise<MonthlyBatteryAverage[]> => {
+  const snapshot = await getDocs(monthlyBatteryAveragesCollection);
+  return snapshot.docs.map(doc => doc.data() as MonthlyBatteryAverage);
 };

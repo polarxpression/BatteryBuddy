@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type, FunctionDeclaration, Tool } from "@google/genai";
+import { getDailyBatteryRecords, getWeeklyBatteryAverages, getMonthlyBatteryAverages } from "@/lib/firebase";
 
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
@@ -55,6 +56,18 @@ const functionDeclarations: FunctionDeclaration[] = [
       required: ["brand", "model", "newQuantity"],
     },
   },
+  {
+    name: "get_historical_battery_data",
+    description: "Retrieves historical daily battery quantity records.",
+  },
+  {
+    name: "get_weekly_battery_averages",
+    description: "Retrieves weekly average battery quantities.",
+  },
+  {
+    name: "get_monthly_battery_averages",
+    description: "Retrieves monthly average battery quantities.",
+  },
 ];
 
 const tools: Tool[] = [
@@ -74,8 +87,13 @@ Available functions:
 - get_inventory()
 - export_csv()
 - generate_report(reportContent: string)
+- get_historical_battery_data()
+- get_weekly_battery_averages()
+- get_monthly_battery_averages()
 
 Strict function-calling rules (must follow):
+- When suggesting quantities to buy, prioritize using 
+get_monthly_battery_averages() if available, then get_weekly_battery_averages(), and finally get_historical_battery_data() for more granular insights if needed.
 - ALWAYS call get_inventory() first before attempting any function that modifies or adds inventory (for example, add_battery or update_battery_quantity). Use the results of get_inventory() to determine whether the item already exists and to avoid creating duplicates.
 - After receiving the inventory result, decide:
   - If an exact match for brand+model exists, prefer update_battery_quantity to change quantities rather than creating a duplicate entry.
@@ -146,11 +164,98 @@ export async function POST(request: Request) {
       async start(controller) {
         try {
           for await (const chunk of streamIterator) {
-            const data = {
-              text: chunk.text,
-              functionCalls: chunk.functionCalls,
-            };
-            controller.enqueue(JSON.stringify(data) + '\n');
+            if (chunk.functionCalls) {
+              for (const call of chunk.functionCalls) {
+                if (call.name === "get_historical_battery_data") {
+                  const historicalData = await getDailyBatteryRecords();
+                  contents.push({
+                    role: "model",
+                    parts: [{ functionCall: call }],
+                  });
+                  contents.push({
+                    role: "tool",
+                    parts: [{ functionResponse: { name: call.name, response: historicalData } }],
+                  });
+                  const newStreamIterator = await ai.models.generateContentStream({
+                    model: currentModel,
+                    contents,
+                    config: {
+                      systemInstruction: systemPrompt,
+                      tools,
+                    },
+                  });
+                  for await (const newChunk of newStreamIterator) {
+                    const data = {
+                      text: newChunk.text,
+                      functionCalls: newChunk.functionCalls,
+                    };
+                    controller.enqueue(JSON.stringify(data) + '\n');
+                  }
+                } else if (call.name === "get_weekly_battery_averages") {
+                  const weeklyAverages = await getWeeklyBatteryAverages();
+                  contents.push({
+                    role: "model",
+                    parts: [{ functionCall: call }],
+                  });
+                  contents.push({
+                    role: "tool",
+                    parts: [{ functionResponse: { name: call.name, response: weeklyAverages } }],
+                  });
+                  const newStreamIterator = await ai.models.generateContentStream({
+                    model: currentModel,
+                    contents,
+                    config: {
+                      systemInstruction: systemPrompt,
+                      tools,
+                    },
+                  });
+                  for await (const newChunk of newStreamIterator) {
+                    const data = {
+                      text: newChunk.text,
+                      functionCalls: newChunk.functionCalls,
+                    };
+                    controller.enqueue(JSON.stringify(data) + '\n');
+                  }
+                } else if (call.name === "get_monthly_battery_averages") {
+                  const monthlyAverages = await getMonthlyBatteryAverages();
+                  contents.push({
+                    role: "model",
+                    parts: [{ functionCall: call }],
+                  });
+                  contents.push({
+                    role: "tool",
+                    parts: [{ functionResponse: { name: call.name, response: monthlyAverages } }],
+                  });
+                  const newStreamIterator = await ai.models.generateContentStream({
+                    model: currentModel,
+                    contents,
+                    config: {
+                      systemInstruction: systemPrompt,
+                      tools,
+                    },
+                  });
+                  for await (const newChunk of newStreamIterator) {
+                    const data = {
+                      text: newChunk.text,
+                      functionCalls: newChunk.functionCalls,
+                    };
+                    controller.enqueue(JSON.stringify(data) + '\n');
+                  }
+                } else {
+                  const data = {
+                    text: chunk.text,
+                    functionCalls: chunk.functionCalls,
+                  };
+                  controller.enqueue(JSON.stringify(data) + '\n');
+                }
+              }
+            } else {
+              const data = {
+                text: chunk.text,
+                functionCalls: chunk.functionCalls,
+              };
+              controller.enqueue(JSON.stringify(data) + '\n');
+            }
           }
         } catch (err) {
           controller.error(err);
@@ -181,11 +286,98 @@ export async function POST(request: Request) {
         async start(controller) {
           try {
             for await (const chunk of streamIterator) {
-              const data = {
-                text: chunk.text,
-                functionCalls: chunk.functionCalls,
-              };
-              controller.enqueue(JSON.stringify(data) + '\n');
+              if (chunk.functionCalls) {
+                for (const call of chunk.functionCalls) {
+                  if (call.name === "get_historical_battery_data") {
+                    const historicalData = await getDailyBatteryRecords();
+                    contents.push({
+                      role: "model",
+                      parts: [{ functionCall: call }],
+                    });
+                    contents.push({
+                      role: "tool",
+                      parts: [{ functionResponse: { name: call.name, response: historicalData } }],
+                    });
+                    const newStreamIterator = await ai.models.generateContentStream({
+                      model: currentModel,
+                      contents,
+                      config: {
+                        systemInstruction: systemPrompt,
+                        tools,
+                      },
+                    });
+                    for await (const newChunk of newStreamIterator) {
+                      const data = {
+                        text: newChunk.text,
+                        functionCalls: newChunk.functionCalls,
+                      };
+                      controller.enqueue(JSON.stringify(data) + '\n');
+                    }
+                  } else if (call.name === "get_weekly_battery_averages") {
+                    const weeklyAverages = await getWeeklyBatteryAverages();
+                    contents.push({
+                      role: "model",
+                      parts: [{ functionCall: call }],
+                    });
+                    contents.push({
+                      role: "tool",
+                      parts: [{ functionResponse: { name: call.name, response: weeklyAverages } }],
+                    });
+                    const newStreamIterator = await ai.models.generateContentStream({
+                      model: currentModel,
+                      contents,
+                      config: {
+                        systemInstruction: systemPrompt,
+                        tools,
+                      },
+                    });
+                    for await (const newChunk of newStreamIterator) {
+                      const data = {
+                        text: newChunk.text,
+                        functionCalls: newChunk.functionCalls,
+                      };
+                      controller.enqueue(JSON.stringify(data) + '\n');
+                    }
+                  } else if (call.name === "get_monthly_battery_averages") {
+                    const monthlyAverages = await getMonthlyBatteryAverages();
+                    contents.push({
+                      role: "model",
+                      parts: [{ functionCall: call }],
+                    });
+                    contents.push({
+                      role: "tool",
+                      parts: [{ functionResponse: { name: call.name, response: monthlyAverages } }],
+                    });
+                    const newStreamIterator = await ai.models.generateContentStream({
+                      model: currentModel,
+                      contents,
+                      config: {
+                        systemInstruction: systemPrompt,
+                        tools,
+                      },
+                    });
+                    for await (const newChunk of newStreamIterator) {
+                      const data = {
+                        text: newChunk.text,
+                        functionCalls: newChunk.functionCalls,
+                      };
+                      controller.enqueue(JSON.stringify(data) + '\n');
+                    }
+                  } else {
+                    const data = {
+                      text: chunk.text,
+                      functionCalls: chunk.functionCalls,
+                    };
+                    controller.enqueue(JSON.stringify(data) + '\n');
+                  }
+                }
+              } else {
+                const data = {
+                  text: chunk.text,
+                  functionCalls: chunk.functionCalls,
+                };
+                controller.enqueue(JSON.stringify(data) + '\n');
+              }
             }
           } catch (err) {
             controller.error(err);
