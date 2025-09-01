@@ -20,11 +20,11 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-isSupported().then((supported) => {
-  if (supported) {
+(async () => {
+  if (await isSupported()) {
     getAnalytics(app);
   }
-});
+})();
 export const db = getFirestore(app);
 
 const batteriesCollection = collection(db, "batteries");

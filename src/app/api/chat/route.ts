@@ -126,13 +126,13 @@ let currentModel: 'gemini-2.5-pro' | 'gemini-2.5-flash' = 'gemini-2.5-pro';
 export async function POST(request: Request) {
   const { message, history } = await request.json();
 
-  const contents = [
-    ...history,
-    {
+  const contents = [...history];
+  if (message) {
+    contents.push({
       role: "user",
       parts: [{ text: message }],
-    },
-  ];
+    });
+  }
 
   try {
     // Use the streaming API and place tools inside the request config per SDK
