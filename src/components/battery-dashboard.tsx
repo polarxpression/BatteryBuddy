@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { createRoot } from 'react-dom/client';
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   addBattery,
   deleteBattery,
@@ -184,6 +187,81 @@ export function BatteryDashboard() {
     document.body.removeChild(link);
   }
 
+  
+
+  
+
+  const handleGenerateAIReport = async () => {
+    try {
+      toast({
+        title: "Gerando relatório...",
+        description: "Aguarde enquanto a IA gera o relatório.",
+      });
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: "Gerar um relatório detalhado sobre o inventário de baterias, incluindo itens em falta, itens com baixo estoque e sugestões de compra. O relatório deve ser formatado em Markdown.",
+          history: [],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let result = "";
+      let done = false;
+
+      while (!done) {
+        const { value, done: readerDone } = await reader?.read() || { value: undefined, done: true };
+        done = readerDone;
+        if (value) {
+          result += decoder.decode(value);
+        }
+      }
+
+      const parsedResult = JSON.parse(result.split('\n').filter(Boolean).pop() || '{}');
+      const functionCall = parsedResult.functionCalls?.[0];
+
+      if (functionCall && functionCall.name === "generate_report") {
+        const markdownContent = functionCall.args.reportContent;
+
+        const tempDiv = document.createElement("div");
+        const root = createRoot(tempDiv);
+        root.render(<ReactMarkdown remarkPlugins={[remarkGfm]}>{markdownContent}</ReactMarkdown>);
+
+        import("html2pdf.js").then(html2pdf => {
+          html2pdf.default().from(tempDiv).save("relatorio_ia.pdf");
+          toast({
+            title: "Sucesso!",
+            description: "Relatório gerado e baixado com sucesso.",
+          });
+        });
+
+      } else {
+        toast({
+          title: "Erro!",
+          description: "A IA não retornou o conteúdo do relatório esperado.",
+          variant: "destructive",
+        });
+      }
+
+    } catch (error) {
+      console.error("Erro ao gerar relatório com IA:", error);
+      toast({
+        title: "Erro!",
+        description: "Ocorreu um erro ao gerar o relatório com IA.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleGenerateReport = (outputType: "print" | "download", reportContent?: string, suggestions?: string) => {
     const lowStockItems = batteries.filter(
       (battery) => {
@@ -324,7 +402,7 @@ export function BatteryDashboard() {
         </div>
         <InventorySummary batteries={filteredBatteries} appSettings={appSettings} />
         
-        <BatteryReport onGenerateReport={handleGenerateReport} onGenerateSuggestion={handleGenerateSuggestion} />
+        <BatteryReport onGenerateReport={handleGenerateReport} onGenerateSuggestion={handleGenerateSuggestion} onGenerateAIReport={handleGenerateAIReport} />
 
         <Card>
             <CardHeader>

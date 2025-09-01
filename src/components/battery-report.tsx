@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface BatteryReportProps {
   onGenerateReport: (outputType: "print" | "download") => void;
   onGenerateSuggestion: () => void;
+  onGenerateAIReport: () => void;
 }
 
-export function BatteryReport({ onGenerateReport, onGenerateSuggestion }: BatteryReportProps) {
+export function BatteryReport({ onGenerateReport, onGenerateSuggestion, onGenerateAIReport }: BatteryReportProps) {
   return (
     <Card>
       <CardHeader>
@@ -17,6 +18,7 @@ export function BatteryReport({ onGenerateReport, onGenerateSuggestion }: Batter
       <CardContent>
         <div className="flex justify-end gap-2">
           <Button onClick={() => onGenerateSuggestion()}>Pedir sugestão de compra para IA</Button>
+          <Button onClick={() => onGenerateAIReport()}>Gerar Relatório com IA</Button>
           <Button onClick={() => onGenerateReport("print")}>Imprimir</Button>
           <Button onClick={() => onGenerateReport("download")}>Baixar PDF</Button>
         </div>

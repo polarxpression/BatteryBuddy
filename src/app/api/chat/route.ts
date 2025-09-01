@@ -33,16 +33,13 @@ const functionDeclarations: FunctionDeclaration[] = [
   },
   {
     name: "generate_report",
-    description: "Generates a stock report.",
+    description: "Generates a stock report with custom markdown content.",
     parameters: {
       type: Type.OBJECT,
       properties: {
-        outputType: {
-          type: Type.STRING,
-          enum: ["print", "download"],
-        },
+        reportContent: { type: Type.STRING, description: "The markdown content for the report." },
       },
-      required: ["outputType"],
+      required: ["reportContent"],
     },
   },
   {
@@ -76,7 +73,7 @@ Available functions:
 - update_battery_quantity(brand, model, newQuantity)
 - get_inventory()
 - export_csv()
-- generate_report(outputType: "print" | "download")
+- generate_report(reportContent: string)
 
 Strict function-calling rules (must follow):
 - ALWAYS call get_inventory() first before attempting any function that modifies or adds inventory (for example, add_battery or update_battery_quantity). Use the results of get_inventory() to determine whether the item already exists and to avoid creating duplicates.
