@@ -41,6 +41,7 @@ const AddEditBatterySheetSchema = z.object({
   model: z.string().min(1, "O modelo é obrigatório."),
   quantity: z.string(),
   packSize: z.number(),
+  barcode: z.string().min(1, "O código de barras é obrigatório."),
 });
 
 
@@ -65,11 +66,17 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       model: "",
       quantity: "0",
       packSize: 1,
+      barcode: "",
     },
   });
 
   
   const quantityRef = useRef<HTMLInputElement>(null);
+  const barcodeRef = useRef<HTMLInputElement>(null);
+  const typeRef = useRef<HTMLButtonElement>(null);
+  const brandRef = useRef<HTMLButtonElement>(null);
+  const modelRef = useRef<HTMLButtonElement>(null);
+  const packSizeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const unsubscribe = onAppSettingsSnapshot(setAppSettings);
@@ -82,6 +89,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
         form.reset({
           ...batteryToEdit,
           quantity: String(batteryToEdit.quantity),
+          barcode: batteryToEdit.barcode || "",
         });
       } else {
         form.reset({
@@ -91,6 +99,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           model: "",
           quantity: "0",
           packSize: 1,
+          barcode: "",
         });
       }
     }
@@ -102,7 +111,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
     onOpenChange(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, nextFieldRef?: React.RefObject<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>, nextFieldRef?: React.RefObject<HTMLElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       if (nextFieldRef?.current) {
@@ -133,7 +142,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                     <FormLabel>Tipo de Bateria</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger ref={typeRef} onKeyDown={(e) => handleKeyDown(e, brandRef)}>
                           <SelectValue placeholder="Selecione um tipo de bateria" />
                         </SelectTrigger>
                       </FormControl>
@@ -157,7 +166,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                     <FormLabel>Marca</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger ref={brandRef} onKeyDown={(e) => handleKeyDown(e, modelRef)}>
                           <SelectValue placeholder="Selecione uma marca" />
                         </SelectTrigger>
                       </FormControl>
@@ -181,7 +190,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                     <FormLabel>Modelo</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger ref={modelRef} onKeyDown={(e) => handleKeyDown(e, quantityRef)}>
                           <SelectValue placeholder="Selecione um modelo" />
                         </SelectTrigger>
                       </FormControl>
@@ -208,7 +217,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         type="text" 
                         {...field} 
                         ref={quantityRef} 
-                        onKeyDown={(e) => handleKeyDown(e)}
+                        onKeyDown={(e) => handleKeyDown(e, packSizeRef)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -223,7 +232,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                     <FormLabel>Unidades por Embalagem</FormLabel>
                     <Select onValueChange={(value) => field.onChange(parseInt(value, 10))} defaultValue={String(field.value)}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger ref={packSizeRef} onKeyDown={(e) => handleKeyDown(e, barcodeRef)}>
                           <SelectValue placeholder="Selecione o tamanho da embalagem" />
                         </SelectTrigger>
                       </FormControl>
@@ -235,6 +244,24 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="barcode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Código de Barras</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="text" 
+                        {...field}
+                        ref={barcodeRef}
+                        onKeyDown={(e) => handleKeyDown(e)}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

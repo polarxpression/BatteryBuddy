@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { FileDown, FileUp, Plus, Pencil, Trash2, Send, ChevronDown, ChevronUp } from 'lucide-react';
@@ -29,35 +29,22 @@ interface AiManagerProps {
   addBattery: (data: Battery) => Promise<void>;
   updateBatteryQuantity: (brand: string, model: string, newQuantity: number) => Promise<void>;
   handleExport: () => void;
-    handleGenerateReport: (outputType: 'print' | 'download') => void;
+  handleGenerateReport: (outputType: 'print' | 'download') => void;
   batteries: Battery[];
+  initialPrompt?: string;
+  onInitialPromptSent: () => void;
 }
 
-interface FunctionCallArgs {
-  brand?: string;
-  model?: string;
-  type?: string;
-  packSize?: number;
-  quantity?: number | string;
-  newQuantity?: number | string;
-  amount?: number | string;
-  category?: string;
-  id?: string;
-  outputType?: 'print' | 'download';
-}
-
-const components = {
-  li: (props: React.HTMLAttributes<HTMLLIElement>) => <li className="list-disc ml-4" {...props} />,
-  ul: (props: React.HTMLAttributes<HTMLUListElement>) => <ul className="list-disc" {...props} />,
-  ol: (props: React.HTMLAttributes<HTMLOListElement>) => <ol className="list-decimal ml-4" {...props} />,
-};
+// ... (rest of the code)
 
 export function AiManager({
   addBattery,
   updateBatteryQuantity,
   handleExport,
   handleGenerateReport,
-  batteries
+  batteries,
+  initialPrompt,
+  onInitialPromptSent
 }: AiManagerProps) {
   const { t } = useTranslation();
   const [history, setHistory] = useState<Content[]>([]);
@@ -70,6 +57,25 @@ export function AiManager({
 
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
+
+  interface FunctionCallArgs {
+    brand?: string;
+    model?: string;
+    type?: string;
+    packSize?: number;
+    quantity?: number | string;
+    newQuantity?: number | string;
+    amount?: number | string;
+    category?: string;
+    id?: string;
+    outputType?: 'print' | 'download';
+  }
+
+  const components = {
+    li: (props: React.HTMLAttributes<HTMLLIElement>) => <li className="list-disc ml-4" {...props} />,
+    ul: (props: React.HTMLAttributes<HTMLUListElement>) => <ul className="list-disc" {...props} />,
+    ol: (props: React.HTMLAttributes<HTMLOListElement>) => <ol className="list-decimal ml-4" {...props} />,
+  };
 
   const handleToolToggle = (key: string) => {
     setOpenTool(prev => (prev === key ? null : key));
@@ -89,7 +95,9 @@ export function AiManager({
     scrollToBottom();
   }, [history, streamingMessage]);
 
-  const executeCommand = async (functionCall: FunctionCall) => {
+  
+
+  const executeCommand = useCallback(async (functionCall: FunctionCall) => {
     if (!functionCall || !functionCall.name || !functionCall.args) return null;
   
     switch (functionCall.name) {
@@ -131,6 +139,7 @@ export function AiManager({
           type: b.type,
           quantity: b.quantity,
           packSize: b.packSize,
+          barcode: b.barcode,
           total: b.quantity * b.packSize
         })));
       case 'export_csv':
@@ -143,7 +152,7 @@ export function AiManager({
         console.warn('Unknown command:', functionCall.name);
         return `Unknown command: ${functionCall.name}`;
     }
-  };
+  }, [addBattery, updateBatteryQuantity, handleExport, handleGenerateReport, batteries]);
 
   const clearChat = () => {
     setHistory([]);
@@ -153,7 +162,7 @@ export function AiManager({
     setCurrentTool(null);
   };
 
-  const handleSendMessage = async (userMessage: string, currentHistory?: Content[], isRecursiveCall = false) => {
+  const handleSendMessage = useCallback(async (userMessage: string, currentHistory?: Content[], isRecursiveCall = false) => {
     if (!userMessage && !currentHistory) return;
 
     if (userMessage) {
@@ -230,6 +239,9 @@ export function AiManager({
         modelParts.push(...functionCalls.map(fc => ({ functionCall: fc })));
 
         for (const call of functionCalls) {
+          if (call.name === 'get_historical_battery_data' || call.name === 'get_weekly_battery_averages') {
+            continue;
+          }
           setCurrentTool(call.name || null);
           const output = await executeCommand(call);
           toolOutputs.push({ functionResponse: { name: call.name, response: { content: output } } });
@@ -251,7 +263,14 @@ export function AiManager({
       setHistory(prev => [...prev, { role: 'model', parts: [{ text: 'Sorry, an unexpected error occurred.' }], timestamp: Date.now() }]);
       setStatus('idle');
     }
-  };
+  }, [history, executeCommand]);
+
+  useEffect(() => {
+    if (initialPrompt) {
+      handleSendMessage(initialPrompt);
+      onInitialPromptSent();
+    }
+  }, [initialPrompt, handleSendMessage, onInitialPromptSent]);
 
   const StatusIndicator = ({ status, tool }: { status: 'thinking' | 'tool_usage', tool: string | null }) => {
     let text = '';

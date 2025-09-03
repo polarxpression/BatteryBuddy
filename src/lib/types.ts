@@ -16,6 +16,7 @@ export const BatterySchema = z.object({
     }
   }),
   packSize: z.coerce.number().int(),
+  barcode: z.string().min(1, "O código de barras é obrigatório."),
 });
 
 export type Battery = z.infer<typeof BatterySchema>;

@@ -34,7 +34,7 @@ const functionDeclarations: FunctionDeclaration[] = [
   },
   {
     name: "generate_report",
-    description: "Generates a stock report with custom markdown content.",
+    description: "Generates a stock report with custom markdown content. If the historical and weekly averages data is not available, you must inform the user that you were unable to generate the report due to missing data.",
     parameters: {
       type: Type.OBJECT,
       properties: {
@@ -59,14 +59,26 @@ const functionDeclarations: FunctionDeclaration[] = [
   {
     name: "get_historical_battery_data",
     description: "Retrieves historical daily battery quantity records.",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {},
+    },
   },
   {
     name: "get_weekly_battery_averages",
     description: "Retrieves weekly average battery quantities.",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {},
+    },
   },
   {
     name: "get_monthly_battery_averages",
     description: "Retrieves monthly average battery quantities.",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {},
+    },
   },
 ];
 
@@ -107,6 +119,8 @@ Response format and tone:
 - For conversational replies (no function call): be concise (1–3 short sentences), helpful, and specific.
 - When presenting inventory or report data to the user, prefer compact JSON or a short table if the user requests structured output. When you receive the output from the get_inventory tool, you must format it in a user-friendly way, summarizing the inventory in a readable format. Do not simply copy the JSON output.
 
+When you receive the output from the get_historical_battery_data, get_weekly_battery_averages, and get_monthly_battery_averages functions, you will receive a JSON string. You must parse this string to access the data.
+
 Illustrative examples (showing required ordering):
 1) User: "Add 12 AA Duracell batteries, pack size 4"
   - Assistant action: CALL get_inventory(); examine results for a Duracell AA entry.
@@ -138,141 +152,22 @@ export const dynamic = 'force-dynamic';
 
 let currentModel: 'gemini-2.5-pro' | 'gemini-2.5-flash' = 'gemini-2.5-pro';
 
+import { showErrorToast } from "@/lib/ui";
+
 export async function POST(request: Request) {
-  const { message, history } = await request.json();
-
-  const contents = [...history];
-  if (message) {
-    contents.push({
-      role: "user",
-      parts: [{ text: message }],
-    });
-  }
-
   try {
-    // Use the streaming API and place tools inside the request config per SDK
-    const streamIterator = await ai.models.generateContentStream({
-      model: currentModel,
-      contents,
-      config: {
-        systemInstruction: systemPrompt,
-        tools,
-      },
-    });
+    const { message, history } = await request.json();
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of streamIterator) {
-            if (chunk.functionCalls) {
-              for (const call of chunk.functionCalls) {
-                if (call.name === "get_historical_battery_data") {
-                  const historicalData = await getDailyBatteryRecords();
-                  contents.push({
-                    role: "model",
-                    parts: [{ functionCall: call }],
-                  });
-                  contents.push({
-                    role: "tool",
-                    parts: [{ functionResponse: { name: call.name, response: historicalData } }],
-                  });
-                  const newStreamIterator = await ai.models.generateContentStream({
-                    model: currentModel,
-                    contents,
-                    config: {
-                      systemInstruction: systemPrompt,
-                      tools,
-                    },
-                  });
-                  for await (const newChunk of newStreamIterator) {
-                    const data = {
-                      text: newChunk.text,
-                      functionCalls: newChunk.functionCalls,
-                    };
-                    controller.enqueue(JSON.stringify(data) + '\n');
-                  }
-                } else if (call.name === "get_weekly_battery_averages") {
-                  const weeklyAverages = await getWeeklyBatteryAverages();
-                  contents.push({
-                    role: "model",
-                    parts: [{ functionCall: call }],
-                  });
-                  contents.push({
-                    role: "tool",
-                    parts: [{ functionResponse: { name: call.name, response: weeklyAverages } }],
-                  });
-                  const newStreamIterator = await ai.models.generateContentStream({
-                    model: currentModel,
-                    contents,
-                    config: {
-                      systemInstruction: systemPrompt,
-                      tools,
-                    },
-                  });
-                  for await (const newChunk of newStreamIterator) {
-                    const data = {
-                      text: newChunk.text,
-                      functionCalls: newChunk.functionCalls,
-                    };
-                    controller.enqueue(JSON.stringify(data) + '\n');
-                  }
-                } else if (call.name === "get_monthly_battery_averages") {
-                  const monthlyAverages = await getMonthlyBatteryAverages();
-                  contents.push({
-                    role: "model",
-                    parts: [{ functionCall: call }],
-                  });
-                  contents.push({
-                    role: "tool",
-                    parts: [{ functionResponse: { name: call.name, response: monthlyAverages } }],
-                  });
-                  const newStreamIterator = await ai.models.generateContentStream({
-                    model: currentModel,
-                    contents,
-                    config: {
-                      systemInstruction: systemPrompt,
-                      tools,
-                    },
-                  });
-                  for await (const newChunk of newStreamIterator) {
-                    const data = {
-                      text: newChunk.text,
-                      functionCalls: newChunk.functionCalls,
-                    };
-                    controller.enqueue(JSON.stringify(data) + '\n');
-                  }
-                } else {
-                  const data = {
-                    text: chunk.text,
-                    functionCalls: chunk.functionCalls,
-                  };
-                  controller.enqueue(JSON.stringify(data) + '\n');
-                }
-              }
-            } else {
-              const data = {
-                text: chunk.text,
-                functionCalls: chunk.functionCalls,
-              };
-              controller.enqueue(JSON.stringify(data) + '\n');
-            }
-          }
-        } catch (err) {
-          controller.error(err);
-        } finally {
-          controller.close();
-        }
-      },
-    });
+    const contents = [...history];
+    if (message) {
+      contents.push({
+        role: "user",
+        parts: [{ text: message }],
+      });
+    }
 
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-  } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes('quota')) {
-      currentModel = 'gemini-2.5-flash';
+    try {
+      // Use the streaming API and place tools inside the request config per SDK
       const streamIterator = await ai.models.generateContentStream({
         model: currentModel,
         contents,
@@ -286,18 +181,33 @@ export async function POST(request: Request) {
         async start(controller) {
           try {
             for await (const chunk of streamIterator) {
+              console.log("Received chunk:", JSON.stringify(chunk, null, 2));
               if (chunk.functionCalls) {
+                console.log("Detected function calls:", JSON.stringify(chunk.functionCalls, null, 2));
                 for (const call of chunk.functionCalls) {
-                  if (call.name === "get_historical_battery_data") {
-                    const historicalData = await getDailyBatteryRecords();
+                  if (
+                    call.name === "get_historical_battery_data" ||
+                    call.name === "get_weekly_battery_averages" ||
+                    call.name === "get_monthly_battery_averages"
+                  ) {
+                    const functionMap = {
+                      get_historical_battery_data: getDailyBatteryRecords,
+                      get_weekly_battery_averages: getWeeklyBatteryAverages,
+                      get_monthly_battery_averages: getMonthlyBatteryAverages,
+                    };
+
+                    const selectedFunction = functionMap[call.name as keyof typeof functionMap];
+                    const data = await selectedFunction();
+
                     contents.push({
                       role: "model",
                       parts: [{ functionCall: call }],
                     });
                     contents.push({
                       role: "tool",
-                      parts: [{ functionResponse: { name: call.name, response: historicalData } }],
+                      parts: [{ functionResponse: { name: call.name, response: { content: JSON.stringify(data) } } }],
                     });
+
                     const newStreamIterator = await ai.models.generateContentStream({
                       model: currentModel,
                       contents,
@@ -306,56 +216,7 @@ export async function POST(request: Request) {
                         tools,
                       },
                     });
-                    for await (const newChunk of newStreamIterator) {
-                      const data = {
-                        text: newChunk.text,
-                        functionCalls: newChunk.functionCalls,
-                      };
-                      controller.enqueue(JSON.stringify(data) + '\n');
-                    }
-                  } else if (call.name === "get_weekly_battery_averages") {
-                    const weeklyAverages = await getWeeklyBatteryAverages();
-                    contents.push({
-                      role: "model",
-                      parts: [{ functionCall: call }],
-                    });
-                    contents.push({
-                      role: "tool",
-                      parts: [{ functionResponse: { name: call.name, response: weeklyAverages } }],
-                    });
-                    const newStreamIterator = await ai.models.generateContentStream({
-                      model: currentModel,
-                      contents,
-                      config: {
-                        systemInstruction: systemPrompt,
-                        tools,
-                      },
-                    });
-                    for await (const newChunk of newStreamIterator) {
-                      const data = {
-                        text: newChunk.text,
-                        functionCalls: newChunk.functionCalls,
-                      };
-                      controller.enqueue(JSON.stringify(data) + '\n');
-                    }
-                  } else if (call.name === "get_monthly_battery_averages") {
-                    const monthlyAverages = await getMonthlyBatteryAverages();
-                    contents.push({
-                      role: "model",
-                      parts: [{ functionCall: call }],
-                    });
-                    contents.push({
-                      role: "tool",
-                      parts: [{ functionResponse: { name: call.name, response: monthlyAverages } }],
-                    });
-                    const newStreamIterator = await ai.models.generateContentStream({
-                      model: currentModel,
-                      contents,
-                      config: {
-                        systemInstruction: systemPrompt,
-                        tools,
-                      },
-                    });
+
                     for await (const newChunk of newStreamIterator) {
                       const data = {
                         text: newChunk.text,
@@ -392,8 +253,109 @@ export async function POST(request: Request) {
           "Content-Type": "application/json",
         },
       });
-    } else {
-      throw error;
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes('quota')) {
+        currentModel = 'gemini-2.5-flash';
+        console.log("Request contents (fallback):", JSON.stringify(contents, null, 2));
+        const streamIterator = await ai.models.generateContentStream({
+          model: currentModel,
+          contents,
+          config: {
+            systemInstruction: systemPrompt,
+            tools,
+          },
+        });
+
+        const stream = new ReadableStream({
+          async start(controller) {
+            try {
+              for await (const chunk of streamIterator) {
+                console.log("Received chunk (fallback):", JSON.stringify(chunk, null, 2));
+                if (chunk.functionCalls) {
+                  console.log("Detected function calls (fallback):", JSON.stringify(chunk.functionCalls, null, 2));
+                  for (const call of chunk.functionCalls) {
+                    if (
+                      call.name === "get_historical_battery_data" ||
+                      call.name === "get_weekly_battery_averages" ||
+                      call.name === "get_monthly_battery_averages"
+                    ) {
+                      const functionMap = {
+                        get_historical_battery_data: getDailyBatteryRecords,
+                        get_weekly_battery_averages: getWeeklyBatteryAverages,
+                        get_monthly_battery_averages: getMonthlyBatteryAverages,
+                      };
+
+                      const selectedFunction = functionMap[call.name as keyof typeof functionMap];
+                      const data = await selectedFunction();
+
+                      contents.push({
+                        role: "model",
+                        parts: [{ functionCall: call }],
+                      });
+                      contents.push({
+                        role: "tool",
+                        parts: [{ functionResponse: { name: call.name, response: { content: JSON.stringify(data) } } }],
+                      });
+
+                      const newStreamIterator = await ai.models.generateContentStream({
+                        model: currentModel,
+                        contents,
+                        config: {
+                          systemInstruction: systemPrompt,
+                          tools,
+                        },
+                      });
+
+                      for await (const newChunk of newStreamIterator) {
+                        const data = {
+                          text: newChunk.text,
+                          functionCalls: newChunk.functionCalls,
+                        };
+                        controller.enqueue(JSON.stringify(data) + '\n');
+                      }
+                    } else {
+                      const data = {
+                        text: chunk.text,
+                        functionCalls: chunk.functionCalls,
+                      };
+                      controller.enqueue(JSON.stringify(data) + '\n');
+                    }
+                  }
+                } else {
+                  const data = {
+                    text: chunk.text,
+                    functionCalls: chunk.functionCalls,
+                  };
+                  controller.enqueue(JSON.stringify(data) + '\n');
+                }
+              }
+            } catch (err) {
+              controller.error(err);
+            } finally {
+              controller.close();
+            }
+          },
+        });
+
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+      } else {
+        throw error;
+      }
     }
+  } catch (error) {
+    console.error("Error in POST function:", error);
+    showErrorToast("An error occurred while processing your request.", () => {
+      // Retry logic here
+    });
+    return new Response(JSON.stringify({ error: "An error occurred" }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
   }
 }

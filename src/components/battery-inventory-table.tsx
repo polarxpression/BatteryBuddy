@@ -48,6 +48,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                             <span className="sr-only">Ícone</span>
                         </TableHead>
                         <TableHead>Marca & Modelo</TableHead>
+                        <TableHead className={`${isMobile ? "hidden" : ""}`}>Código de Barras</TableHead>
                         <TableHead className={`${isMobile ? "hidden" : ""}`}>Tipo</TableHead>
                         <TableHead className={`${isMobile ? "hidden" : ""}`}>Embalagem</TableHead>
                         <TableHead className="text-right">Quantidade</TableHead>
@@ -67,6 +68,9 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                         <TableCell className="font-medium">
                             <div className="font-bold">{battery.brand}</div>
                             <div className="text-sm">{battery.model}</div>
+                        </TableCell>
+                        <TableCell className={`${isMobile ? "hidden" : ""}`}>
+                            {battery.barcode}
                         </TableCell>
                         <TableCell className={`${isMobile ? "hidden" : ""}`}>
                             <Badge variant="outline">{battery.type}</Badge>

@@ -130,7 +130,8 @@ export function BatteryDashboard() {
         !searchTerm ||
         battery.brand.toLowerCase().includes(searchTermLower) ||
         (battery.model || "").toLowerCase().includes(searchTermLower) ||
-        battery.type.toLowerCase().includes(searchTermLower);
+        battery.type.toLowerCase().includes(searchTermLower) ||
+        (battery.barcode || "").toLowerCase().includes(searchTermLower);
 
       return typeMatch && brandMatch && modelMatch && searchMatch;
     });
@@ -215,7 +216,7 @@ export function BatteryDashboard() {
   const handleExport = () => {
     const csv = Papa.unparse(filteredBatteries.map(b => ({...b, total: b.quantity * b.packSize})) , {
       header: true,
-      columns: ["brand", "model", "type", "packSize", "quantity", "total"],
+      columns: ["brand", "model", "type", "barcode", "packSize", "quantity", "total"],
     });
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -397,8 +398,16 @@ export function BatteryDashboard() {
   };
 
   const handleGenerateSuggestion = () => {
+    const prompt = "Com base no inventário atual, nos dados históricos diários, nas médias semanais e nas médias mensais, por favor, sugira quais baterias devo comprar e em que quantidade para manter um estoque ideal. Priorize as médias mensais, depois as semanais e, por fim, os dados diários para uma análise mais detalhada.";
+    setAiManagerInitialPrompt(prompt);
     setIsAiManagerOpen(true);
   };
+
+  const handleClearInitialPrompt = () => {
+    setAiManagerInitialPrompt(undefined);
+  };
+
+  const [aiManagerInitialPrompt, setAiManagerInitialPrompt] = useState<string | undefined>(undefined);
 
   const totalBatteries = filteredBatteries.reduce((acc, b) => acc + b.quantity, 0);
   const batteryTypesCount = new Set(filteredBatteries.map(b => b.type)).size;
@@ -534,6 +543,8 @@ export function BatteryDashboard() {
             handleExport={handleExport}
             handleGenerateReport={handleGenerateReport}
             batteries={filteredBatteries}
+            initialPrompt={aiManagerInitialPrompt}
+            onInitialPromptSent={handleClearInitialPrompt}
           />
         </div>
       )}

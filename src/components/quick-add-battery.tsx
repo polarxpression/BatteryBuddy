@@ -34,6 +34,7 @@ const QuickAddBatterySchema = z.object({
   model: z.string().optional(),
   quantity: z.string(),
   packSize: z.coerce.number().int().optional(),
+  barcode: z.string().min(1, "O código de barras é obrigatório."),
 });
 
 
@@ -53,11 +54,15 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
       brand: undefined,
       model: "",
       quantity: "1",
+      barcode: "",
     },
   });
 
   const modelRef = useRef<HTMLInputElement>(null);
   const quantityRef = useRef<HTMLInputElement>(null);
+  const barcodeRef = useRef<HTMLInputElement>(null);
+  const typeRef = useRef<HTMLButtonElement>(null);
+  const brandRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const unsubscribe = onAppSettingsSnapshot(setAppSettings);
@@ -73,12 +78,13 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
         brand: data.brand, // keep brand for next entry
         model: "",
         quantity: "1",
+        barcode: "",
     });
     // Set focus to model field after submission
     modelRef.current?.focus();
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, nextFieldRef?: React.RefObject<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>, nextFieldRef?: React.RefObject<HTMLElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       if (nextFieldRef?.current) {
@@ -109,7 +115,7 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                     <FormLabel>Battery Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger ref={typeRef} onKeyDown={(e) => handleKeyDown(e, quantityRef)}>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
@@ -136,7 +142,7 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                         type="text" 
                         {...field}
                         ref={quantityRef}
-                        onKeyDown={(e) => handleKeyDown(e, modelRef)}
+                        onKeyDown={(e) => handleKeyDown(e, brandRef)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -153,7 +159,7 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                         <FormLabel>Brand</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger ref={brandRef} onKeyDown={(e) => handleKeyDown(e, modelRef)}>
                               <SelectValue placeholder="Select brand" />
                             </SelectTrigger>
                           </FormControl>
@@ -180,6 +186,24 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                           placeholder="e.g., Eneloop" 
                           {...field}
                           ref={modelRef}
+                          onKeyDown={(e) => handleKeyDown(e, barcodeRef)}
+                        />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="barcode"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Barcode</FormLabel>
+                        <FormControl>
+                        <Input 
+                          placeholder="e.g., 1234567890123" 
+                          {...field}
+                          ref={barcodeRef}
                           onKeyDown={(e) => handleKeyDown(e)}
                         />
                         </FormControl>
