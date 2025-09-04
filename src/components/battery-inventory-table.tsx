@@ -48,11 +48,11 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                             <span className="sr-only">Ícone</span>
                         </TableHead>
                         <TableHead>Marca & Modelo</TableHead>
-                        <TableHead className={`${isMobile ? "hidden" : ""}`}>Código de Barras</TableHead>
-                        <TableHead className={`${isMobile ? "hidden" : ""}`}>Tipo</TableHead>
-                        <TableHead className={`${isMobile ? "hidden" : ""}`}>Embalagem</TableHead>
+                        <TableHead>Código de Barras</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Embalagem</TableHead>
                         <TableHead className="text-right">Quantidade</TableHead>
-                        <TableHead className={`text-right ${isMobile ? "hidden" : ""}`}>Total</TableHead>
+                        <TableHead className={`text-right`}>Total</TableHead>
                         <TableHead>
                             <span className="sr-only">Ações</span>
                         </TableHead>
@@ -69,13 +69,13 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                             <div className="font-bold">{battery.brand}</div>
                             <div className="text-sm">{battery.model}</div>
                         </TableCell>
-                        <TableCell className={`${isMobile ? "hidden" : ""}`}>
+                        <TableCell>
                             {battery.barcode}
                         </TableCell>
-                        <TableCell className={`${isMobile ? "hidden" : ""}`}>
+                        <TableCell>
                             <Badge variant="outline">{battery.type}</Badge>
                         </TableCell>
-                        <TableCell className={`${isMobile ? "hidden" : ""}`}>
+                        <TableCell>
                             <Badge variant="outline">{battery.packSize}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -104,7 +104,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                                 </Button>
                             </div>
                         </TableCell>
-                        <TableCell className={`text-right font-medium ${isMobile ? "hidden" : ""}`}>
+                        <TableCell className={`text-right font-medium`}>
                             {battery.quantity * battery.packSize}
                         </TableCell>
                         <TableCell>
