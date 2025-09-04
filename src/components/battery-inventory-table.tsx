@@ -79,6 +79,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                         <TableCell className="font-medium">
                             <div className="font-bold">{battery.brand}</div>
                             <div className="text-sm">{battery.model}</div>
+                            {battery.discontinued && <Badge variant="destructive">Descontinuada</Badge>}
                         </TableCell>
                         <TableCell>
                             {battery.barcode}

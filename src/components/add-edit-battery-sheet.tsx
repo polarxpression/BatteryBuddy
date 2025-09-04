@@ -13,8 +13,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   Sheet,
   SheetContent,
@@ -42,6 +44,7 @@ const AddEditBatterySheetSchema = z.object({
   quantity: z.string(),
   packSize: z.number(),
   barcode: z.string().min(1, "O código de barras é obrigatório."),
+  discontinued: z.boolean().optional(),
 });
 
 
@@ -90,6 +93,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           ...batteryToEdit,
           quantity: String(batteryToEdit.quantity),
           barcode: batteryToEdit.barcode || "",
+          discontinued: batteryToEdit.discontinued || false,
         });
       } else {
         form.reset({
@@ -100,6 +104,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           quantity: "0",
           packSize: 1,
           barcode: "",
+          discontinued: false,
         });
       }
     }
@@ -263,6 +268,28 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                       />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="discontinued"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Descontinuada
+                      </FormLabel>
+                      <FormDescription>
+                        Marque esta opção se a bateria não é mais vendida.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />

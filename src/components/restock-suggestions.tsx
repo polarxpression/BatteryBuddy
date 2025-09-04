@@ -11,11 +11,11 @@ export function RestockSuggestions({ batteries }: { batteries: Battery[] }) {
   const lowStockItems = batteries.filter(
     (battery) => {
       const totalQuantity = battery.quantity * battery.packSize;
-      return totalQuantity > 0 && totalQuantity < LOW_STOCK_THRESHOLD;
+      return !battery.discontinued && totalQuantity > 0 && totalQuantity < LOW_STOCK_THRESHOLD;
     }
   );
 
-  const outOfStockItems = batteries.filter(battery => battery.quantity * battery.packSize === 0);
+  const outOfStockItems = batteries.filter(battery => !battery.discontinued && battery.quantity * battery.packSize === 0);
 
   return (
     <Card>
@@ -34,13 +34,13 @@ export function RestockSuggestions({ batteries }: { batteries: Battery[] }) {
             <div className="space-y-2">
             {outOfStockItems.map((battery) => (
                 <div key={battery.id} className="flex items-center gap-4">
-                    <div className="font-medium text-destructive break-words">{battery.brand} {battery.model} ({battery.type})</div>
+                    <div className="font-medium text-destructive break-words">{battery.brand} {battery.model} ({battery.type} c/ {battery.packSize})</div>
                     <div className="ml-auto font-bold text-destructive">Fora de estoque</div>
                 </div>
             ))}
             {lowStockItems.map((battery) => (
                 <div key={battery.id} className="flex items-center gap-4">
-                    <div className="font-medium break-words">{battery.brand} {battery.model} ({battery.type})</div>
+                    <div className="font-medium break-words">{battery.brand} {battery.model} ({battery.type} c/ {battery.packSize})</div>
                     <div className="ml-auto font-bold">{battery.quantity * battery.packSize} restantes</div>
                 </div>
             ))}

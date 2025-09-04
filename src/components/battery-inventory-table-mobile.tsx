@@ -55,6 +55,7 @@ export function BatteryInventoryTableMobile({ batteries, onEdit, onDelete, onQua
                                 <div className="font-medium">
                                     <div className="font-bold">{battery.brand}</div>
                                     <div className="text-sm">{battery.model}</div>
+                                    {battery.discontinued && <Badge variant="destructive">Descontinuada</Badge>}
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
