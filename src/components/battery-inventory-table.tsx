@@ -21,7 +21,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu";
-import { useMobile } from "@/hooks/use-mobile";
+
 
 interface BatteryInventoryTableProps {
     batteries: Battery[];
@@ -31,7 +31,7 @@ interface BatteryInventoryTableProps {
 }
 
 export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityChange }: BatteryInventoryTableProps) {
-    const isMobile = useMobile();
+    
 
     const getQuantityBadgeVariant = (quantity: number): "default" | "destructive" | "secondary" => {
         if (quantity === 0) return "destructive";
@@ -51,7 +51,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                         <TableHead>Código de Barras</TableHead>
                         <TableHead>Tipo</TableHead>
                         <TableHead>Embalagem</TableHead>
-                        <TableHead className="text-right">Quantidade</TableHead>
+                        <TableHead className="min-w-[100px] text-right">Quantidade</TableHead>
                         <TableHead className={`text-right`}>Total</TableHead>
                         <TableHead>
                             <span className="sr-only">Ações</span>
@@ -79,7 +79,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                             <Badge variant="outline">{battery.packSize}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                            <div className={`flex items-center justify-end ${isMobile ? "gap-0" : "gap-1 md:gap-2"}`}>
+                            <div className={`flex items-center justify-end gap-1 md:gap-2`}>
                                 <Button
                                     variant="ghost"
                                     size="icon"
