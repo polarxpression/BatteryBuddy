@@ -23,6 +23,12 @@ import {
   } from "@/components/ui/dropdown-menu";
 
 
+import { useMobile } from "@/hooks/use-mobile";
+
+
+import { BatteryInventoryTableMobile } from "./battery-inventory-table-mobile";
+
+
 interface BatteryInventoryTableProps {
     batteries: Battery[];
     onEdit: (battery: Battery) => void;
@@ -31,6 +37,7 @@ interface BatteryInventoryTableProps {
 }
 
 export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityChange }: BatteryInventoryTableProps) {
+    const isMobile = useMobile();
     
 
     const getQuantityBadgeVariant = (quantity: number): "default" | "destructive" | "secondary" => {
@@ -38,6 +45,10 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
         if (quantity < 5) return "secondary";
         return "default";
     };
+
+    if (isMobile) {
+        return <BatteryInventoryTableMobile {...{ batteries, onEdit, onDelete, onQuantityChange }} />;
+    }
     
     return (
         <div>
