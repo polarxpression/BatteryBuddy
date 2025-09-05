@@ -305,71 +305,11 @@ export function BatteryDashboard() {
   };
 
   const handleGenerateReport = (outputType: "print" | "download", reportContent?: string, suggestions?: string) => {
-    const lowStockItems = batteries.filter(
-      (battery) => {
-        const totalQuantity = battery.quantity * battery.packSize;
-        return totalQuantity > 0 && totalQuantity < 5;
-      }
-    );
+    const tempDiv = document.createElement("div");
+    const root = createRoot(tempDiv);
+    root.render(<ReactMarkdown remarkPlugins={[remarkGfm]}>{reportContent || ""}</ReactMarkdown>);
 
-    const outOfStockItems = batteries.filter(battery => battery.quantity * battery.packSize === 0);
-
-    let finalReportContent = reportContent || `
-      <html>
-        <head>
-          <title>Relatório de Baterias</title>
-          <style>
-            body { font-family: sans-serif; margin: 2rem; }
-            h1 { color: #333; }
-            table { border-collapse: collapse; width: 100%; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
-            .out-of-stock { color: red; font-weight: bold; }
-          </style>
-        </head>
-        <body>
-          <h1>Relatório de Baterias</h1>
-          
-          <h2>Fora de Estoque</h2>
-          ${outOfStockItems.length > 0 ? `
-            <table>
-              <tr>
-                <th>Marca</th>
-                <th>Modelo</th>
-                <th>Tipo</th>
-              </tr>
-              ${outOfStockItems.map(battery => `
-                <tr>
-                  <td>${battery.brand}</td>
-                  <td>${battery.model}</td>
-                  <td>${battery.type}</td>
-                </tr>
-              `).join('')}
-            </table>
-          ` : "<p>Nenhum item fora de estoque.</p>"}
-
-          <h2>Estoque Baixo</h2>
-          ${lowStockItems.length > 0 ? `
-            <table>
-              <tr>
-                <th>Marca</th>
-                <th>Modelo</th>
-                <th>Tipo</th>
-                <th>Quantidade Restante</th>
-              </tr>
-              ${lowStockItems.map(battery => `
-                <tr>
-                  <td>${battery.brand}</td>
-                  <td>${battery.model}</td>
-                  <td>${battery.type}</td>
-                  <td>${battery.quantity * battery.packSize}</td>
-                </tr>
-              `).join('')}
-            </table>
-          ` : "<p>Nenhum item com estoque baixo.</p>"}
-        </body>
-      </html>
-    `;
+    let finalReportContent = tempDiv.innerHTML;
 
     if (suggestions) {
         const suggestionHtml = `<h2>Sugestões</h2><p>${suggestions}</p>`;

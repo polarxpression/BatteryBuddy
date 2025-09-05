@@ -29,7 +29,7 @@ interface AiManagerProps {
   addBattery: (data: Battery) => Promise<void>;
   updateBatteryQuantity: (brand: string, model: string, newQuantity: number) => Promise<void>;
   handleExport: () => void;
-  handleGenerateReport: (outputType: 'print' | 'download') => void;
+  handleGenerateReport: (outputType: 'print' | 'download', reportContent?: string) => void;
   batteries: Battery[];
   initialPrompt?: string;
   onInitialPromptSent: () => void;
@@ -145,9 +145,37 @@ export function AiManager({
       case 'export_csv':
         handleExport();
         return 'The inventory has been exported to CSV.';
-      case 'generate_report':
-        handleGenerateReport(functionCall.args.outputType as 'print' | 'download');
+      case 'generate_report': {
+        const lowStockItems = batteries.filter(
+          (battery) => {
+            const totalQuantity = battery.quantity * battery.packSize;
+            return !battery.discontinued && totalQuantity > 0 && totalQuantity < 5;
+          }
+        );
+
+        const outOfStockItems = batteries.filter(battery => !battery.discontinued && battery.quantity * battery.packSize === 0);
+
+        const reportContent = `
+# Relatório de Baterias
+
+## Fora de Estoque
+${outOfStockItems.length > 0 ? `
+| Marca | Modelo | Tipo |
+|---|---|---|
+${outOfStockItems.map(battery => `| ${battery.brand} | ${battery.model} | ${battery.type} |`).join('\n')}
+` : "Nenhum item fora de estoque."}
+
+## Estoque Baixo
+${lowStockItems.length > 0 ? `
+| Marca | Modelo | Tipo | Quantidade Restante |
+|---|---|---|---|
+${lowStockItems.map(battery => `| ${battery.brand} | ${battery.model} | ${battery.type} | ${battery.quantity * battery.packSize} |`).join('\n')}
+` : "Nenhum item com estoque baixo."}
+`;
+
+        handleGenerateReport(functionCall.args.outputType as 'print' | 'download', reportContent);
         return 'The report has been generated.';
+      }
       default:
         console.warn('Unknown command:', functionCall.name);
         return `Unknown command: ${functionCall.name}`;
