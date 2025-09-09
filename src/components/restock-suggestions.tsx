@@ -34,13 +34,25 @@ export function RestockSuggestions({ batteries }: { batteries: Battery[] }) {
             <div className="space-y-2">
             {outOfStockItems.map((battery) => (
                 <div key={battery.id} className="flex items-center gap-4">
-                    <div className="font-medium text-destructive break-words">{battery.brand} {battery.model} ({battery.type}, Embalagem com {battery.packSize})</div>
+                    <div className="font-medium text-destructive break-words flex items-center gap-2">
+                        {battery.brand} {battery.model} ({battery.type}, Embalagem com{" "}
+                        <span className="flex items-center justify-center w-5 h-5 bg-accent text-accent-foreground rounded-full text-xs">
+                            {battery.packSize}
+                        </span>
+                        )
+                    </div>
                     <div className="ml-auto font-bold text-destructive">Fora de estoque</div>
                 </div>
             ))}
             {lowStockItems.map((battery) => (
                 <div key={battery.id} className="flex items-center gap-4">
-                    <div className="font-medium break-words">{battery.brand} {battery.model} ({battery.type}, Embalagem com {battery.packSize})</div>
+                    <div className="font-medium break-words flex items-center gap-2">
+                        {battery.brand} {battery.model} ({battery.type}, Embalagem com{" "}
+                        <span className="flex items-center justify-center w-5 h-5 bg-accent text-accent-foreground rounded-full text-xs">
+                            {battery.packSize}
+                        </span>
+                        )
+                    </div>
                     <div className="ml-auto font-bold">{battery.quantity * battery.packSize} restantes</div>
                 </div>
             ))}
