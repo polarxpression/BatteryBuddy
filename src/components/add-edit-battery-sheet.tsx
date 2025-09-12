@@ -45,6 +45,7 @@ const AddEditBatterySheetSchema = z.object({
   packSize: z.number(),
   barcode: z.string().min(1, "O código de barras é obrigatório."),
   discontinued: z.boolean().optional(),
+  location: z.enum(["gondola", "stock"]).optional(),
 });
 
 
@@ -70,6 +71,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       quantity: "0",
       packSize: 1,
       barcode: "",
+      location: "gondola",
     },
   });
 
@@ -94,6 +96,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           quantity: String(batteryToEdit.quantity),
           barcode: batteryToEdit.barcode || "",
           discontinued: batteryToEdit.discontinued || false,
+          location: batteryToEdit.location || "gondola",
         });
       } else {
         form.reset({
@@ -105,6 +108,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           packSize: 1,
           barcode: "",
           discontinued: false,
+          location: "gondola",
         });
       }
     }
@@ -247,6 +251,27 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                             {size}
                           </SelectItem>
                         ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Localização</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a localização" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="gondola">Gôndola</SelectItem>
+                        <SelectItem value="stock">Estoque</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

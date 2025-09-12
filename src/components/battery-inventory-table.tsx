@@ -61,6 +61,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                         <TableHead>Marca & Modelo</TableHead>
                         <TableHead>Código de Barras</TableHead>
                         <TableHead>Tipo</TableHead>
+                        <TableHead>Localização</TableHead>
                         <TableHead>Embalagem</TableHead>
                         <TableHead className="min-w-[100px] text-right">Quantidade</TableHead>
                         <TableHead className={`text-right`}>Total</TableHead>
@@ -86,6 +87,9 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                         </TableCell>
                         <TableCell>
                             <Badge variant="outline">{battery.type}</Badge>
+                        </TableCell>
+                        <TableCell>
+                            {battery.location && <Badge variant="outline">{battery.location}</Badge>}
                         </TableCell>
                         <TableCell>
                             <Badge variant="outline">{battery.packSize}</Badge>
@@ -142,7 +146,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                     ))
                 ) : (
                     <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center">
+                        <TableCell colSpan={8} className="h-24 text-center">
                             Nenhuma bateria encontrada.
                         </TableCell>
                     </TableRow>

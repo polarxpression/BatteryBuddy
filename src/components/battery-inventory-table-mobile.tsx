@@ -100,6 +100,10 @@ export function BatteryInventoryTableMobile({ batteries, onEdit, onDelete, onQua
                                         <TableCell className="text-right"><Badge variant="outline">{battery.type}</Badge></TableCell>
                                     </TableRow>
                                     <TableRow>
+                                        <TableCell>Localização</TableCell>
+                                        <TableCell className="text-right">{battery.location && <Badge variant="outline">{battery.location}</Badge>}</TableCell>
+                                    </TableRow>
+                                    <TableRow>
                                         <TableCell>Embalagem</TableCell>
                                         <TableCell className="text-right"><Badge variant="outline">{battery.packSize}</Badge></TableCell>
                                     </TableRow>
