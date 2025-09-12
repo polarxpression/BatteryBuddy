@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { RestockReport } from "@/components/restock-report";
 import { AppSettings, Battery } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ReportPage() {
   const [lowStockItems, setLowStockItems] = useState<Battery[]>([]);
   const [outOfStockItems, setOutOfStockItems] = useState<Battery[]>([]);
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const lowStockData = localStorage.getItem("lowStockItems");
@@ -23,7 +25,23 @@ export default function ReportPage() {
     if (appSettingsData) {
       setAppSettings(JSON.parse(appSettingsData));
     }
+    setLoading(false);
   }, []);
+
+  if (loading) {
+    return (
+      <div className="p-4 sm:p-6 md:p-8">
+        <div className="max-w-4xl mx-auto">
+          <Skeleton className="h-8 w-64 mb-6" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-64 w-full" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <RestockReport
