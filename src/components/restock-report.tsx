@@ -62,7 +62,7 @@ export function RestockReport({ lowStockItems, outOfStockItems, appSettings }: R
                   alt={battery.model || "Battery Image"}
                   width={300}
                   height={200}
-                  className="w-full h-40 object-cover"
+                  className="w-full h-40 object-contain"
                 />
               </CardHeader>
               <CardContent className="p-4">
