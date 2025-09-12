@@ -190,7 +190,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {appSettings?.batteryTypes.map((type) => (
+                        {appSettings?.batteryTypes && Object.values(appSettings.batteryTypes).map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
                           </SelectItem>
@@ -214,7 +214,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {appSettings?.batteryBrands.map((brand) => (
+                        {appSettings?.batteryBrands && Object.values(appSettings.batteryBrands).map((brand) => (
                           <SelectItem key={brand} value={brand}>
                             {brand}
                           </SelectItem>
@@ -238,7 +238,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {appSettings?.batteryModels.map((model) => (
+                        {appSettings?.batteryModels && Object.values(appSettings.batteryModels).map((model) => (
                           <SelectItem key={model} value={model}>
                             {model}
                           </SelectItem>
@@ -280,7 +280,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {appSettings?.packSizes.map((size) => (
+                        {appSettings?.packSizes && Object.values(appSettings.packSizes).sort((a, b) => a - b).map((size) => (
                           <SelectItem key={size} value={String(size)}>
                             {size}
                           </SelectItem>

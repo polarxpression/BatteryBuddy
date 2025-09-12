@@ -21,26 +21,26 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const [newPackSize, setNewPackSize] = useState("");
   const [newBrand, setNewBrand] = useState("");
   const [newModel, setNewModel] = useState("");
-  const [types, setTypes] = useState<string[]>([]);
-  const [sizes, setSizes] = useState<number[]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
-  const [models, setModels] = useState<string[]>([]);
+  const [types, setTypes] = useState<Record<string, string>>({});
+  const [sizes, setSizes] = useState<Record<string, number>>({});
+  const [brands, setBrands] = useState<Record<string, string>>({});
+  const [models, setModels] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const unsubscribe = onAppSettingsSnapshot((settings) => {
       if (settings) {
-        setTypes(settings.batteryTypes);
-        setSizes(settings.packSizes);
-        setBrands(settings.batteryBrands);
-        setModels(settings.batteryModels);
+        setTypes(settings.batteryTypes || {});
+        setSizes(settings.packSizes || {});
+        setBrands(settings.batteryBrands || {});
+        setModels(settings.batteryModels || {});
       }
     });
     return () => unsubscribe();
   }, []);
 
   const handleAddType = async () => {
-    if (newType && !types.includes(newType)) {
-      const updatedTypes = [...types, newType];
+    if (newType && !types[newType]) {
+      const updatedTypes = { ...types, [newType]: newType };
       await updateAppSettings({ batteryTypes: updatedTypes, packSizes: sizes, batteryBrands: brands, batteryModels: models });
       toast({ title: "Sucesso!", description: `Tipo de bateria ${newType} adicionado.` });
       setNewType("");
@@ -48,15 +48,15 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   };
 
   const handleRemoveType = async (typeToRemove: string) => {
-    const updatedTypes = types.filter(t => t !== typeToRemove);
+    const { [typeToRemove]: removed, ...updatedTypes } = types;
     await updateAppSettings({ batteryTypes: updatedTypes, packSizes: sizes, batteryBrands: brands, batteryModels: models });
     toast({ title: "Sucesso!", description: `Tipo de bateria ${typeToRemove} removido.` });
   };
 
   const handleAddPackSize = async () => {
     const size = parseInt(newPackSize, 10);
-    if (size && !sizes.includes(size)) {
-      const updatedSizes = [...sizes, size].sort((a, b) => a - b);
+    if (size && !Object.values(sizes).includes(size)) {
+      const updatedSizes = { ...sizes, [newPackSize]: size };
       await updateAppSettings({ batteryTypes: types, packSizes: updatedSizes, batteryBrands: brands, batteryModels: models });
       toast({ title: "Sucesso!", description: `Tamanho de embalagem ${size} adicionado.` });
       setNewPackSize("");
@@ -64,14 +64,17 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   };
 
   const handleRemovePackSize = async (sizeToRemove: number) => {
-    const updatedSizes = sizes.filter(s => s !== sizeToRemove);
-    await updateAppSettings({ batteryTypes: types, packSizes: updatedSizes, batteryBrands: brands, batteryModels: models });
-    toast({ title: "Sucesso!", description: `Tamanho de embalagem ${sizeToRemove} removido.` });
+    const keyToRemove = Object.keys(sizes).find(key => sizes[key] === sizeToRemove);
+      if (keyToRemove) {
+        const { [keyToRemove]: removed, ...updatedSizes } = sizes;
+        await updateAppSettings({ batteryTypes: types, packSizes: updatedSizes, batteryBrands: brands, batteryModels: models });
+        toast({ title: "Sucesso!", description: `Tamanho de embalagem ${sizeToRemove} removido.` });
+      }
   };
 
   const handleAddBrand = async () => {
-    if (newBrand && !brands.includes(newBrand)) {
-      const updatedBrands = [...brands, newBrand];
+    if (newBrand && !brands[newBrand]) {
+      const updatedBrands = { ...brands, [newBrand]: newBrand };
       await updateAppSettings({ batteryTypes: types, packSizes: sizes, batteryBrands: updatedBrands, batteryModels: models });
       toast({ title: "Sucesso!", description: `Marca ${newBrand} adicionada.` });
       setNewBrand("");
@@ -79,14 +82,14 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   };
 
   const handleRemoveBrand = async (brandToRemove: string) => {
-    const updatedBrands = brands.filter(b => b !== brandToRemove);
+    const { [brandToRemove]: removed, ...updatedBrands } = brands;
     await updateAppSettings({ batteryTypes: types, packSizes: sizes, batteryBrands: updatedBrands, batteryModels: models });
     toast({ title: "Sucesso!", description: `Marca ${brandToRemove} removida.` });
   };
 
   const handleAddModel = async () => {
-    if (newModel && !models.includes(newModel)) {
-      const updatedModels = [...models, newModel];
+    if (newModel && !models[newModel]) {
+      const updatedModels = { ...models, [newModel]: newModel };
       await updateAppSettings({ batteryTypes: types, packSizes: sizes, batteryBrands: brands, batteryModels: updatedModels });
       toast({ title: "Sucesso!", description: `Modelo ${newModel} adicionado.` });
       setNewModel("");
@@ -94,7 +97,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   };
 
   const handleRemoveModel = async (modelToRemove: string) => {
-    const updatedModels = models.filter(m => m !== modelToRemove);
+    const { [modelToRemove]: removed, ...updatedModels } = models;
     await updateAppSettings({ batteryTypes: types, packSizes: sizes, batteryBrands: brands, batteryModels: updatedModels });
     toast({ title: "Sucesso!", description: `Modelo ${modelToRemove} removido.` });
   };
@@ -114,8 +117,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
             </CardHeader>
             <CardContent className="grid gap-4">
               <div className="flex flex-wrap gap-2">
-                {types.length > 0 ? (
-                  types.map(type => (
+                {Object.keys(types).length > 0 ? (
+                  Object.keys(types).map(type => (
                     <Badge key={type} variant="secondary" className="flex items-center gap-1 pr-1">
                       {type}
                       <button
@@ -151,8 +154,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
             </CardHeader>
             <CardContent className="grid gap-4">
               <div className="flex flex-wrap gap-2">
-                {sizes.length > 0 ? (
-                  sizes.map(size => (
+                {Object.values(sizes).length > 0 ? (
+                  Object.values(sizes).sort((a,b) => a-b).map(size => (
                     <Badge key={size} variant="secondary" className="flex items-center gap-1 pr-1">
                       {size}
                       <button
@@ -189,8 +192,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
             </CardHeader>
             <CardContent className="grid gap-4">
               <div className="flex flex-wrap gap-2">
-                {brands.length > 0 ? (
-                  brands.map(brand => (
+                {Object.keys(brands).length > 0 ? (
+                  Object.keys(brands).map(brand => (
                     <Badge key={brand} variant="secondary" className="flex items-center gap-1 pr-1">
                       {brand}
                       <button
@@ -226,8 +229,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
             </CardHeader>
             <CardContent className="grid gap-4">
               <div className="flex flex-wrap gap-2">
-                {models.length > 0 ? (
-                  models.map(model => (
+                {Object.keys(models).length > 0 ? (
+                  Object.keys(models).map(model => (
                     <Badge key={model} variant="secondary" className="flex items-center gap-1 pr-1">
                       {model}
                       <button

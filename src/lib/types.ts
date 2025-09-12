@@ -25,10 +25,10 @@ export const BatterySchema = z.object({
 export type Battery = z.infer<typeof BatterySchema>;
 
 export const AppSettingsSchema = z.object({
-  batteryTypes: z.array(z.string()),
-  packSizes: z.array(z.number()),
-  batteryBrands: z.array(z.string()),
-  batteryModels: z.array(z.string()),
+  batteryTypes: z.record(z.string()),
+  packSizes: z.record(z.number()),
+  batteryBrands: z.record(z.string()),
+  batteryModels: z.record(z.string()),
   lowStockThreshold: z.number().optional(),
 });
 
@@ -61,5 +61,3 @@ export interface MonthlyBatteryAverage {
   year: number;
   averages: AggregatedBatteryData[];
 }
-
-

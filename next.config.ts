@@ -29,12 +29,13 @@ const nextConfig = {
     NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   },
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'polar.is-a.dev',
+        hostname: '**',
         port: '',
-        pathname: '/images/**',
+        pathname: '**',
       },
     ],
   },
