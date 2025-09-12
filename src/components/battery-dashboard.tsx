@@ -65,6 +65,15 @@ export function BatteryDashboard() {
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const lowStockItems = useMemo(() => batteries.filter(
+    (battery) => {
+      const totalQuantity = battery.quantity * battery.packSize;
+      return !battery.discontinued && totalQuantity > 0 && totalQuantity < (appSettings?.lowStockThreshold || 5);
+    }
+  ), [batteries, appSettings]);
+
+  const outOfStockItems = useMemo(() => batteries.filter(battery => !battery.discontinued && battery.quantity * battery.packSize === 0), [batteries]);
+
   useEffect(() => {
     const unsubscribe = onBatteriesSnapshot((newBatteries) => {
       setBatteries(
@@ -304,37 +313,11 @@ export function BatteryDashboard() {
     }
   };
 
-  const handleGenerateReport = (outputType: "print" | "download", reportContent?: string, suggestions?: string) => {
-    const tempDiv = document.createElement("div");
-    const root = createRoot(tempDiv);
-    root.render(<ReactMarkdown remarkPlugins={[remarkGfm]}>{reportContent || ""}</ReactMarkdown>);
-
-    let finalReportContent = tempDiv.innerHTML;
-
-    if (suggestions) {
-        const suggestionHtml = `<h2>Sugestões</h2><p>${suggestions}</p>`;
-        const bodyIndex = finalReportContent.indexOf('</body>');
-        finalReportContent = finalReportContent.slice(0, bodyIndex) + suggestionHtml + finalReportContent.slice(bodyIndex);
-    }
-
-    if (outputType === "print") {
-      const reportWindow = window.open("", "_blank");
-      if (!reportWindow) {
-        toast({
-          title: "Erro ao abrir o relatório",
-          description: "O bloqueador de pop-ups do seu navegador pode estar impedindo a abertura do relatório. Por favor, desative-o e tente novamente.",
-          variant: "destructive",
-        });
-        return;
-      }
-      reportWindow.document.write(finalReportContent);
-      reportWindow.document.close();
-      reportWindow.print();
-    } else {
-      import("html2pdf.js").then(html2pdf => {
-        html2pdf.default().from(finalReportContent).save("battery_report.pdf");
-      });
-    }
+  const handleGenerateReport = () => {
+    localStorage.setItem("lowStockItems", JSON.stringify(lowStockItems));
+    localStorage.setItem("outOfStockItems", JSON.stringify(outOfStockItems));
+    localStorage.setItem("appSettings", JSON.stringify(appSettings));
+    window.open("/report", "_blank");
   };
 
   const handleGenerateSuggestion = () => {
@@ -388,7 +371,7 @@ export function BatteryDashboard() {
                     <p className="text-xs text-muted-foreground">em {batteryTypesCount} tipos</p>
                 </CardContent>
             </Card>
-            <RestockSuggestions batteries={filteredBatteries} />
+                        <RestockSuggestions batteries={filteredBatteries} appSettings={appSettings} />
         </div>
         <InventorySummary batteries={filteredBatteries} appSettings={appSettings} />
         

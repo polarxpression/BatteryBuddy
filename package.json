@@ -42,8 +42,10 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.5.0",
     "embla-carousel-react": "^8.6.0",
+    "file-saver": "^2.0.5",
     "firebase": "^11.10.0",
     "genkit": "^1.14.1",
+    "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.10.3",
     "langchain": "^0.3.31",
     "lucide-react": "^0.475.0",
@@ -72,6 +74,7 @@
   },
   "devDependencies": {
     "@gradio/client": "^1.17.1",
+    "@types/file-saver": "^2.0.7",
     "@types/html2pdf.js": "^0.10.0",
     "@types/node": "^20",
     "@types/papaparse": "^5.3.16",

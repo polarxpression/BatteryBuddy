@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, onSnapshot, getDoc } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 import { Battery, AppSettings, DailyBatteryRecord, WeeklyBatteryAverage, MonthlyBatteryAverage } from "./types";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -26,6 +27,7 @@ const app = initializeApp(firebaseConfig);
   }
 })();
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 const batteriesCollection = collection(db, "batteries");
 const settingsDoc = doc(db, "settings", "app-settings");

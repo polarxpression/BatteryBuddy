@@ -19,6 +19,7 @@ export const BatterySchema = z.object({
   barcode: z.string().min(1, "O código de barras é obrigatório."),
   discontinued: z.boolean().optional(),
   location: z.enum(["gondola", "stock"]).optional(),
+  imageUrl: z.string().optional(),
 });
 
 export type Battery = z.infer<typeof BatterySchema>;

@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +34,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { onAppSettingsSnapshot } from "@/lib/firebase";
+import { onAppSettingsSnapshot, storage } from "@/lib/firebase";
+import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
 import { AppSettings, Battery, BatterySchema } from "@/lib/types";
 
 const AddEditBatterySheetSchema = z.object({
@@ -46,6 +48,7 @@ const AddEditBatterySheetSchema = z.object({
   barcode: z.string().min(1, "O código de barras é obrigatório."),
   discontinued: z.boolean().optional(),
   location: z.enum(["gondola", "stock"]).optional(),
+  imageUrl: z.string().optional(),
 });
 
 
@@ -60,6 +63,7 @@ type Type = z.infer<typeof AddEditBatterySheetSchema>
 
 export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmit }: AddEditBatterySheetProps) {
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const form = useForm<Type>({
     resolver: zodResolver(AddEditBatterySheetSchema),
@@ -72,6 +76,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       packSize: 1,
       barcode: "",
       location: "gondola",
+      imageUrl: "",
     },
   });
 
@@ -97,7 +102,11 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           barcode: batteryToEdit.barcode || "",
           discontinued: batteryToEdit.discontinued || false,
           location: batteryToEdit.location || "gondola",
+          imageUrl: batteryToEdit.imageUrl || "",
         });
+        if (batteryToEdit.imageUrl) {
+          setImagePreview(batteryToEdit.imageUrl);
+        }
       } else {
         form.reset({
           id: crypto.randomUUID(),
@@ -109,10 +118,28 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           barcode: "",
           discontinued: false,
           location: "gondola",
+          imageUrl: "",
         });
+        setImagePreview(null);
       }
     }
   }, [batteryToEdit, form, open]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      const fileRef = storageRef(storage, `batteries/${file.name}`);
+      await uploadBytes(fileRef, file);
+      const imageUrl = await getDownloadURL(fileRef);
+      form.setValue("imageUrl", imageUrl);
+    }
+  };
 
   const handleFormSubmit = (data: z.infer<typeof AddEditBatterySheetSchema>) => {
     const parsedData = BatterySchema.parse(data);
@@ -292,6 +319,23 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         onKeyDown={(e) => handleKeyDown(e)}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Imagem</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        onChange={handleFileChange}
+                      />
+                    </FormControl>
+                                        {imagePreview && <Image src={imagePreview} alt="Battery preview" width={80} height={80} className="mt-2 h-20 w-20 object-cover" />}
                     <FormMessage />
                   </FormItem>
                 )}

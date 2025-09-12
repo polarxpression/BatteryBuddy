@@ -1,17 +1,14 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Battery } from "@/lib/types";
+import { AppSettings, type Battery } from "@/lib/types";
 import { AlertTriangle } from "lucide-react";
 
-
-const LOW_STOCK_THRESHOLD = 5;
-
-export function RestockSuggestions({ batteries }: { batteries: Battery[] }) {
+export function RestockSuggestions({ batteries, appSettings }: { batteries: Battery[], appSettings: AppSettings | null }) {
   const lowStockItems = batteries.filter(
     (battery) => {
       const totalQuantity = battery.quantity * battery.packSize;
-      return !battery.discontinued && totalQuantity > 0 && totalQuantity < LOW_STOCK_THRESHOLD;
+      return !battery.discontinued && totalQuantity > 0 && totalQuantity < (appSettings?.lowStockThreshold || 5);
     }
   );
 
