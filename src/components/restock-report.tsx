@@ -20,12 +20,28 @@ export function RestockReport({ lowStockItems, outOfStockItems, appSettings }: R
 
   const handleExportImage = () => {
     if (reportRef.current) {
-      html2canvas(reportRef.current).then((canvas) => {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            saveAs(blob, "restock-report.png");
+      const images = Array.from(reportRef.current.querySelectorAll("img"));
+      const promises = images.map(img => {
+        return new Promise((resolve, reject) => {
+          if (img.complete) {
+            resolve(true);
+          } else {
+            img.onload = () => resolve(true);
+            img.onerror = () => reject();
           }
         });
+      });
+
+      Promise.all(promises).then(() => {
+        if (reportRef.current) {
+          html2canvas(reportRef.current).then((canvas) => {
+            canvas.toBlob((blob) => {
+              if (blob) {
+                saveAs(blob, "restock-report.png");
+              }
+            });
+          });
+        }
       });
     }
   };
