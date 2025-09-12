@@ -70,8 +70,9 @@ export function RestockReport({ lowStockItems, outOfStockItems, appSettings }: R
                 <p className="text-sm text-gray-500">{battery.type}</p>
                 <p className="text-sm text-gray-600">Embalagem com: {battery.packSize}</p>
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                  <p className="text-base font-bold text-red-600">
-                    Necessário Repor: {Math.max(0, Math.ceil(((appSettings?.lowStockThreshold || 5) * 2) / battery.packSize) - battery.quantity)}
+                  <p className="text-sm text-gray-500">Quantidade Necessária:</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {Math.max(0, Math.ceil(((appSettings?.lowStockThreshold || 5) * 2) / battery.packSize) - battery.quantity)}
                   </p>
                 </div>
               </CardContent>
