@@ -398,7 +398,7 @@ export function BatteryDashboard() {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Todos os Tipos</SelectItem>
-                            {appSettings?.batteryTypes.map(type => (
+                            {appSettings?.batteryTypes && Object.keys(appSettings.batteryTypes).map(type => (
                                 <SelectItem key={type} value={type}>{type}</SelectItem>
                             ))}
                         </SelectContent>
@@ -409,7 +409,7 @@ export function BatteryDashboard() {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Todas as Marcas</SelectItem>
-                            {appSettings?.batteryBrands.map(brand => (
+                            {appSettings?.batteryBrands && Object.keys(appSettings.batteryBrands).map(brand => (
                                 <SelectItem key={brand} value={brand}>{brand}</SelectItem>
                             ))}
                         </SelectContent>
@@ -420,7 +420,7 @@ export function BatteryDashboard() {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Todos os Modelos</SelectItem>
-                            {appSettings?.batteryModels.map(model => (
+                            {appSettings?.batteryModels && Object.keys(appSettings.batteryModels).map(model => (
                                 <SelectItem key={model} value={model}>{model}</SelectItem>
                             ))}
                         </SelectContent>

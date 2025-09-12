@@ -120,7 +120,7 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {appSettings?.batteryTypes.map((type) => (
+                        {appSettings?.batteryTypes && Object.keys(appSettings.batteryTypes).map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
                           </SelectItem>
@@ -164,7 +164,7 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {appSettings?.batteryBrands.map((brand) => (
+                            {appSettings?.batteryBrands && Object.keys(appSettings.batteryBrands).map((brand) => (
                               <SelectItem key={brand} value={brand}>
                                 {brand}
                               </SelectItem>
