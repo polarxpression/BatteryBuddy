@@ -69,11 +69,11 @@ export function BatteryDashboard() {
   const lowStockItems = useMemo(() => batteries.filter(
     (battery) => {
       const totalQuantity = battery.quantity * battery.packSize;
-      return !battery.discontinued && totalQuantity > 0 && totalQuantity < (appSettings?.lowStockThreshold || 5);
+      return battery.location === "gondola" && !battery.discontinued && totalQuantity > 0 && totalQuantity < (appSettings?.lowStockThreshold || 5);
     }
   ), [batteries, appSettings]);
 
-  const outOfStockItems = useMemo(() => batteries.filter(battery => !battery.discontinued && battery.quantity * battery.packSize === 0), [batteries]);
+  const outOfStockItems = useMemo(() => batteries.filter(battery => battery.location === "gondola" && !battery.discontinued && battery.quantity * battery.packSize === 0), [batteries]);
 
   useEffect(() => {
     const unsubscribe = onBatteriesSnapshot((newBatteries) => {
