@@ -64,7 +64,7 @@ export const getAppSettings = async (): Promise<AppSettings | null> => {
     return snapshot.exists() ? snapshot.data() as AppSettings : null;
 }
 
-export const updateAppSettings = async (settings: AppSettings) => {
+export const updateAppSettings = async (settings: Partial<AppSettings>) => {
     await setDoc(settingsDoc, settings, { merge: true });
 }
 
@@ -73,10 +73,10 @@ export const onAppSettingsSnapshot = (callback: (settings: AppSettings | null) =
         if (snapshot.exists()) {
             const data = snapshot.data();
             const settings: AppSettings = {
-                batteryTypes: data?.batteryTypes || [],
-                packSizes: data?.packSizes || [],
-                batteryBrands: data?.batteryBrands || [],
-                batteryModels: data?.batteryModels || [],
+                batteryTypes: data?.batteryTypes || {},
+                packSizes: data?.packSizes || {},
+                batteryBrands: data?.batteryBrands || {},
+                batteryModels: data?.batteryModels || {},
                 lowStockThreshold: data?.lowStockThreshold || 5,
             };
             callback(settings);

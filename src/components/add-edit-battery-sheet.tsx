@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { onAppSettingsSnapshot, storage } from "@/lib/firebase";
+import { storage } from "@/lib/firebase";
 import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
 import { AppSettings, Battery, BatterySchema } from "@/lib/types";
 
@@ -58,12 +58,12 @@ interface AddEditBatterySheetProps {
   onOpenChange: (open: boolean) => void;
   batteryToEdit?: Battery | null;
   onSubmit: (data: Battery) => void;
+  appSettings: AppSettings | null;
 }
 
 type Type = z.infer<typeof AddEditBatterySheetSchema>
 
-export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmit }: AddEditBatterySheetProps) {
-  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmit, appSettings }: AddEditBatterySheetProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -89,11 +89,6 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
   const brandRef = useRef<HTMLButtonElement>(null);
   const modelRef = useRef<HTMLButtonElement>(null);
   const packSizeRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    const unsubscribe = onAppSettingsSnapshot(setAppSettings);
-    return () => unsubscribe();
-  }, []);
 
   useEffect(() => {
     if (open) {

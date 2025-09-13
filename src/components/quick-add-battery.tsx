@@ -40,12 +40,14 @@ const QuickAddBatterySchema = z.object({
 
 interface QuickAddBatteryProps {
   onSubmit: (data: Battery) => void;
+  appSettings: AppSettings | null;
 }
 
 type Type = z.infer<typeof QuickAddBatterySchema>
 
-export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
-  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+export function QuickAddBattery({ onSubmit, appSettings }: QuickAddBatteryProps) {
+  const [, setAppSettings] = useState<AppSettings | null>(null);
+  
 
   const form = useForm<Type>({
     resolver: zodResolver(QuickAddBatterySchema),
@@ -223,3 +225,4 @@ export function QuickAddBattery({ onSubmit }: QuickAddBatteryProps) {
     </Card>
   );
 }
+   

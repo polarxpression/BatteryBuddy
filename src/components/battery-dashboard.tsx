@@ -48,6 +48,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Input } from "./ui/input";
 import { BatteryReport } from "./battery-report";
 import { AiManager } from "./ai-manager";
+
 import { AiOrb } from "./ai-orb";
 
 export function BatteryDashboard() {
@@ -436,6 +437,7 @@ export function BatteryDashboard() {
         onOpenChange={setIsSheetOpen}
         batteryToEdit={batteryToEdit}
         onSubmit={handleSubmit}
+        appSettings={appSettings}
       />
 
       <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />

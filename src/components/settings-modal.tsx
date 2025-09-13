@@ -8,7 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { X } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { onAppSettingsSnapshot, updateAppSettings } from "@/lib/firebase";
+import { onAppSettingsSnapshot, updateAppSettings, db } from "@/lib/firebase";
+import { doc, updateDoc, deleteField } from "firebase/firestore";
 
 interface SettingsModalProps {
   open: boolean;
@@ -41,16 +42,17 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const handleAddType = async () => {
     if (newType && !types[newType]) {
       const updatedTypes = { ...types, [newType]: newType };
-      await updateAppSettings({ batteryTypes: updatedTypes, packSizes: sizes, batteryBrands: brands, batteryModels: models });
+      await updateAppSettings({ batteryTypes: updatedTypes });
       toast({ title: "Sucesso!", description: `Tipo de bateria ${newType} adicionado.` });
       setNewType("");
     }
   };
 
   const handleRemoveType = async (typeToRemove: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { [typeToRemove]: _, ...updatedTypes } = types;
-    await updateAppSettings({ batteryTypes: updatedTypes, packSizes: sizes, batteryBrands: brands, batteryModels: models });
+    const settingsRef = doc(db, "settings", "app-settings");
+    await updateDoc(settingsRef, {
+      [`batteryTypes.${typeToRemove}`]: deleteField()
+    });
     toast({ title: "Sucesso!", description: `Tipo de bateria ${typeToRemove} removido.` });
   };
 
@@ -58,7 +60,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     const size = parseInt(newPackSize, 10);
     if (size && !Object.values(sizes).includes(size)) {
       const updatedSizes = { ...sizes, [newPackSize]: size };
-      await updateAppSettings({ batteryTypes: types, packSizes: updatedSizes, batteryBrands: brands, batteryModels: models });
+      await updateAppSettings({ packSizes: updatedSizes });
       toast({ title: "Sucesso!", description: `Tamanho de embalagem ${size} adicionado.` });
       setNewPackSize("");
     }
@@ -69,7 +71,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
       if (keyToRemove) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [keyToRemove]: _, ...updatedSizes } = sizes;
-        await updateAppSettings({ batteryTypes: types, packSizes: updatedSizes, batteryBrands: brands, batteryModels: models });
+        await updateAppSettings({ packSizes: updatedSizes });
         toast({ title: "Sucesso!", description: `Tamanho de embalagem ${sizeToRemove} removido.` });
       }
   };
@@ -77,32 +79,34 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const handleAddBrand = async () => {
     if (newBrand && !brands[newBrand]) {
       const updatedBrands = { ...brands, [newBrand]: newBrand };
-      await updateAppSettings({ batteryTypes: types, packSizes: sizes, batteryBrands: updatedBrands, batteryModels: models });
+      await updateAppSettings({ batteryBrands: updatedBrands });
       toast({ title: "Sucesso!", description: `Marca ${newBrand} adicionada.` });
       setNewBrand("");
     }
   };
 
   const handleRemoveBrand = async (brandToRemove: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { [brandToRemove]: _, ...updatedBrands } = brands;
-    await updateAppSettings({ batteryTypes: types, packSizes: sizes, batteryBrands: updatedBrands, batteryModels: models });
+    const settingsRef = doc(db, "settings", "app-settings");
+    await updateDoc(settingsRef, {
+      [`batteryBrands.${brandToRemove}`]: deleteField()
+    });
     toast({ title: "Sucesso!", description: `Marca ${brandToRemove} removida.` });
   };
 
   const handleAddModel = async () => {
     if (newModel && !models[newModel]) {
       const updatedModels = { ...models, [newModel]: newModel };
-      await updateAppSettings({ batteryTypes: types, packSizes: sizes, batteryBrands: brands, batteryModels: updatedModels });
+      await updateAppSettings({ batteryModels: updatedModels });
       toast({ title: "Sucesso!", description: `Modelo ${newModel} adicionado.` });
       setNewModel("");
     }
   };
 
   const handleRemoveModel = async (modelToRemove: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { [modelToRemove]: _, ...updatedModels } = models;
-    await updateAppSettings({ batteryTypes: types, packSizes: sizes, batteryBrands: brands, batteryModels: updatedModels });
+    const settingsRef = doc(db, "settings", "app-settings");
+    await updateDoc(settingsRef, {
+      [`batteryModels.${modelToRemove}`]: deleteField()
+    });
     toast({ title: "Sucesso!", description: `Modelo ${modelToRemove} removido.` });
   };
 
