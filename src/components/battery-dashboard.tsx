@@ -63,6 +63,7 @@ export function BatteryDashboard() {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [brandFilter, setBrandFilter] = useState<string>("all");
   const [modelFilter, setModelFilter] = useState<string>("all");
+  const [locationFilter, setLocationFilter] = useState<string>("all");
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -134,6 +135,7 @@ export function BatteryDashboard() {
       const typeMatch = typeFilter === "all" || battery.type === typeFilter;
       const brandMatch = brandFilter === "all" || battery.brand === brandFilter;
       const modelMatch = modelFilter === "all" || battery.model === modelFilter;
+      const locationMatch = locationFilter === "all" || battery.location === locationFilter;
 
       const searchTermLower = searchTerm.toLowerCase();
       const searchMatch =
@@ -143,9 +145,9 @@ export function BatteryDashboard() {
         battery.type.toLowerCase().includes(searchTermLower) ||
         (battery.barcode || "").toLowerCase().includes(searchTermLower);
 
-      return typeMatch && brandMatch && modelMatch && searchMatch;
+      return typeMatch && brandMatch && modelMatch && locationMatch && searchMatch;
     });
-  }, [batteries, typeFilter, brandFilter, modelFilter, searchTerm]);
+  }, [batteries, typeFilter, brandFilter, modelFilter, locationFilter, searchTerm]);
 
   const handleOpenAddSheet = () => {
     setBatteryToEdit(null);
@@ -392,7 +394,7 @@ export function BatteryDashboard() {
                         className="max-w-sm"
                     />
                 </div>
-                <div className={`grid ${isMobile ? "grid-cols-1 gap-4" : "grid-cols-3 gap-4"} mb-4`}>
+                <div className={`grid ${isMobile ? "grid-cols-1 gap-4" : "grid-cols-4 gap-4"} mb-4`}>
                     <Select value={typeFilter} onValueChange={setTypeFilter}>
                         <SelectTrigger>
                             <SelectValue placeholder="Filtrar por tipo" />
@@ -424,6 +426,16 @@ export function BatteryDashboard() {
                             {appSettings?.batteryModels && Object.keys(appSettings.batteryModels).map(model => (
                                 <SelectItem key={model} value={model}>{model}</SelectItem>
                             ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={locationFilter} onValueChange={setLocationFilter}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Filtrar por localização" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas as Localizações</SelectItem>
+                            <SelectItem value="gondola">Gôndola</SelectItem>
+                            <SelectItem value="stock">Estoque</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

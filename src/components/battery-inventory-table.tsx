@@ -36,6 +36,11 @@ interface BatteryInventoryTableProps {
     onQuantityChange: (id: string, newQuantity: number) => void;
 }
 
+const locationTranslation: { [key: string]: string } = {
+    gondola: "Gôndola",
+    stock: "Estoque",
+};
+
 export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityChange }: BatteryInventoryTableProps) {
     const isMobile = useMobile();
     
@@ -89,7 +94,7 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                             <Badge variant="outline">{battery.type}</Badge>
                         </TableCell>
                         <TableCell>
-                            {battery.location && <Badge variant="outline">{battery.location}</Badge>}
+                            {battery.location && <Badge variant="outline">{locationTranslation[battery.location]}</Badge>}
                         </TableCell>
                         <TableCell>
                             <Badge variant="outline">{battery.packSize}</Badge>
