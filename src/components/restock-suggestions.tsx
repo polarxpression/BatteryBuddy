@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Image from "next/image";
 import { AppSettings, type Battery } from "@/lib/types";
 import { AlertTriangle } from "lucide-react";
 
@@ -30,8 +31,11 @@ export function RestockSuggestions({ batteries, appSettings }: { batteries: Batt
         ) : (
             <div className="space-y-2">
             {outOfStockItems.map((battery) => (
-                <div key={battery.id} className="flex items-center gap-4">
-                    <div className="font-medium text-destructive break-words flex items-center gap-2">
+                <div key={battery.id} className="flex items-center gap-4 p-4 border rounded-lg shadow-sm">
+                    {battery.imageUrl && (
+                        <Image src={battery.imageUrl} alt={battery.brand} width={48} height={48} className="rounded-md object-cover" />
+                    )}
+                    <div className="flex-1 font-medium text-destructive break-words flex items-center gap-2">
                         {battery.brand} {battery.model} ({battery.type}, Embalagem com{" "}
                         <span className="flex items-center justify-center w-5 h-5 bg-accent text-accent-foreground rounded-full text-xs">
                             {battery.packSize}
@@ -42,8 +46,11 @@ export function RestockSuggestions({ batteries, appSettings }: { batteries: Batt
                 </div>
             ))}
             {lowStockItems.map((battery) => (
-                <div key={battery.id} className="flex items-center gap-4">
-                    <div className="font-medium break-words flex items-center gap-2">
+                <div key={battery.id} className="flex items-center gap-4 p-4 border rounded-lg shadow-sm">
+                    {battery.imageUrl && (
+                        <Image src={battery.imageUrl} alt={battery.brand} width={48} height={48} className="rounded-md object-cover" />
+                    )}
+                    <div className="flex-1 font-medium break-words flex items-center gap-2">
                         {battery.brand} {battery.model} ({battery.type}, Embalagem com{" "}
                         <span className="flex items-center justify-center w-5 h-5 bg-accent text-accent-foreground rounded-full text-xs">
                             {battery.packSize}
