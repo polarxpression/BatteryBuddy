@@ -44,12 +44,13 @@ import { ThemeToggle } from "./theme-toggle";
 import { SettingsModal } from "./settings-modal";
 import { useMobile } from "@/hooks/use-mobile";
 import Papa from "papaparse";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Input } from "./ui/input";
 import { BatteryReport } from "./battery-report";
 import { AiManager } from "./ai-manager";
 
 import { AiOrb } from "./ai-orb";
+
+import { filterBatteries } from "@/lib/search";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
@@ -60,10 +61,6 @@ export function BatteryDashboard() {
   const [isAiManagerOpen, setIsAiManagerOpen] = useState(false);
   const [batteryToEdit, setBatteryToEdit] = useState<Battery | null>(null);
   const [batteryToDelete, setBatteryToDelete] = useState<string | null>(null);
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [brandFilter, setBrandFilter] = useState<string>("all");
-  const [modelFilter, setModelFilter] = useState<string>("all");
-  const [locationFilter, setLocationFilter] = useState<string>("all");
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -131,23 +128,8 @@ export function BatteryDashboard() {
   }, []);
 
   const filteredBatteries = useMemo(() => {
-    return batteries.filter((battery) => {
-      const typeMatch = typeFilter === "all" || battery.type === typeFilter;
-      const brandMatch = brandFilter === "all" || battery.brand === brandFilter;
-      const modelMatch = modelFilter === "all" || battery.model === modelFilter;
-      const locationMatch = locationFilter === "all" || battery.location === locationFilter;
-
-      const searchTermLower = searchTerm.toLowerCase();
-      const searchMatch =
-        !searchTerm ||
-        battery.brand.toLowerCase().includes(searchTermLower) ||
-        (battery.model || "").toLowerCase().includes(searchTermLower) ||
-        battery.type.toLowerCase().includes(searchTermLower) ||
-        (battery.barcode || "").toLowerCase().includes(searchTermLower);
-
-      return typeMatch && brandMatch && modelMatch && locationMatch && searchMatch;
-    });
-  }, [batteries, typeFilter, brandFilter, modelFilter, locationFilter, searchTerm]);
+    return filterBatteries(batteries, searchTerm);
+  }, [batteries, searchTerm]);
 
   const handleOpenAddSheet = () => {
     setBatteryToEdit(null);
@@ -374,7 +356,7 @@ export function BatteryDashboard() {
                     <p className="text-xs text-muted-foreground">em {batteryTypesCount} tipos</p>
                 </CardContent>
             </Card>
-                        <RestockSuggestions batteries={filteredBatteries} appSettings={appSettings} />
+                        <RestockSuggestions lowStockItems={lowStockItems} outOfStockItems={outOfStockItems} />
         </div>
         <InventorySummary batteries={filteredBatteries} appSettings={appSettings} />
         
@@ -393,51 +375,6 @@ export function BatteryDashboard() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="max-w-sm"
                     />
-                </div>
-                <div className={`grid ${isMobile ? "grid-cols-1 gap-4" : "grid-cols-4 gap-4"} mb-4`}>
-                    <Select value={typeFilter} onValueChange={setTypeFilter}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Filtrar por tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todos os Tipos</SelectItem>
-                            {appSettings?.batteryTypes && Object.keys(appSettings.batteryTypes).map(type => (
-                                <SelectItem key={type} value={type}>{type}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Select value={brandFilter} onValueChange={setBrandFilter}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Filtrar por marca" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todas as Marcas</SelectItem>
-                            {appSettings?.batteryBrands && Object.keys(appSettings.batteryBrands).map(brand => (
-                                <SelectItem key={brand} value={brand}>{brand}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Select value={modelFilter} onValueChange={setModelFilter}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Filtrar por modelo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todos os Modelos</SelectItem>
-                            {appSettings?.batteryModels && Object.keys(appSettings.batteryModels).map(model => (
-                                <SelectItem key={model} value={model}>{model}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Select value={locationFilter} onValueChange={setLocationFilter}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Filtrar por localização" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todas as Localizações</SelectItem>
-                            <SelectItem value="gondola">Gôndola</SelectItem>
-                            <SelectItem value="stock">Estoque</SelectItem>
-                        </SelectContent>
-                    </Select>
                 </div>
                 <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
             </CardContent>

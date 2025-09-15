@@ -20,6 +20,19 @@ export const BatterySchema = z.object({
   discontinued: z.boolean().optional(),
   location: z.enum(["gondola", "stock"]).optional(),
   imageUrl: z.string().optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  lastUsed: z.string().optional(),
+  score: z.number().optional(),
+  width: z.number().optional(),
+  height: z.number().optional(),
+  filesize: z.number().optional(),
+  duration: z.number().optional(),
+  pool: z.string().optional(),
+  fav: z.boolean().optional(),
+  favcount: z.number().optional(),
+  source: z.string().optional(),
+  rating: z.string().optional(),
 });
 
 export type Battery = z.infer<typeof BatterySchema>;

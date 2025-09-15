@@ -2,18 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
-import { AppSettings, type Battery } from "@/lib/types";
+import { type Battery } from "@/lib/types";
 import { AlertTriangle } from "lucide-react";
 
-export function RestockSuggestions({ batteries, appSettings }: { batteries: Battery[], appSettings: AppSettings | null }) {
-  const lowStockItems = batteries.filter(
-    (battery) => {
-      const totalQuantity = battery.quantity * battery.packSize;
-      return !battery.discontinued && totalQuantity > 0 && totalQuantity < (appSettings?.lowStockThreshold || 5);
-    }
-  );
-
-  const outOfStockItems = batteries.filter(battery => !battery.discontinued && battery.quantity * battery.packSize === 0);
+export function RestockSuggestions({ lowStockItems, outOfStockItems }: { lowStockItems: Battery[], outOfStockItems: Battery[] }) {
+  
 
   return (
     <Card>
@@ -57,7 +50,7 @@ export function RestockSuggestions({ batteries, appSettings }: { batteries: Batt
                         </span>
                         )
                     </div>
-                    <div className="ml-auto font-bold">{battery.quantity * battery.packSize} restantes</div>
+                    <div className="ml-auto font-bold">{battery.quantity} restantes</div>
                 </div>
             ))}
             </div>

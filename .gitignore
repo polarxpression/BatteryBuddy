@@ -56,3 +56,4 @@ firebase-configuration.json
 *.log
 *.rar
 *.zip
+grok_report.pdf
