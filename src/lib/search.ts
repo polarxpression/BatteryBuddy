@@ -15,54 +15,52 @@ const tokenize = (query: string): string[] => {
 
 // Shunting-yard algorithm to convert infix to postfix (RPN)
 const toPostfix = (tokens: string[]): string[] => {
-  const output: string[] = [];
-  const operators: string[] = [];
-  const precedence: { [key: string]: number } = { 'OR': 1, 'AND': 2 };
+    const precedence: { [key: string]: number } = { 'OR': 1, 'AND': 2 };
+    const output: string[] = [];
+    const operators: string[] = [];
 
-  let lastTokenWasOperand = false;
+    let lastTokenWasOperand = false;
 
-  for (const token of tokens) {
-    if (token.trim() === '') continue;
+    for (const token of tokens) {
+        if (token.trim() === '') continue;
 
-    if (token === '(') {
-      if (lastTokenWasOperand) {
-        while (operators.length > 0 && precedence[operators[operators.length - 1]] >= precedence['AND']) {
-          output.push(operators.pop()!);
+        if (token === '(') {
+            if (lastTokenWasOperand) {
+                operators.push('AND');
+            }
+            operators.push(token);
+            lastTokenWasOperand = false;
+        } else if (token === ')') {
+            while (operators.length && operators[operators.length - 1] !== '(') {
+                output.push(operators.pop()!);
+            }
+            operators.pop(); // Pop '('
+            lastTokenWasOperand = true;
+        } else if (precedence[token.toUpperCase()]) {
+            const op = token.toUpperCase();
+            while (
+                operators.length &&
+                operators[operators.length - 1] !== '(' &&
+                precedence[operators[operators.length - 1]] >= precedence[op]
+            ) {
+                output.push(operators.pop()!);
+            }
+            operators.push(op);
+            lastTokenWasOperand = false;
+        } else { // Operand
+            if (lastTokenWasOperand) {
+                operators.push('AND');
+            }
+            output.push(token);
+            lastTokenWasOperand = true;
         }
-        operators.push('AND');
-      }
-      operators.push(token);
-      lastTokenWasOperand = false;
-    } else if (token === ')') {
-      while (operators.length > 0 && operators[operators.length - 1] !== '(') {
-        output.push(operators.pop()!);
-      }
-      operators.pop(); // Pop '('
-      lastTokenWasOperand = true;
-    } else if (precedence[token.toUpperCase()]) {
-      const op = token.toUpperCase();
-      while (operators.length > 0 && operators[operators.length - 1] !== '(' && precedence[operators[operators.length - 1]] >= precedence[op]) {
-        output.push(operators.pop()!);
-      }
-      operators.push(op);
-      lastTokenWasOperand = false;
-    } else { // Operand
-      if (lastTokenWasOperand) {
-        while (operators.length > 0 && precedence[operators[operators.length - 1]] >= precedence['AND']) {
-          output.push(operators.pop()!);
-        }
-        operators.push('AND');
-      }
-      output.push(token);
-      lastTokenWasOperand = true;
     }
-  }
 
-  while (operators.length > 0) {
-    output.push(operators.pop()!);
-  }
+    while (operators.length) {
+        output.push(operators.pop()!);
+    }
 
-  return output;
+    return output;
 };
 // #endregion
 
@@ -77,7 +75,7 @@ const evaluateTerm = (battery: Battery, term: string): boolean => {
     const searchableFields = ['brand', 'model', 'type', 'barcode', 'location'];
     const result = searchableFields.some(field => {
         const value = battery[field as keyof Battery];
-        return typeof value === 'string' && value.toLowerCase() === exactTerm;
+        return typeof value === 'string' && value.toLowerCase().trim() === exactTerm;
     });
     return result;
   }
@@ -118,16 +116,37 @@ const evaluateFieldSearch = (battery: Battery, field: string, value: string, fuz
 
   let result = false;
 
-  // Date range
-  if (field === 'created_at' || field === 'updated_at' || field === 'lastUsed') {
+  // Date related fields
+  if (field === 'created_at' || field === 'updated_at' || field === 'lastUsed' || field === 'since' || field === 'until_time') {
+    const batteryDate = batteryValue ? new Date(batteryValue as string).getTime() : 0;
+    if (!batteryDate) return false;
+
+    if (field === 'since') {
+        const sinceDate = new Date(valStr).getTime();
+        result = batteryDate >= sinceDate;
+        return negate ? !result : result;
+    }
+
+    if (field === 'until_time') {
+        const untilDate = parseInt(valStr, 10) * 1000; // Assuming unix timestamp in seconds
+        if (!isNaN(untilDate)) {
+            result = batteryDate <= untilDate;
+            return negate ? !result : result;
+        }
+    }
+
     const dateRangeMatch = valStr.match(/^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/);
     if (dateRangeMatch) {
-      const batteryDate = new Date(batteryValue as string).getTime();
       const startDate = new Date(dateRangeMatch[1]).getTime();
       const endDate = new Date(dateRangeMatch[2]).getTime();
       result = batteryDate >= startDate && batteryDate <= endDate;
       return negate ? !result : result;
     }
+  }
+
+  if (field === 'fav') {
+    result = value === 'me' ? battery.fav === true : false;
+    return negate ? !result : result;
   }
 
   if (typeof batteryValue === 'number' && !isNaN(valNum)) {
@@ -140,12 +159,12 @@ const evaluateFieldSearch = (battery: Battery, field: string, value: string, fuz
     }
   } else if (typeof batteryValue === 'string') {
     if (fuzzy) {
-      result = levenshteinDistance(batteryValue.toLowerCase(), valStr.toLowerCase()) <= 2;
+      result = levenshteinDistance(batteryValue.toLowerCase().trim(), valStr.toLowerCase()) <= 2;
     } else if (valStr.includes('*')) {
       const regex = new RegExp(`^${valStr.replace(/\*/g, '.*')}$`, 'i');
-      result = regex.test(batteryValue);
+      result = regex.test(batteryValue.trim());
     } else {
-      result = batteryValue.toLowerCase() === valStr.toLowerCase();
+      result = batteryValue.toLowerCase().trim() === valStr.toLowerCase();
     }
   } else if (typeof batteryValue === 'boolean') {
     result = batteryValue === (valStr === 'true');
@@ -161,7 +180,7 @@ const evaluateGeneralTagSearch = (battery: Battery, term: string, fuzzy: boolean
   if (fuzzy) {
     return searchableFields.some(field => {
       const value = battery[field as keyof Battery];
-      return typeof value === 'string' && levenshteinDistance(value.toLowerCase(), lowerTerm) <= 2;
+      return typeof value === 'string' && levenshteinDistance(value.toLowerCase().trim(), lowerTerm) <= 2;
     });
   }
 
@@ -169,13 +188,13 @@ const evaluateGeneralTagSearch = (battery: Battery, term: string, fuzzy: boolean
     const regex = new RegExp(`^${lowerTerm.replace(/\*/g, '.*')}$`, 'i');
     return searchableFields.some(field => {
       const value = battery[field as keyof Battery];
-      return typeof value === 'string' && regex.test(value);
+      return typeof value === 'string' && regex.test(value.trim());
     });
   }
 
   return searchableFields.some(field => {
     const value = battery[field as keyof Battery];
-    return typeof value === 'string' && value.toLowerCase() === lowerTerm;
+    return typeof value === 'string' && value.toLowerCase().trim() === lowerTerm;
   });
 };
 
@@ -216,6 +235,13 @@ export const filterBatteries = (batteries: Battery[], searchTerm: string): Batte
     };
   }
 
+  // Extract ?random term
+  let random = false;
+  if (searchTerm.includes('?random')) {
+    random = true;
+    searchTerm = searchTerm.replace('?random', '').trim();
+  }
+
   const tokens = tokenize(searchTerm);
   const postfix = toPostfix(tokens);
 
@@ -233,6 +259,14 @@ export const filterBatteries = (batteries: Battery[], searchTerm: string): Batte
       if (aValue > bValue) return order!.direction === 'asc' ? 1 : -1;
       return 0;
     });
+  }
+
+  if (random) {
+    // Shuffle the array
+    for (let i = filtered.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+    }
   }
 
   return filtered;
