@@ -15,7 +15,7 @@ const tokenize = (query: string): string[] => {
 
 // Shunting-yard algorithm to convert infix to postfix (RPN)
 const toPostfix = (tokens: string[]): string[] => {
-    const precedence: { [key: string]: number } = { 'OR': 1, 'AND': 2 };
+    const precedence: { [key: string]: number } = { 'OR': 1, '~': 1, 'AND': 2 };
     const output: string[] = [];
     const operators: string[] = [];
 
@@ -72,7 +72,7 @@ const evaluateTerm = (battery: Battery, term: string): boolean => {
   // Handle quoted exact match
   if (term.startsWith('"') && term.endsWith('"')) {
     const exactTerm = term.substring(1, term.length - 1).toLowerCase();
-    const searchableFields = ['brand', 'model', 'type', 'barcode', 'location'];
+    const searchableFields = ['brand', 'model', 'type', 'barcode', 'location', 'packSize'];
     const result = searchableFields.some(field => {
         const value = battery[field as keyof Battery];
         return typeof value === 'string' && value.toLowerCase().trim() === exactTerm;
@@ -174,7 +174,7 @@ const evaluateFieldSearch = (battery: Battery, field: string, value: string, fuz
 };
 
 const evaluateGeneralTagSearch = (battery: Battery, term: string, fuzzy: boolean): boolean => {
-  const searchableFields = ['brand', 'model', 'type', 'barcode', 'location'];
+  const searchableFields = ['brand', 'model', 'type', 'barcode', 'location', 'packSize'];
   const lowerTerm = term.toLowerCase();
 
   if (fuzzy) {

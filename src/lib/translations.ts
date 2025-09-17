@@ -57,6 +57,8 @@ export const translations = {
   'search:field_updated_at': 'data de atualização',
   'search:field_lastUsed': 'último uso',
   'search:field_fav': 'favorito',
+  'search:find_either_term_tilde': 'O mesmo que OR. Encontra baterias que correspondem a qualquer um dos termos.',
+  'search:field_packSize': 'tamanho do pacote',
 };
 
 export type TranslationKey = keyof typeof translations;

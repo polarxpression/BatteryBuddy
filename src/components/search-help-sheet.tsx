@@ -1,3 +1,4 @@
+
 import {
   Sheet,
   SheetContent,
@@ -54,9 +55,14 @@ export function SearchHelpSheet({ open, onOpenChange }: { open: boolean, onOpenC
                   <td className="border border-gray-300 px-4 py-2"><code>rechargeable OR li-ion</code></td>
                 </tr>
                 <tr>
+                  <td className="border border-gray-300 px-4 py-2"><code>term1 ~ term2</code></td>
+                  <td className="border border-gray-300 px-4 py-2">{t('search:find_either_term_tilde')}</td>
+                  <td className="border border-gray-300 px-4 py-2"><code>rechargeable ~ li-ion</code></td>
+                </tr>
+                <tr>
                   <td className="border border-gray-300 px-4 py-2"><code>(term1 OR term2) AND term3</code></td>
                   <td className="border border-gray-300 px-4 py-2">{t('search:group_conditions')}</td>
-                  <td className="border border-gray-300 px-4 py-2"><code>(eneloop OR duracell) AND AA</code></td>
+                  <td className="border border-gray-300 px-4 py-2"><code>(eneloop ~ duracell) AND AA</code></td>
                 </tr>
               </tbody>
             </table>
@@ -157,6 +163,7 @@ export function SearchHelpSheet({ open, onOpenChange }: { open: boolean, onOpenC
               <li><code>{t('search:field_voltage')}</code> (numeric)</li>
               <li><code>{t('search:field_capacity')}</code> (numeric)</li>
               <li><code>{t('search:field_quantity')}</code> (numeric)</li>
+              <li><code>{t('search:field_packSize')}</code> (numeric)</li>
               <li><code>{t('search:field_chemistry')}</code></li>
               <li><code>{t('search:field_barcode')}</code></li>
               <li><code>{t('search:field_location')}</code></li>
