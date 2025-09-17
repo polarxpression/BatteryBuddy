@@ -89,11 +89,7 @@ export function SearchHelpSheet({ open, onOpenChange }: { open: boolean, onOpenC
                   <td className="border border-gray-300 px-4 py-2">{t('search:exclude_term')}</td>
                   <td className="border border-gray-300 px-4 py-2"><code>-disposable</code></td>
                 </tr>
-                <tr>
-                  <td className="border border-gray-300 px-4 py-2"><code>~term</code></td>
-                  <td className="border border-gray-300 px-4 py-2">{t('search:fuzzy_search')}</td>
-                  <td className="border border-gray-300 px-4 py-2"><code>~battey</code></td>
-                </tr>
+                
                 <tr>
                   <td className="border border-gray-300 px-4 py-2"><code>field:value</code></td>
                   <td className="border border-gray-300 px-4 py-2">{t('search:specific_field')}</td>

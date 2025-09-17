@@ -1,5 +1,4 @@
 import type { Battery } from "./types";
-import { levenshteinDistance } from "./string";
 
 // #region: Parser
 // Simple tokenizer
@@ -9,7 +8,7 @@ const tokenize = (query: string): string[] => {
     if (token.startsWith('"') && token.endsWith('"')) {
       return token;
     }
-    return token.split(/([()])/).filter(Boolean);
+    return token.split(/([()~])/).filter(Boolean);
   });
 };
 
@@ -86,25 +85,19 @@ const evaluateTerm = (battery: Battery, term: string): boolean => {
     term = term.substring(1);
   }
 
-  let fuzzy = false;
-  if (term.startsWith('~')) {
-    fuzzy = true;
-    term = term.substring(1);
-  }
-
   // Field-specific search (e.g., score:>50)
   const fieldMatch = term.match(/^([a-z_]+):(.+)$/);
   if (fieldMatch) {
     const [, field, value] = fieldMatch;
-    return evaluateFieldSearch(battery, field, value, fuzzy, negate);
+    return evaluateFieldSearch(battery, field, value, negate);
   }
 
   // General tag search
-  const result = evaluateGeneralTagSearch(battery, term, fuzzy);
+  const result = evaluateGeneralTagSearch(battery, term);
   return negate ? !result : result;
 };
 
-const evaluateFieldSearch = (battery: Battery, field: string, value: string, fuzzy: boolean, negate: boolean): boolean => {
+const evaluateFieldSearch = (battery: Battery, field: string, value: string, negate: boolean): boolean => {
   const operatorMatch = value.match(/^(>=|<=|>|<|=)?(.+)$/);
   if (!operatorMatch) return false;
 
@@ -158,9 +151,7 @@ const evaluateFieldSearch = (battery: Battery, field: string, value: string, fuz
       case '=': result = batteryValue === valNum; break;
     }
   } else if (typeof batteryValue === 'string') {
-    if (fuzzy) {
-      result = levenshteinDistance(batteryValue.toLowerCase().trim(), valStr.toLowerCase()) <= 2;
-    } else if (valStr.includes('*')) {
+    if (valStr.includes('*')) {
       const regex = new RegExp(`^${valStr.replace(/\*/g, '.*')}$`, 'i');
       result = regex.test(batteryValue.trim());
     } else {
@@ -173,16 +164,9 @@ const evaluateFieldSearch = (battery: Battery, field: string, value: string, fuz
   return negate ? !result : result;
 };
 
-const evaluateGeneralTagSearch = (battery: Battery, term: string, fuzzy: boolean): boolean => {
+const evaluateGeneralTagSearch = (battery: Battery, term: string): boolean => {
   const searchableFields = ['brand', 'model', 'type', 'barcode', 'location', 'packSize'];
   const lowerTerm = term.toLowerCase();
-
-  if (fuzzy) {
-    return searchableFields.some(field => {
-      const value = battery[field as keyof Battery];
-      return typeof value === 'string' && levenshteinDistance(value.toLowerCase().trim(), lowerTerm) <= 2;
-    });
-  }
 
   if (lowerTerm.includes('*')) {
     const regex = new RegExp(`^${lowerTerm.replace(/\*/g, '.*')}$`, 'i');
@@ -206,7 +190,7 @@ const evaluatePostfix = (postfix: string[], battery: Battery): boolean => {
       const right = stack.pop() ?? false;
       const left = stack.pop() ?? false;
       stack.push(left && right);
-    } else if (token === 'OR') {
+    } else if (token === 'OR' || token === '~') {
       const right = stack.pop() ?? false;
       const left = stack.pop() ?? false;
       stack.push(left || right);
