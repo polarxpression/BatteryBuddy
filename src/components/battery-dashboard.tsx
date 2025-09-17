@@ -21,7 +21,7 @@ import { AddEditBatterySheet } from "./add-edit-battery-sheet";
 import { BatteryInventoryTable } from "./battery-inventory-table";
 import { RestockSuggestions } from "./restock-suggestions";
 import { Button } from "./ui/button";
-import { PlusCircle, Settings, Zap, Download } from "lucide-react";
+import { PlusCircle, Settings, Zap, Download, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -49,7 +49,7 @@ import { BatteryReport } from "./battery-report";
 import { AiManager } from "./ai-manager";
 
 import { AiOrb } from "./ai-orb";
-
+import { SearchHelpSheet } from "./search-help-sheet";
 import { filterBatteries } from "@/lib/search";
 
 export function BatteryDashboard() {
@@ -59,6 +59,7 @@ export function BatteryDashboard() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAiManagerOpen, setIsAiManagerOpen] = useState(false);
+  const [isHelpSheetOpen, setIsHelpSheetOpen] = useState(false);
   const [batteryToEdit, setBatteryToEdit] = useState<Battery | null>(null);
   const [batteryToDelete, setBatteryToDelete] = useState<string | null>(null);
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
@@ -368,13 +369,17 @@ export function BatteryDashboard() {
                 <p className="text-muted-foreground">Todas as baterias em sua coleção.</p>
             </CardHeader>
             <CardContent>
-                <div className="mb-4">
+                <div className="mb-4 flex items-center gap-2">
                     <Input 
                         placeholder="Pesquisar..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="max-w-sm"
                     />
+                    <Button variant="outline" size="icon" onClick={() => setIsHelpSheetOpen(true)}>
+                        <HelpCircle className="h-4 w-4" />
+                        <span className="sr-only">Ajuda</span>
+                    </Button>
                 </div>
                 <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
             </CardContent>
@@ -388,6 +393,8 @@ export function BatteryDashboard() {
         onSubmit={handleSubmit}
         appSettings={appSettings}
       />
+
+      <SearchHelpSheet open={isHelpSheetOpen} onOpenChange={setIsHelpSheetOpen} />
 
       <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
       
