@@ -89,7 +89,7 @@ export default function ReportPage() {
           .then(function (dataUrl: string) {
             saveAs(dataUrl, "restock-report.png");
           })
-          .catch(function (error) {
+          .catch(function (error: Error) {
             console.error('oops, something went wrong!', error);
           });
       }
