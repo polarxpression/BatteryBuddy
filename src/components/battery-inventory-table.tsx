@@ -82,7 +82,17 @@ export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityC
                     batteries.map((battery) => (
                     <TableRow key={battery.id}>
                         <TableCell className="hidden sm:table-cell">
-                            <BatteryIcon type={battery.type} className="h-8 w-8 text-muted-foreground" />
+                            {battery.imageUrl ? (
+                                <div className="h-8 w-8 overflow-hidden rounded-lg">
+                                    <img 
+                                        src={battery.imageUrl} 
+                                        alt={`${battery.brand} ${battery.model}`} 
+                                        className="h-full w-full object-cover"
+                                    />
+                                </div>
+                            ) : (
+                                <BatteryIcon type={battery.type} className="h-8 w-8 text-muted-foreground" />
+                            )}
                         </TableCell>
                         <TableCell className="font-medium">
                             <div className="font-bold">{battery.brand}</div>

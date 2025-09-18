@@ -51,7 +51,17 @@ export function BatteryInventoryTableMobile({ batteries, onEdit, onDelete, onQua
                     <Collapsible key={battery.id} open={openCollapsibles.includes(battery.id)} onOpenChange={() => toggleCollapsible(battery.id)} className="border-b">
                         <div className="flex items-center justify-between p-4">
                             <div className="flex items-center gap-4">
-                                <BatteryIcon type={battery.type} className="h-8 w-8 text-muted-foreground" />
+                                {battery.imageUrl ? (
+                                    <div className="h-8 w-8 overflow-hidden rounded-lg">
+                                        <img 
+                                            src={battery.imageUrl} 
+                                            alt={`${battery.brand} ${battery.model}`} 
+                                            className="h-full w-full object-cover"
+                                        />
+                                    </div>
+                                ) : (
+                                    <BatteryIcon type={battery.type} className="h-8 w-8 text-muted-foreground" />
+                                )}
                                 <div className="font-medium">
                                     <div className="font-bold">{battery.brand}</div>
                                     <div className="text-sm">{battery.model}</div>
