@@ -8,36 +8,66 @@ import { useToast } from "@/hooks/use-toast";
 import { X } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { onAppSettingsSnapshot, updateAppSettings, db } from "@/lib/firebase";
+import { AppSettings } from "@/lib/types";
+import { updateAppSettings, db } from "@/lib/firebase";
 import { doc, updateDoc, deleteField } from "firebase/firestore";
 
 interface SettingsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  appSettings: AppSettings | null;
 }
 
-export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
+export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModalProps) {
   const { toast } = useToast();
   const [newType, setNewType] = useState("");
   const [newPackSize, setNewPackSize] = useState("");
   const [newBrand, setNewBrand] = useState("");
+
   const [newModel, setNewModel] = useState("");
   const [types, setTypes] = useState<Record<string, string>>({});
   const [sizes, setSizes] = useState<Record<string, number>>({});
   const [brands, setBrands] = useState<Record<string, string>>({});
   const [models, setModels] = useState<Record<string, string>>({});
+  const [lowStockThreshold, setLowStockThreshold] = useState(appSettings?.lowStockThreshold || 5);
 
   useEffect(() => {
-    const unsubscribe = onAppSettingsSnapshot((settings) => {
-      if (settings) {
-        setTypes(settings.batteryTypes || {});
-        setSizes(settings.packSizes || {});
-        setBrands(settings.batteryBrands || {});
-        setModels(settings.batteryModels || {});
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+    if (appSettings) {
+      setTypes(appSettings.batteryTypes || {});
+      setSizes(appSettings.packSizes || {});
+      setBrands(appSettings.batteryBrands || {});
+      setModels(appSettings.batteryModels || {});
+      setLowStockThreshold(appSettings.lowStockThreshold || 5);
+    }
+  }, [appSettings]);
+
+
+
+  const handleUpdateLowStockThreshold = async () => {
+    const newThresholdString = (document.getElementById('lowStockThresholdInput') as HTMLInputElement).value;
+    const newThreshold = parseInt(newThresholdString, 10);
+
+    if (isNaN(newThreshold) || newThreshold < 0) {
+      toast({
+        title: "Erro",
+        description: "Por favor, insira um número válido e não negativo para o nível de estoque baixo.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await updateAppSettings({ lowStockThreshold: newThreshold });
+      toast({ title: "Sucesso!", description: `Nível de estoque baixo atualizado para ${newThreshold}.` });
+    } catch (error) {
+      console.error("Failed to update low stock threshold:", error);
+      toast({
+        title: "Erro",
+        description: "Falha ao atualizar o nível de estoque baixo. Verifique o console para mais detalhes.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleAddType = async () => {
     if (newType && !types[newType]) {
@@ -263,6 +293,25 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   className="flex-grow"
                 />
                 <Button onClick={handleAddModel} className="shrink-0">Adicionar</Button>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Nível de Estoque Baixo</CardTitle>
+              <CardDescription>Defina o limite para alerta de estoque baixo.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="flex gap-2">
+                <Input
+                  id="lowStockThresholdInput"
+                  value={lowStockThreshold}
+                  onChange={(e) => setLowStockThreshold(parseInt(e.target.value, 10))}
+                  type="number"
+                  placeholder="Limite de estoque baixo"
+                  className="flex-grow"
+                />
+                <Button onClick={handleUpdateLowStockThreshold} className="shrink-0">Salvar</Button>
               </div>
             </CardContent>
           </Card>

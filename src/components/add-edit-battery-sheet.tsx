@@ -37,7 +37,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { storage } from "@/lib/firebase";
 import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
-import { AppSettings, Battery, BatterySchema } from "@/lib/types";
+import { Battery, BatterySchema } from "@/lib/types";
 
 const AddEditBatterySheetSchema = z.object({
   id: z.string(),
@@ -53,17 +53,19 @@ const AddEditBatterySheetSchema = z.object({
 });
 
 
+import { useAppSettings } from "@/contexts/app-settings-context";
+
 interface AddEditBatterySheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   batteryToEdit?: Battery | null;
   onSubmit: (data: Battery) => void;
-  appSettings: AppSettings | null;
 }
 
 type Type = z.infer<typeof AddEditBatterySheetSchema>
 
-export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmit, appSettings }: AddEditBatterySheetProps) {
+export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmit }: AddEditBatterySheetProps) {
+  const { appSettings } = useAppSettings();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 

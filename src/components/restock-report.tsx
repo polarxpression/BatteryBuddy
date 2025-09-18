@@ -1,22 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { AppSettings, Battery } from "@/lib/types";
+import { Battery } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 
 import { forwardRef } from "react";
 
+import { useAppSettings } from "@/contexts/app-settings-context";
+
 interface RestockReportProps {
-  lowStockItems: Battery[];
-  outOfStockItems: Battery[];
-  appSettings: AppSettings | null;
+  itemsForExternalPurchase: Battery[];
   layout?: 'grid' | 'single';
   onExport: (format: 'image' | 'pdf' | 'csv') => Promise<void>;
 }
 
-export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ lowStockItems, outOfStockItems, appSettings, layout = 'grid', onExport }, ref) => {
-  const itemsToRestock = [...outOfStockItems, ...lowStockItems];
+export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ itemsForExternalPurchase, layout = 'grid', onExport }, ref) => {
+  const { appSettings } = useAppSettings();
 
   return (
     <div className="bg-gray-50 p-4 sm:p-6 md:p-8 light" ref={ref}>
@@ -34,7 +34,7 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ l
             ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'
             : 'flex flex-col gap-4'
         }`}>
-          {itemsToRestock.map((battery) => (
+          {itemsForExternalPurchase.map((battery) => (
             <Card key={battery.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out rounded-lg">
               <CardHeader className="p-0">
                 <Image
@@ -52,7 +52,7 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ l
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <p className="text-sm text-gray-500">Quantidade Necessária:</p>
                   <p className="text-2xl font-bold text-red-600">
-                    {Math.max(0, Math.ceil(((appSettings?.lowStockThreshold || 5) * 2) / battery.packSize) - battery.quantity)}
+                    {Math.max(0, (appSettings?.lowStockThreshold || 5) - battery.quantity)}
                   </p>
                 </div>
               </CardContent>

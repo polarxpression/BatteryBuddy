@@ -9,13 +9,12 @@ import {
   deleteBattery,
   onBatteriesSnapshot,
   updateBattery,
-  onAppSettingsSnapshot,
   saveDailyBatteryRecord,
   getDailyBatteryRecords,
   calculateAndSaveWeeklyAverage,
   calculateAndSaveMonthlyAverage,
 } from "@/lib/firebase";
-import type { Battery, AppSettings } from "@/lib/types";
+import type { Battery } from "@/lib/types";
 
 import { AddEditBatterySheet } from "./add-edit-battery-sheet";
 import { BatteryInventoryTable } from "./battery-inventory-table";
@@ -51,6 +50,9 @@ import { AiManager } from "./ai-manager";
 import { AiOrb } from "./ai-orb";
 import { SearchHelpSheet } from "./search-help-sheet";
 import { filterBatteries } from "@/lib/search";
+import { getAggregatedBatteryQuantities, getAggregatedQuantitiesByLocation } from "@/lib/utils";
+
+import { useAppSettings } from "@/contexts/app-settings-context";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
@@ -62,17 +64,48 @@ export function BatteryDashboard() {
   const [isHelpSheetOpen, setIsHelpSheetOpen] = useState(false);
   const [batteryToEdit, setBatteryToEdit] = useState<Battery | null>(null);
   const [batteryToDelete, setBatteryToDelete] = useState<string | null>(null);
-  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+  const { appSettings } = useAppSettings();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const lowStockItems = useMemo(() => batteries.filter(
-    (battery) => {
-      const totalQuantity = battery.quantity * battery.packSize;
-      return battery.location === "gondola" && !battery.discontinued && totalQuantity > 0 && totalQuantity < (appSettings?.lowStockThreshold || 5);
-    }
-  ), [batteries, appSettings]);
+  const aggregatedQuantitiesByLocation = useMemo(() => getAggregatedQuantitiesByLocation(batteries), [batteries]);
 
-  const outOfStockItems = useMemo(() => batteries.filter(battery => battery.location === "gondola" && !battery.discontinued && battery.quantity * battery.packSize === 0), [batteries]);
+  const { itemsForInternalRestock, itemsForExternalPurchase } = useMemo(() => {
+    const lowStockThreshold = appSettings?.lowStockThreshold || 5;
+    const internalRestock: Battery[] = [];
+    const externalPurchase: Battery[] = [];
+
+    const uniqueBatteryTypes = new Map<string, Battery>();
+    batteries.forEach(battery => {
+      const key = `${battery.brand}-${battery.model}-${battery.type}-${battery.packSize}`;
+      if (!uniqueBatteryTypes.has(key)) {
+        uniqueBatteryTypes.set(key, battery);
+      }
+    });
+
+    uniqueBatteryTypes.forEach(battery => {
+      const key = `${battery.brand}-${battery.model}-${battery.type}-${battery.packSize}`;
+      const quantities = aggregatedQuantitiesByLocation.get(key);
+      const gondolaQuantity = quantities?.get("gondola") || 0;
+      const stockQuantity = quantities?.get("stock") || 0;
+      const totalQuantity = gondolaQuantity + stockQuantity;
+
+      if (battery.discontinued) return; // Skip discontinued batteries
+
+      // Determine items for internal restock (gondola is low, stock has enough)
+      if (gondolaQuantity < lowStockThreshold && stockQuantity > 0) {
+        const neededInGondola = lowStockThreshold - gondolaQuantity;
+        const canMove = Math.min(neededInGondola, stockQuantity);
+        internalRestock.push({ ...battery, quantity: canMove, location: "stock" }); // Representing quantity to move
+      }
+
+      // Determine items for external purchase (overall low stock or out of stock)
+      if (totalQuantity <= lowStockThreshold) {
+        externalPurchase.push({ ...battery, quantity: totalQuantity });
+      }
+    });
+
+    return { itemsForInternalRestock: internalRestock, itemsForExternalPurchase: externalPurchase };
+  }, [batteries, appSettings, aggregatedQuantitiesByLocation]);
 
   useEffect(() => {
     const unsubscribe = onBatteriesSnapshot((newBatteries) => {
@@ -86,10 +119,7 @@ export function BatteryDashboard() {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const unsubscribe = onAppSettingsSnapshot(setAppSettings);
-    return () => unsubscribe();
-  }, []);
+
 
   useEffect(() => {
     const saveRecord = async () => {
@@ -377,9 +407,9 @@ export function BatteryDashboard() {
                     <p className="text-xs text-muted-foreground">em {batteryTypesCount} tipos</p>
                 </CardContent>
             </Card>
-                        <RestockSuggestions lowStockItems={lowStockItems} outOfStockItems={outOfStockItems} batteries={batteries} />
+                        <RestockSuggestions itemsForInternalRestock={itemsForInternalRestock} />
         </div>
-        <InventorySummary batteries={filteredBatteries} appSettings={appSettings} />
+        <InventorySummary batteries={filteredBatteries} />
         
         <BatteryReport onGenerateReport={handleGenerateReportFromModal} onGenerateSuggestion={handleGenerateSuggestion} onGenerateAIReport={handleGenerateAIReport} brands={brands} packSizes={packSizes} />
 
@@ -401,7 +431,7 @@ export function BatteryDashboard() {
                         <span className="sr-only">Ajuda</span>
                     </Button>
                 </div>
-                <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
+                <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} appSettings={appSettings} />
             </CardContent>
         </Card>
       </main>
@@ -411,12 +441,11 @@ export function BatteryDashboard() {
         onOpenChange={setIsSheetOpen}
         batteryToEdit={batteryToEdit}
         onSubmit={handleSubmit}
-        appSettings={appSettings}
       />
 
       <SearchHelpSheet open={isHelpSheetOpen} onOpenChange={setIsHelpSheetOpen} />
 
-      <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
+      <SettingsModal key={JSON.stringify(appSettings)} open={isSettingsOpen} onOpenChange={setIsSettingsOpen} appSettings={appSettings} />
       
       <AlertDialog open={!!batteryToDelete} onOpenChange={() => setBatteryToDelete(null)}>
         <AlertDialogContent>

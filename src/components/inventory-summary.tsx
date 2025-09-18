@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { type Battery, type AppSettings } from "@/lib/types";
+import { type Battery } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -12,12 +12,14 @@ import {
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import { useMobile } from "@/hooks/use-mobile";
 
+import { useAppSettings } from "@/contexts/app-settings-context";
+
 interface InventorySummaryProps {
   batteries: Battery[];
-  appSettings: AppSettings | null;
 }
 
-export function InventorySummary({ batteries, appSettings }: InventorySummaryProps) {
+export function InventorySummary({ batteries }: InventorySummaryProps) {
+  const { appSettings } = useAppSettings();
   const isMobile = useMobile();
   const { data, chartConfig } = useMemo(() => {
     const typeMap = new Map<string, { total: number; quantity: number }>();

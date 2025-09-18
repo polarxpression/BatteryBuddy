@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Plus, Minus } from "lucide-react";
 import { BatteryIcon } from "./icons/battery-icon";
-import { type Battery } from "@/lib/types";
+import { type Battery, type AppSettings } from "@/lib/types";
 import { Badge } from "./ui/badge";
 import { EditableQuantity } from "./ui/editable-quantity";
 import {
@@ -34,6 +34,7 @@ interface BatteryInventoryTableProps {
     onEdit: (battery: Battery) => void;
     onDelete: (id: string) => void;
     onQuantityChange: (id: string, newQuantity: number) => void;
+    appSettings: AppSettings | null;
 }
 
 const locationTranslation: { [key: string]: string } = {
@@ -41,13 +42,14 @@ const locationTranslation: { [key: string]: string } = {
     stock: "Estoque",
 };
 
-export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityChange }: BatteryInventoryTableProps) {
+export function BatteryInventoryTable({ batteries, onEdit, onDelete, onQuantityChange, appSettings }: BatteryInventoryTableProps) {
     const isMobile = useMobile();
     
 
     const getQuantityBadgeVariant = (quantity: number): "default" | "destructive" | "secondary" => {
+        const lowStockThreshold = appSettings?.lowStockThreshold || 5;
         if (quantity === 0) return "destructive";
-        if (quantity < 5) return "secondary";
+        if (quantity <= lowStockThreshold) return "secondary";
         return "default";
     };
 

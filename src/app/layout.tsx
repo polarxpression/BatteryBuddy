@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   description: 'An app to manage your battery storage',
 };
 
+import { AppSettingsProvider } from "@/contexts/app-settings-context";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -19,10 +21,16 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`font-sans ${inter.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <AppSettingsProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+          >
             {children}
             <Toaster />
-        </ThemeProvider>
+          </ThemeProvider>
+        </AppSettingsProvider>
       </body>
     </html>
   );

@@ -65,7 +65,13 @@ export const getAppSettings = async (): Promise<AppSettings | null> => {
 }
 
 export const updateAppSettings = async (settings: Partial<AppSettings>) => {
-    await setDoc(settingsDoc, settings, { merge: true });
+    try {
+        await setDoc(settingsDoc, settings, { merge: true });
+        console.log("App settings updated successfully.", settings);
+    } catch (error) {
+        console.error("Error updating app settings:", error);
+        throw error; // Re-throw to be caught by the caller
+    }
 }
 
 export const onAppSettingsSnapshot = (callback: (settings: AppSettings | null) => void) => {

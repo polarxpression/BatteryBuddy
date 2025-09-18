@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef } from "react";
-import { AppSettings, Battery } from "@/lib/types";
-import { onBatteriesSnapshot, onAppSettingsSnapshot } from "@/lib/firebase";
+import { Battery } from "@/lib/types";
+import { onBatteriesSnapshot } from "@/lib/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import dynamic from "next/dynamic";
 import { saveAs } from "file-saver";
 import domtoimage from 'dom-to-image-more';
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { getAggregatedQuantitiesByLocation } from "@/lib/utils";
 
 const RestockReport = dynamic(() => import("@/components/restock-report").then(mod => mod.RestockReport), {
   ssr: false,
@@ -26,9 +27,11 @@ const RestockReport = dynamic(() => import("@/components/restock-report").then(m
   ),
 });
 
+import { useAppSettings } from "@/contexts/app-settings-context";
+
 export default function ReportPage() {
   const [batteries, setBatteries] = useState<Battery[]>([]);
-  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+  const { appSettings } = useAppSettings();
   const [isLoading, setIsLoading] = useState(true);
   const [layout, setLayout] = useState<'grid' | 'single'>('grid');
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -46,13 +49,10 @@ export default function ReportPage() {
       setBatteries(newBatteries);
       setIsLoading(false);
     });
-    const unsubscribeAppSettings = onAppSettingsSnapshot((settings) => {
-      setAppSettings(settings);
-    });
+
 
     return () => {
       unsubscribeBatteries();
-      unsubscribeAppSettings();
     };
   }, []);
 
@@ -101,13 +101,13 @@ export default function ReportPage() {
     } else if (format === 'csv') {
       const csvContent = [
         ['Brand', 'Model', 'Type', 'Pack Size', 'Current Quantity', 'Restock Amount Needed'].join(','),
-        ...lowStockItems.map(battery => [
+        ...itemsForExternalPurchase.map(battery => [
           battery.brand,
           battery.model,
           battery.type,
           battery.packSize,
           battery.quantity,
-          Math.max(0, Math.ceil(((appSettings?.lowStockThreshold || 5) * 2) / battery.packSize) - battery.quantity)
+          Math.max(0, (appSettings?.lowStockThreshold || 5) - battery.quantity)
         ].join(','))
       ].join('\n');
 
@@ -132,19 +132,37 @@ export default function ReportPage() {
     });
   }, [batteries, selectedBrands, selectedPackSizes]);
 
-  const lowStockItems = useMemo(() => {
-    if (!appSettings) return [];
-    return filteredBatteries.filter(
-      (battery) => {
-        const totalQuantity = battery.quantity * battery.packSize;
-        return !battery.discontinued && totalQuantity > 0 && totalQuantity < (appSettings.lowStockThreshold || 5);
-      }
-    );
-  }, [filteredBatteries, appSettings]);
+  const aggregatedQuantitiesByLocation = useMemo(() => getAggregatedQuantitiesByLocation(filteredBatteries), [filteredBatteries]);
 
-  const outOfStockItems = useMemo(() => {
-    return filteredBatteries.filter(battery => !battery.discontinued && battery.quantity * battery.packSize === 0);
-  }, [filteredBatteries]);
+  const itemsForExternalPurchase = useMemo(() => {
+    const lowStockThreshold = appSettings?.lowStockThreshold || 5;
+    const externalPurchase: Battery[] = [];
+
+    const uniqueBatteryTypes = new Map<string, Battery>();
+    filteredBatteries.forEach(battery => {
+      const key = `${battery.brand}-${battery.model}-${battery.type}-${battery.packSize}`;
+      if (!uniqueBatteryTypes.has(key)) {
+        uniqueBatteryTypes.set(key, battery);
+      }
+    });
+
+    uniqueBatteryTypes.forEach(battery => {
+      const key = `${battery.brand}-${battery.model}-${battery.type}-${battery.packSize}`;
+      const quantities = aggregatedQuantitiesByLocation.get(key);
+      const gondolaQuantity = quantities?.get("gondola") || 0;
+      const stockQuantity = quantities?.get("stock") || 0;
+      const totalQuantity = gondolaQuantity + stockQuantity;
+
+      if (battery.discontinued) return; // Skip discontinued batteries
+
+      // Determine items for external purchase (overall low stock or out of stock)
+      if (totalQuantity <= lowStockThreshold) {
+        externalPurchase.push({ ...battery, quantity: totalQuantity });
+      }
+    });
+
+    return externalPurchase;
+  }, [filteredBatteries, appSettings, aggregatedQuantitiesByLocation]);
 
   if (isLoading) {
     return (
@@ -165,9 +183,7 @@ export default function ReportPage() {
     <ThemeProvider forcedTheme="light">
       <RestockReport
         ref={reportRef}
-        lowStockItems={lowStockItems}
-        outOfStockItems={outOfStockItems}
-        appSettings={appSettings}
+        itemsForExternalPurchase={itemsForExternalPurchase}
         layout={layout}
         onExport={handleExport}
       />
