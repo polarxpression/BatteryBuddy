@@ -26,8 +26,19 @@ export default function ReportPage() {
   const [batteries, setBatteries] = useState<Battery[]>([]);
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [format, setFormat] = useState<string>('image');
+  const [layout, setLayout] = useState<string>('grid');
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedPackSizes, setSelectedPackSizes] = useState<string[]>([]);
 
   useEffect(() => {
+    // Get URL parameters
+    const params = new URLSearchParams(window.location.search);
+    setFormat(params.get('format') || 'image');
+    setLayout(params.get('layout') || 'grid');
+    setSelectedBrands(params.get('brands')?.split(',') || []);
+    setSelectedPackSizes(params.get('packSizes')?.split(',') || []);
+
     const unsubscribeBatteries = onBatteriesSnapshot((newBatteries) => {
       setBatteries(newBatteries);
       setIsLoading(false);
@@ -42,19 +53,31 @@ export default function ReportPage() {
     };
   }, []);
 
+  const filteredBatteries = useMemo(() => {
+    return batteries.filter(battery => {
+      if (selectedBrands.length > 0 && !selectedBrands.includes(battery.brand)) {
+        return false;
+      }
+      if (selectedPackSizes.length > 0 && !selectedPackSizes.includes(battery.packSize.toString())) {
+        return false;
+      }
+      return true;
+    });
+  }, [batteries, selectedBrands, selectedPackSizes]);
+
   const lowStockItems = useMemo(() => {
     if (!appSettings) return [];
-    return batteries.filter(
+    return filteredBatteries.filter(
       (battery) => {
         const totalQuantity = battery.quantity * battery.packSize;
         return !battery.discontinued && totalQuantity > 0 && totalQuantity < (appSettings.lowStockThreshold || 5);
       }
     );
-  }, [batteries, appSettings]);
+  }, [filteredBatteries, appSettings]);
 
   const outOfStockItems = useMemo(() => {
-    return batteries.filter(battery => !battery.discontinued && battery.quantity * battery.packSize === 0);
-  }, [batteries]);
+    return filteredBatteries.filter(battery => !battery.discontinued && battery.quantity * battery.packSize === 0);
+  }, [filteredBatteries]);
 
   if (isLoading) {
     return (
@@ -76,6 +99,8 @@ export default function ReportPage() {
       lowStockItems={lowStockItems}
       outOfStockItems={outOfStockItems}
       appSettings={appSettings}
+      layout={layout}
+      format={format}
     />
   );
 }

@@ -299,11 +299,29 @@ export function BatteryDashboard() {
     }
   };
 
-  const handleGenerateReport = () => {
-    localStorage.setItem("lowStockItems", JSON.stringify(lowStockItems));
-    localStorage.setItem("outOfStockItems", JSON.stringify(outOfStockItems));
-    localStorage.setItem("appSettings", JSON.stringify(appSettings));
-    window.open("/report", "_blank");
+  const handleGenerateReportForAI = (outputType: "print" | "download", reportContent?: string) => {
+    if (outputType === 'print') {
+        const printWindow = window.open('', '_blank');
+        printWindow?.document.write(reportContent || '');
+        printWindow?.document.close();
+        printWindow?.print();
+    } else {
+        const blob = new Blob([reportContent || ''], { type: 'text/html' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'report.html';
+        link.click();
+    }
+  };
+
+  const handleGenerateReportFromModal = (options: { format: string; layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => {
+    console.log("Generating report with options:", options);
+    const searchParams = new URLSearchParams();
+    searchParams.append('format', options.format);
+    searchParams.append('layout', options.layout);
+    searchParams.append('brands', options.selectedBrands.join(','));
+    searchParams.append('packSizes', options.selectedPackSizes.join(','));
+    window.open(`/report?${searchParams.toString()}`, "_blank");
   };
 
   const handleGenerateSuggestion = () => {
@@ -321,6 +339,9 @@ export function BatteryDashboard() {
   const totalBatteries = filteredBatteries.reduce((acc, b) => acc + b.quantity, 0);
   const batteryTypesCount = new Set(filteredBatteries.map(b => b.type)).size;
 
+
+  const brands = useMemo(() => Array.from(new Set(batteries.map(b => b.brand))), [batteries]);
+  const packSizes = useMemo(() => Array.from(new Set(batteries.map(b => b.packSize.toString()))), [batteries]);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -357,11 +378,11 @@ export function BatteryDashboard() {
                     <p className="text-xs text-muted-foreground">em {batteryTypesCount} tipos</p>
                 </CardContent>
             </Card>
-                        <RestockSuggestions lowStockItems={lowStockItems} outOfStockItems={outOfStockItems} />
+                        <RestockSuggestions lowStockItems={lowStockItems} outOfStockItems={outOfStockItems} batteries={batteries} />
         </div>
         <InventorySummary batteries={filteredBatteries} appSettings={appSettings} />
         
-        <BatteryReport onGenerateReport={handleGenerateReport} onGenerateSuggestion={handleGenerateSuggestion} onGenerateAIReport={handleGenerateAIReport} />
+        <BatteryReport onGenerateReport={handleGenerateReportFromModal} onGenerateSuggestion={handleGenerateSuggestion} onGenerateAIReport={handleGenerateAIReport} brands={brands} packSizes={packSizes} />
 
         <Card>
             <CardHeader>
@@ -422,7 +443,7 @@ export function BatteryDashboard() {
             addBattery={handleSubmit}
             updateBatteryQuantity={updateBatteryQuantity}
             handleExport={handleExport}
-            handleGenerateReport={handleGenerateReport}
+            handleGenerateReport={handleGenerateReportForAI}
             batteries={filteredBatteries}
             initialPrompt={aiManagerInitialPrompt}
             onInitialPromptSent={handleClearInitialPrompt}

@@ -44,21 +44,9 @@ export const translations = {
   'search:random_results': 'Obtém um conjunto aleatório de resultados.',
   'search:available_fields': 'Campos Disponíveis',
   'search:available_fields_desc': 'Você pode usar os seguintes campos para pesquisas específicas de campo:',
-  'search:field_brand': 'marca',
-  'search:field_model': 'modelo',
-  'search:field_type': 'tipo',
-  'search:field_voltage': 'voltagem',
-  'search:field_capacity': 'capacidade',
-  'search:field_quantity': 'quantidade',
-  'search:field_chemistry': 'química',
-  'search:field_barcode': 'código de barras',
-  'search:field_location': 'localização',
-  'search:field_created_at': 'data de criação',
-  'search:field_updated_at': 'data de atualização',
-  'search:field_lastUsed': 'último uso',
-  'search:field_fav': 'favorito',
+  
   'search:find_either_term_tilde': 'O mesmo que OR. Encontra baterias que correspondem a qualquer um dos termos.',
-  'search:field_packSize': 'tamanho do pacote',
+  
 };
 
 export type TranslationKey = keyof typeof translations;

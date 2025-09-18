@@ -71,12 +71,11 @@ const evaluateTerm = (battery: Battery, term: string): boolean => {
   // Handle quoted exact match
   if (term.startsWith('"') && term.endsWith('"')) {
     const exactTerm = term.substring(1, term.length - 1).toLowerCase();
-    const searchableFields = ['brand', 'model', 'type', 'barcode', 'location', 'packSize'];
-    const result = searchableFields.some(field => {
+    const searchableFields = ['brand', 'model', 'type', 'barcode', 'location']; // MODIFIED HERE
+    return searchableFields.some(field => {
         const value = battery[field as keyof Battery];
         return typeof value === 'string' && value.toLowerCase().trim() === exactTerm;
     });
-    return result;
   }
 
   let negate = false;
@@ -142,6 +141,21 @@ const evaluateFieldSearch = (battery: Battery, field: string, value: string, neg
     return negate ? !result : result;
   }
 
+  if (field === 'packSize') {
+    const packSize = battery.packSize;
+    if (typeof packSize === 'number' && !isNaN(valNum)) {
+      switch (operator) {
+        case '>=': result = packSize >= valNum; break;
+        case '<=': result = packSize <= valNum; break;
+        case '>': result = packSize > valNum; break;
+        case '<': result = packSize < valNum; break;
+        case '=': result = packSize === valNum; break;
+        default: result = packSize === valNum; break;
+      }
+    }
+    return negate ? !result : result;
+  }
+
   if (typeof batteryValue === 'number' && !isNaN(valNum)) {
     switch (operator) {
       case '>=': result = batteryValue >= valNum; break;
@@ -165,8 +179,10 @@ const evaluateFieldSearch = (battery: Battery, field: string, value: string, neg
 };
 
 const evaluateGeneralTagSearch = (battery: Battery, term: string): boolean => {
-  const searchableFields = ['brand', 'model', 'type', 'barcode', 'location', 'packSize'];
+  const searchableFields = ['brand', 'model', 'type', 'barcode', 'location'];
   const lowerTerm = term.toLowerCase();
+
+  // REMOVED packSize check from here
 
   if (lowerTerm.includes('*')) {
     const regex = new RegExp(`^${lowerTerm.replace(/\*/g, '.*')}$`, 'i');
@@ -178,7 +194,7 @@ const evaluateGeneralTagSearch = (battery: Battery, term: string): boolean => {
 
   return searchableFields.some(field => {
     const value = battery[field as keyof Battery];
-    return typeof value === 'string' && value.toLowerCase().trim() === lowerTerm;
+    return typeof value === 'string' && value.toLowerCase().trim().includes(lowerTerm);
   });
 };
 

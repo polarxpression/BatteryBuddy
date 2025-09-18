@@ -153,20 +153,20 @@ export function SearchHelpSheet({ open, onOpenChange }: { open: boolean, onOpenC
             <h3 className="font-semibold text-lg mb-2">{t('search:available_fields')}</h3>
             <p>{t('search:available_fields_desc')}</p>
             <ul className="list-disc list-inside mt-2">
-              <li><code>{t('search:field_brand')}</code></li>
-              <li><code>{t('search:field_model')}</code></li>
-              <li><code>{t('search:field_type')}</code></li>
-              <li><code>{t('search:field_voltage')}</code> (numeric)</li>
-              <li><code>{t('search:field_capacity')}</code> (numeric)</li>
-              <li><code>{t('search:field_quantity')}</code> (numeric)</li>
-              <li><code>{t('search:field_packSize')}</code> (numeric)</li>
-              <li><code>{t('search:field_chemistry')}</code></li>
-              <li><code>{t('search:field_barcode')}</code></li>
-              <li><code>{t('search:field_location')}</code></li>
-              <li><code>{t('search:field_created_at')}</code> (date)</li>
-              <li><code>{t('search:field_updated_at')}</code> (date)</li>
-              <li><code>{t('search:field_lastUsed')}</code> (date)</li>
-              <li><code>{t('search:field_fav')}</code> (boolean, use <code>fav:me</code>)</li>
+              <li><code>brand</code></li>
+              <li><code>model</code></li>
+              <li><code>type</code></li>
+              <li><code>voltage</code> (numeric)</li>
+              <li><code>capacity</code> (numeric)</li>
+              <li><code>quantity</code> (numeric)</li>
+              <li><code>packSize</code> (numeric)</li>
+              <li><code>chemistry</code></li>
+              <li><code>barcode</code></li>
+              <li><code>location</code></li>
+              <li><code>created_at</code> (date)</li>
+              <li><code>updated_at</code> (date)</li>
+              <li><code>lastUsed</code> (date)</li>
+              <li><code>fav</code> (boolean, use <code>fav:me</code>)</li>
             </ul>
           </div>
         </div>
