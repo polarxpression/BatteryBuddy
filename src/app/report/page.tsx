@@ -26,16 +26,16 @@ export default function ReportPage() {
   const [batteries, setBatteries] = useState<Battery[]>([]);
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [format, setFormat] = useState<string>('image');
-  const [layout, setLayout] = useState<string>('grid');
+  const [format, setFormat] = useState<'image' | 'pdf' | 'csv'>('image');
+  const [layout, setLayout] = useState<'grid' | 'single'>('grid');
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedPackSizes, setSelectedPackSizes] = useState<string[]>([]);
 
   useEffect(() => {
     // Get URL parameters
     const params = new URLSearchParams(window.location.search);
-    setFormat(params.get('format') || 'image');
-    setLayout(params.get('layout') || 'grid');
+    setFormat(params.get('format') as 'image' | 'pdf' | 'csv' || 'image');
+    setLayout(params.get('layout') as 'grid' | 'single' || 'grid');
     setSelectedBrands(params.get('brands')?.split(',') || []);
     setSelectedPackSizes(params.get('packSizes')?.split(',') || []);
 
