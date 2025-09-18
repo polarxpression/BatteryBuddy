@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GenerateReportModal } from "./generate-report-modal";
 
 interface BatteryReportProps {
-  onGenerateReport: (options: { format: string; layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => void;
+  onGenerateReport: (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => void;
   onGenerateSuggestion: () => void;
   onGenerateAIReport: () => void;
   brands: string[];
@@ -16,7 +16,7 @@ interface BatteryReportProps {
 export function BatteryReport({ onGenerateReport, onGenerateSuggestion, onGenerateAIReport, brands, packSizes }: BatteryReportProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleGenerateReport = (options: { format: string; layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => {
+  const handleGenerateReport = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => {
     onGenerateReport(options);
     setIsModalOpen(false);
   };

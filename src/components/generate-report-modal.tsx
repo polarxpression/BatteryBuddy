@@ -15,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface GenerateReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onGenerate: (options: { format: string; layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => void;
+  onGenerate: (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => void;
   brands: string[];
   packSizes: string[];
 }
@@ -27,17 +27,10 @@ export function GenerateReportModal({
   brands,
   packSizes,
 }: GenerateReportModalProps) {
-  const [format, setFormat] = useState("image");
   const [layout, setLayout] = useState("grid");
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedPackSizes, setSelectedPackSizes] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-
-  const formatOptions = [
-    { value: "image", label: "Imagem" },
-    { value: "pdf", label: "PDF" },
-    { value: "csv", label: "CSV" },
-  ];
 
   const layoutOptions = [
     { value: "grid", label: "Grade" },
@@ -47,7 +40,6 @@ export function GenerateReportModal({
   // Reset form state when modal is closed
   useEffect(() => {
     if (!isOpen) {
-      setFormat("image");
       setLayout("grid");
       setSelectedBrands([]);
       setSelectedPackSizes([]);
@@ -69,7 +61,6 @@ export function GenerateReportModal({
     setIsGenerating(true);
     try {
       await onGenerate({
-        format,
         layout,
         selectedBrands,
         selectedPackSizes,
@@ -116,37 +107,7 @@ export function GenerateReportModal({
 
         <ScrollArea className="flex-1 px-6">
           <form id="reportForm" className="space-y-6 py-4">
-            <div className="space-y-4">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Formato de Saída</div>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                {formatOptions.map(({ value, label }) => (
-                  <div key={value} className="flex-1">
-                    <input 
-                      type="radio" 
-                      id={`format-${value}`} 
-                      name="format" 
-                      value={value} 
-                      className="sr-only" 
-                      checked={format === value} 
-                      onChange={() => setFormat(value)} 
-                    />
-                    <label 
-                      htmlFor={`format-${value}`} 
-                      className={`flex items-center justify-center py-2 px-3 border-2 rounded-md cursor-pointer text-sm font-medium transition ${
-                        format === value 
-                          ? "border-primary bg-primary/10 text-primary" 
-                          : "border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-                      }`}
-                    >
-                      {label}
-                    </label>
-                  </div>
-                ))}
-              </div>
-              <div className="text-xs text-muted-foreground italic">Escolha como você quer receber seu relatório</div>
-            </div>
 
-            <div className="border-t my-6"></div>
 
             <div className="space-y-4">
               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Opções de Layout</div>

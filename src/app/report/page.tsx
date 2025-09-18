@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { AppSettings, Battery } from "@/lib/types";
 import { onBatteriesSnapshot, onAppSettingsSnapshot } from "@/lib/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import dynamic from "next/dynamic";
+import { saveAs } from "file-saver";
+import domtoimage from 'dom-to-image-more';
+
+import { ThemeProvider } from "@/components/theme-provider";
 
 const RestockReport = dynamic(() => import("@/components/restock-report").then(mod => mod.RestockReport), {
   ssr: false,
@@ -26,15 +30,14 @@ export default function ReportPage() {
   const [batteries, setBatteries] = useState<Battery[]>([]);
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [format, setFormat] = useState<'image' | 'pdf' | 'csv'>('image');
   const [layout, setLayout] = useState<'grid' | 'single'>('grid');
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedPackSizes, setSelectedPackSizes] = useState<string[]>([]);
+  const reportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Get URL parameters
     const params = new URLSearchParams(window.location.search);
-    setFormat(params.get('format') as 'image' | 'pdf' | 'csv' || 'image');
     setLayout(params.get('layout') as 'grid' | 'single' || 'grid');
     setSelectedBrands(params.get('brands')?.split(',') || []);
     setSelectedPackSizes(params.get('packSizes')?.split(',') || []);
@@ -52,6 +55,70 @@ export default function ReportPage() {
       unsubscribeAppSettings();
     };
   }, []);
+
+  const toggleExportButtons = (show: boolean) => {
+    if (!reportRef.current) return;
+    const exportButtons = reportRef.current.querySelector('#export-buttons') as HTMLElement;
+    if (exportButtons) {
+      exportButtons.style.display = show ? 'flex' : 'none';
+    }
+  };
+
+  const handleExport = async (format: 'image' | 'pdf' | 'csv') => {
+    if (!reportRef.current) return;
+
+    toggleExportButtons(false);
+
+    if (format === 'image') {
+      const images = Array.from(reportRef.current.querySelectorAll("img"));
+      const promises = images.map(img => {
+        return new Promise((resolve, reject) => {
+          if (img.complete) {
+            resolve(true);
+          } else {
+            img.onload = () => resolve(true);
+            img.onerror = () => reject();
+          }
+        });
+      });
+
+      await Promise.all(promises);
+      
+      if (reportRef.current) {
+        domtoimage.toPng(reportRef.current)
+          .then(function (dataUrl: string) {
+            saveAs(dataUrl, "restock-report.png");
+          })
+          .catch(function (error) {
+            console.error('oops, something went wrong!', error);
+          });
+      }
+    } else if (format === 'pdf') {
+      const { default: html2pdf } = await import('html2pdf.js');
+      await html2pdf()
+        .from(reportRef.current)
+        .save("restock-report.pdf");
+    } else if (format === 'csv') {
+      const csvContent = [
+        ['Brand', 'Model', 'Type', 'Pack Size', 'Current Quantity', 'Restock Amount Needed'].join(','),
+        ...lowStockItems.map(battery => [
+          battery.brand,
+          battery.model,
+          battery.type,
+          battery.packSize,
+          battery.quantity,
+          Math.max(0, Math.ceil(((appSettings?.lowStockThreshold || 5) * 2) / battery.packSize) - battery.quantity)
+        ].join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+      saveAs(blob, "restock-report.csv");
+    }
+
+    toggleExportButtons(true);
+  };
+
+
 
   const filteredBatteries = useMemo(() => {
     return batteries.filter(battery => {
@@ -95,12 +162,15 @@ export default function ReportPage() {
   }
 
   return (
-    <RestockReport
-      lowStockItems={lowStockItems}
-      outOfStockItems={outOfStockItems}
-      appSettings={appSettings}
-      layout={layout}
-      format={format}
-    />
+    <ThemeProvider forcedTheme="light">
+      <RestockReport
+        ref={reportRef}
+        lowStockItems={lowStockItems}
+        outOfStockItems={outOfStockItems}
+        appSettings={appSettings}
+        layout={layout}
+        onExport={handleExport}
+      />
+    </ThemeProvider>
   );
 }

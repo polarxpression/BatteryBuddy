@@ -4,81 +4,32 @@ import Image from "next/image";
 import { AppSettings, Battery } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import html2canvas from "html2canvas";
-import { saveAs } from "file-saver";
-import { useRef } from "react";
+
+import { forwardRef } from "react";
 
 interface RestockReportProps {
   lowStockItems: Battery[];
   outOfStockItems: Battery[];
   appSettings: AppSettings | null;
-  format?: 'image' | 'pdf' | 'csv';
   layout?: 'grid' | 'single';
+  onExport: (format: 'image' | 'pdf' | 'csv') => Promise<void>;
 }
 
-export function RestockReport({ lowStockItems, outOfStockItems, appSettings, format = 'image', layout = 'grid' }: RestockReportProps) {
+export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ lowStockItems, outOfStockItems, appSettings, layout = 'grid', onExport }, ref) => {
   const itemsToRestock = [...outOfStockItems, ...lowStockItems];
-  const reportRef = useRef<HTMLDivElement>(null);
-
-  const handleExport = async () => {
-    if (!reportRef.current) return;
-
-    if (format === 'image') {
-      const images = Array.from(reportRef.current.querySelectorAll("img"));
-      const promises = images.map(img => {
-        return new Promise((resolve, reject) => {
-          if (img.complete) {
-            resolve(true);
-          } else {
-            img.onload = () => resolve(true);
-            img.onerror = () => reject();
-          }
-        });
-      });
-
-      await Promise.all(promises);
-      
-      if (reportRef.current) {
-        const canvas = await html2canvas(reportRef.current);
-        canvas.toBlob((blob) => {
-          if (blob) {
-            saveAs(blob, "restock-report.png");
-          }
-        });
-      }
-    } else if (format === 'pdf') {
-      const { default: html2pdf } = await import('html2pdf.js');
-      await html2pdf()
-        .from(reportRef.current)
-        .save("restock-report.pdf");
-    } else if (format === 'csv') {
-      const csvContent = [
-        ['Brand', 'Model', 'Type', 'Pack Size', 'Current Quantity', 'Restock Amount Needed'].join(','),
-        ...itemsToRestock.map(battery => [
-          battery.brand,
-          battery.model,
-          battery.type,
-          battery.packSize,
-          battery.quantity,
-          Math.max(0, Math.ceil(((appSettings?.lowStockThreshold || 5) * 2) / battery.packSize) - battery.quantity)
-        ].join(','))
-      ].join('\\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-      saveAs(blob, "restock-report.csv");
-    }
-  };
 
   return (
-    <div className="bg-gray-50 p-4 sm:p-6 md:p-8" ref={reportRef}>
+    <div className="light bg-gray-50 p-4 sm:p-6 md:p-8" ref={ref}>
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Relatório de Reabastecimento</h1>
-          <Button onClick={handleExport}>
-            Exportar como {format === 'image' ? 'Imagem' : format === 'pdf' ? 'PDF' : 'CSV'}
-          </Button>
+          <div id="export-buttons" className="flex gap-2">
+            <Button onClick={() => onExport('image')}>Exportar como Imagem</Button>
+            <Button onClick={() => onExport('pdf')}>Exportar como PDF</Button>
+            <Button onClick={() => onExport('csv')}>Exportar como CSV</Button>
+          </div>
         </div>
-        <div className={`${
+        <div className={`${ 
           layout === 'grid' 
             ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'
             : 'flex flex-col gap-4'
@@ -111,4 +62,6 @@ export function RestockReport({ lowStockItems, outOfStockItems, appSettings, for
       </div>
     </div>
   );
-}
+});
+
+RestockReport.displayName = "RestockReport";

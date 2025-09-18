@@ -314,10 +314,9 @@ export function BatteryDashboard() {
     }
   };
 
-  const handleGenerateReportFromModal = (options: { format: string; layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => {
+  const handleGenerateReportFromModal = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => {
     console.log("Generating report with options:", options);
     const searchParams = new URLSearchParams();
-    searchParams.append('format', options.format);
     searchParams.append('layout', options.layout);
     searchParams.append('brands', options.selectedBrands.join(','));
     searchParams.append('packSizes', options.selectedPackSizes.join(','));
