@@ -94,8 +94,15 @@ export function BatteryDashboard() {
       // Determine items for internal restock (gondola is low, stock has enough)
       if (gondolaQuantity < lowStockThreshold && stockQuantity > 0) {
         const neededInGondola = lowStockThreshold - gondolaQuantity;
-        const canMove = Math.min(neededInGondola, stockQuantity);
-        internalRestock.push({ ...battery, quantity: canMove, location: "stock" }); // Representing quantity to move
+        if (neededInGondola <= 0) return; // No restock needed if already above or at threshold
+
+        const rawCanMove = neededInGondola;
+        const adjustedCanMove = Math.ceil(rawCanMove / battery.packSize) * battery.packSize;
+        const finalCanMove = Math.min(adjustedCanMove, stockQuantity);
+
+        if (finalCanMove > 0) {
+          internalRestock.push({ ...battery, quantity: finalCanMove, location: "stock" }); // Representing quantity to move
+        }
       }
 
       // Determine items for external purchase (overall low stock or out of stock)
