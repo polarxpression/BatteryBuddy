@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Plus, Minus } from "lucide-react";
 import Mexp from 'math-expression-evaluator';
 
 const mexp = new Mexp();
@@ -54,6 +56,14 @@ export function EditableQuantity({ value, onChange, variant }: EditableQuantityP
     }
   };
 
+  const handleDecrease = () => {
+    onChange(Math.max(0, value - 1));
+  };
+
+  const handleIncrease = () => {
+    onChange(value + 1);
+  };
+
   if (isEditing) {
     return (
       <Input
@@ -69,12 +79,20 @@ export function EditableQuantity({ value, onChange, variant }: EditableQuantityP
   }
 
   return (
-    <Badge
-      variant={variant}
-      className="min-w-10 justify-center text-base cursor-pointer"
-      onClick={handleBadgeClick}
-    >
-      {value}
-    </Badge>
+    <div className="flex items-center gap-1">
+      <Button variant="outline" size="icon" className="h-7 w-7" onClick={handleDecrease}>
+        <Minus className="h-4 w-4" />
+      </Button>
+      <Badge
+        variant={variant}
+        className="min-w-10 justify-center text-base cursor-pointer"
+        onClick={handleBadgeClick}
+      >
+        {value}
+      </Badge>
+      <Button variant="outline" size="icon" className="h-7 w-7" onClick={handleIncrease}>
+        <Plus className="h-4 w-4" />
+      </Button>
+    </div>
   );
 }

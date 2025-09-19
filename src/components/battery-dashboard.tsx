@@ -20,7 +20,7 @@ import { AddEditBatterySheet } from "./add-edit-battery-sheet";
 import { BatteryInventoryTable } from "./battery-inventory-table";
 import { RestockSuggestions } from "./restock-suggestions";
 import { Button } from "./ui/button";
-import { PlusCircle, Settings, Zap, Download, HelpCircle } from "lucide-react";
+import { PlusCircle, Settings, Zap, Download, HelpCircle, Warehouse } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -38,7 +38,6 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { InventorySummary } from "./inventory-summary";
 import { ThemeToggle } from "./theme-toggle";
 import { SettingsModal } from "./settings-modal";
 import { useMobile } from "@/hooks/use-mobile";
@@ -50,7 +49,7 @@ import { AiManager } from "./ai-manager";
 import { AiOrb } from "./ai-orb";
 import { SearchHelpSheet } from "./search-help-sheet";
 import { filterBatteries } from "@/lib/search";
-import { getAggregatedBatteryQuantities, getAggregatedQuantitiesByLocation } from "@/lib/utils";
+import { getAggregatedQuantitiesByLocation } from "@/lib/utils";
 
 import { useAppSettings } from "@/contexts/app-settings-context";
 
@@ -449,20 +448,21 @@ export function BatteryDashboard() {
         </div>
       </header>
       <main className="flex-1 space-y-4 p-4 md:p-8 w-full">
-        <div className={`grid grid-cols-1 ${isMobile ? "sm:grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-2"} gap-4`}>
+        <div className="grid grid-cols-1 gap-4">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Total de Baterias</CardTitle>
-                    <Zap className="h-4 w-4 text-muted-foreground" />
+                    <CardTitle className="text-sm font-medium">Visão Geral do Reabastecimento</CardTitle>
+                    <Warehouse className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{totalBatteries}</div>
-                    <p className="text-xs text-muted-foreground">em {batteryTypesCount} tipos</p>
+                    <div className="text-2xl font-bold">{itemsForInternalRestock.length}</div>
+                    <p className="text-xs text-muted-foreground">itens para reabastecimento interno</p>
+                    <div className="text-2xl font-bold mt-2">{itemsForExternalPurchase.length}</div>
+                    <p className="text-xs text-muted-foreground">itens para compra externa</p>
                 </CardContent>
             </Card>
                         <RestockSuggestions itemsForInternalRestock={itemsForInternalRestock} onMoveBatteries={handleMoveBatteries} />
         </div>
-        <InventorySummary batteries={filteredBatteries} />
         
         <BatteryReport onGenerateReport={handleGenerateReportFromModal} onGenerateSuggestion={handleGenerateSuggestion} onGenerateAIReport={handleGenerateAIReport} brands={brands} packSizes={packSizes} />
 

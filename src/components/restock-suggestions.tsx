@@ -24,26 +24,27 @@ export function RestockSuggestions({ itemsForInternalRestock, onMoveBatteries }:
              <p>Nenhuma sugestão de reabastecimento no momento.</p>
            </div>
         ) : (
-            <div className="space-y-2">
+            <div className="flex flex-wrap justify-center gap-4">
             {itemsForInternalRestock.map((item) => (
-                <div key={item.id} className="flex items-center gap-4 p-4 border rounded-lg shadow-sm">
+                <Card key={item.id} className="flex flex-col items-center gap-2 p-4 shadow-sm max-w-sm">
                     <BatteryImageOrIcon
                         imageUrl={item.imageUrl}
                         alt={item.brand}
                         batteryType={item.type}
-                        width={48}
-                        height={48}
-                        className="rounded-md object-cover"
+                        width={80}
+                        height={80}
+                        className="rounded-md object-cover mb-2"
                     />
-                    <div className="flex-1 font-medium break-words flex items-center gap-2">
-                        {item.brand} {item.model} ({item.type}, Embalagem com {item.packSize})
+                    <div className="text-center w-full">
+                        <p className="font-medium break-words">{item.brand} {item.model} ({item.type})</p>
+                        <p className="text-sm text-muted-foreground">Embalagem com {item.packSize}</p>
                     </div>
-                    <div className="ml-auto font-bold">
+                    <div className="mt-auto mx-auto font-bold">
                         <Button onClick={() => onMoveBatteries([item])} size="sm" className="flex items-center gap-1">
                             Mover: {item.quantity} <ArrowRight className="h-4 w-4" /> Gôndola
                         </Button>
                     </div>
-                </div>
+                </Card>
             ))}
             </div>
         )}

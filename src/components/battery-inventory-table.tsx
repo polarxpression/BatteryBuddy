@@ -67,13 +67,13 @@ export function BatteryInventoryTable({
           <tr>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               <Checkbox />
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("brand")}
             >
               <div className="flex items-center">
@@ -83,7 +83,7 @@ export function BatteryInventoryTable({
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("model")}
             >
               <div className="flex items-center">
@@ -93,7 +93,7 @@ export function BatteryInventoryTable({
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("type")}
             >
               <div className="flex items-center">
@@ -103,13 +103,13 @@ export function BatteryInventoryTable({
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Código de Barras
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("packSize")}
             >
               <div className="flex items-center">
@@ -119,7 +119,7 @@ export function BatteryInventoryTable({
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("quantity")}
             >
               <div className="flex items-center">
@@ -135,11 +135,11 @@ export function BatteryInventoryTable({
         <tbody className="bg-white divide-y divide-gray-200">
           {sortedBatteries.map((battery) => (
             <TableRow key={battery.id} className={battery.quantity <= (appSettings?.lowStockThreshold || 5) ? "bg-red-50/50" : ""}>
-              <TableCell className="font-medium">
+              <TableCell className="text-center font-medium">
                 <Checkbox />
               </TableCell>
-              <TableCell className="font-medium">
-                <div className="flex items-center gap-2">
+              <TableCell className="text-center font-medium">
+                <div className="flex items-center gap-2 justify-center">
                   <BatteryImageOrIcon
                     imageUrl={battery.imageUrl}
                     alt={battery.brand}
@@ -151,11 +151,11 @@ export function BatteryInventoryTable({
                   {battery.brand}
                 </div>
               </TableCell>
-              <TableCell>{battery.model}</TableCell>
-              <TableCell>{battery.type}</TableCell>
-              <TableCell>{battery.barcode}</TableCell>
-              <TableCell>{battery.packSize}</TableCell>
-              <TableCell>
+              <TableCell className="text-center">{battery.model}</TableCell>
+              <TableCell className="text-center">{battery.type}</TableCell>
+              <TableCell className="text-center">{battery.barcode}</TableCell>
+              <TableCell className="text-center">{battery.packSize}</TableCell>
+              <TableCell className="text-center">
                 <EditableQuantity
                   value={battery.quantity}
                   onChange={(newQuantity) => onQuantityChange(battery.id, newQuantity)}
