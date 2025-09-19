@@ -47,6 +47,8 @@ export const translations = {
   
   'search:find_either_term_tilde': 'O mesmo que OR. Encontra baterias que correspondem a qualquer um dos termos.',
   
+  'location:gondola': 'Gôndola',
+  'location:stock': 'Estoque',
 };
 
 export type TranslationKey = keyof typeof translations;

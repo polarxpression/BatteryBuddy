@@ -13,6 +13,8 @@ import {
 import { AppSettings } from "@/lib/types";
 import { EditableQuantity } from "./ui/editable-quantity";
 import { BatteryImageOrIcon } from "./battery-image-or-icon";
+import { useTranslation } from "../hooks/use-translation";
+import { TranslationKey } from "@/lib/translations";
 
 interface BatteryInventoryTableMobileProps {
   batteries: Battery[];
@@ -29,6 +31,7 @@ export function BatteryInventoryTableMobile({
   onQuantityChange,
   appSettings,
 }: BatteryInventoryTableMobileProps) {
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-1 gap-4">
       {batteries.map((battery) => (
@@ -49,6 +52,7 @@ export function BatteryInventoryTableMobile({
               <div>
                 <p className="font-medium">{battery.brand}</p>
                 <p className="text-sm text-gray-500">{battery.type}</p>
+                <p className="text-xs text-muted-foreground">Localização: {t(`location:${battery.location}` as TranslationKey)}</p>
               </div>
             </div>
             <DropdownMenu>

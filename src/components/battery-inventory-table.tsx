@@ -14,6 +14,8 @@ import {
 import { AppSettings } from "@/lib/types";
 import { EditableQuantity } from "./ui/editable-quantity";
 import { BatteryImageOrIcon } from "./battery-image-or-icon";
+import { useTranslation } from "../hooks/use-translation";
+import { TranslationKey } from "@/lib/translations";
 
 interface BatteryInventoryTableProps {
   batteries: Battery[];
@@ -32,6 +34,7 @@ export function BatteryInventoryTable({
 }: BatteryInventoryTableProps) {
   const [sortColumn, setSortColumn] = useState<keyof Battery | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const { t } = useTranslation();
 
   const sortedBatteries = [...batteries].sort((a, b) => {
     if (!sortColumn) return 0;
@@ -127,6 +130,16 @@ export function BatteryInventoryTable({
                 <ArrowUpDown className="ml-1 h-3 w-3" />
               </div>
             </th>
+            <th
+              scope="col"
+              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              onClick={() => handleSort("location")}
+            >
+              <div className="flex items-center">
+                Localização
+                <ArrowUpDown className="ml-1 h-3 w-3" />
+              </div>
+            </th>
             <th scope="col" className="relative px-6 py-3">
               <span className="sr-only">Ações</span>
             </th>
@@ -162,6 +175,7 @@ export function BatteryInventoryTable({
                   variant="default"
                 />
               </TableCell>
+              <TableCell className="text-center">{t(`location:${battery.location}` as TranslationKey)}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
