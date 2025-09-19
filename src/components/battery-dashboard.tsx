@@ -372,6 +372,52 @@ export function BatteryDashboard() {
 
   const [aiManagerInitialPrompt, setAiManagerInitialPrompt] = useState<string | undefined>(undefined);
 
+  const handleMoveBatteries = async (itemsToMove: Battery[]) => {
+    for (const item of itemsToMove) {
+      // Find the actual battery in stock
+      const stockBattery = batteries.find(
+        (b) =>
+          b.brand === item.brand &&
+          b.model === item.model &&
+          b.type === item.type &&
+          b.packSize === item.packSize &&
+          b.location === "stock"
+      );
+
+      // Find the actual battery in gondola
+      const gondolaBattery = batteries.find(
+        (b) =>
+          b.brand === item.brand &&
+          b.model === item.model &&
+          b.type === item.type &&
+          b.packSize === item.packSize &&
+          b.location === "gondola"
+      );
+
+      if (stockBattery) {
+        const newStockQuantity = stockBattery.quantity - item.quantity;
+        await updateBattery({ ...stockBattery, quantity: newStockQuantity });
+      }
+
+      if (gondolaBattery) {
+        const newGondolaQuantity = gondolaBattery.quantity + item.quantity;
+        await updateBattery({ ...gondolaBattery, quantity: newGondolaQuantity });
+      } else if (item.quantity > 0) {
+        // If no gondola battery exists, create one
+        await addBattery({
+          ...item,
+          id: crypto.randomUUID(), // Generate a new ID for the new gondola entry
+          quantity: item.quantity,
+          location: "gondola",
+        });
+      }
+    }
+    toast({
+      title: "Sucesso!",
+      description: "Baterias movidas com sucesso para a gôndola.",
+    });
+  };
+
   const totalBatteries = filteredBatteries.reduce((acc, b) => acc + b.quantity, 0);
   const batteryTypesCount = new Set(filteredBatteries.map(b => b.type)).size;
 
@@ -414,7 +460,7 @@ export function BatteryDashboard() {
                     <p className="text-xs text-muted-foreground">em {batteryTypesCount} tipos</p>
                 </CardContent>
             </Card>
-                        <RestockSuggestions itemsForInternalRestock={itemsForInternalRestock} />
+                        <RestockSuggestions itemsForInternalRestock={itemsForInternalRestock} onMoveBatteries={handleMoveBatteries} />
         </div>
         <InventorySummary batteries={filteredBatteries} />
         
