@@ -7,7 +7,7 @@ export function useMobile() {
 
   useEffect(() => {
     const checkIsMobile = () => {
-      const isMobileDevice = window.matchMedia("(max-width: 768px)").matches
+      const isMobileDevice = window.matchMedia("(max-width: 1080px)").matches
       setIsMobile(isMobileDevice)
     }
 

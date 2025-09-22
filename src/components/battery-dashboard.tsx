@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { createRoot } from 'react-dom/client';
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+
+
+
 import {
   addBattery,
   deleteBattery,
@@ -18,6 +18,7 @@ import type { Battery } from "@/lib/types";
 
 import { AddEditBatterySheet } from "./add-edit-battery-sheet";
 import { BatteryInventoryTable } from "./battery-inventory-table";
+import { BatteryInventoryTableMobile } from "./battery-inventory-table-mobile";
 import { RestockSuggestions } from "./restock-suggestions";
 import { Button } from "./ui/button";
 import { PlusCircle, Settings, Zap, Download, HelpCircle, Warehouse } from "lucide-react";
@@ -44,9 +45,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import Papa from "papaparse";
 import { Input } from "./ui/input";
 import { BatteryReport } from "./battery-report";
-import { AiManager } from "./ai-manager";
 
-import { AiOrb } from "./ai-orb";
 import { SearchHelpSheet } from "./search-help-sheet";
 import { filterBatteries } from "@/lib/search";
 import { getAggregatedQuantitiesByLocation } from "@/lib/utils";
@@ -59,7 +58,6 @@ export function BatteryDashboard() {
   const [batteries, setBatteries] = useState<Battery[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isAiManagerOpen, setIsAiManagerOpen] = useState(false);
   const [isHelpSheetOpen, setIsHelpSheetOpen] = useState(false);
   const [batteryToEdit, setBatteryToEdit] = useState<Battery | null>(null);
   const [batteryToDelete, setBatteryToDelete] = useState<string | null>(null);
@@ -69,7 +67,6 @@ export function BatteryDashboard() {
   const aggregatedQuantitiesByLocation = useMemo(() => getAggregatedQuantitiesByLocation(batteries), [batteries]);
 
   const { itemsForInternalRestock, itemsForExternalPurchase } = useMemo(() => {
-    const lowStockThreshold = appSettings?.lowStockThreshold || 5;
     const internalRestock: Battery[] = [];
     const externalPurchase: Battery[] = [];
 
@@ -227,23 +224,7 @@ export function BatteryDashboard() {
     }
   };
 
-  const updateBatteryQuantity = async (brand: string, model: string, newQuantity: number) => {
-    const battery = batteries.find(b => b.brand === brand && b.model === model);
-    if (battery) {
-      await updateBattery({ ...battery, quantity: newQuantity });
-      toast({
-        title: "Sucesso!",
-        description: `A quantidade da bateria ${brand} ${model} foi atualizada para ${newQuantity}.`,
-      });
-    } else {
-      toast({
-        title: "Erro!",
-        description: `Bateria ${brand} ${model} não encontrada.`, 
-        variant: "destructive",
-      });
-      throw new Error(`Battery ${brand} ${model} not found.`);
-    }
-  };
+
 
   const handleQuantityChange = async (id: string, newQuantity: number) => {
     if (newQuantity < 0) return;
@@ -273,91 +254,9 @@ export function BatteryDashboard() {
 
   
 
-  const handleGenerateAIReport = async () => {
-    try {
-      toast({
-        title: "Gerando relatório...",
-        description: "Aguarde enquanto a IA gera o relatório.",
-      });
 
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: "Gerar um relatório detalhado sobre o inventário de baterias, incluindo itens em falta, itens com baixo estoque e sugestões de compra. O relatório deve ser formatado em Markdown.",
-          history: [],
-        }),
-      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let result = "";
-      let done = false;
-
-      while (!done) {
-        const { value, done: readerDone } = await reader?.read() || { value: undefined, done: true };
-        done = readerDone;
-        if (value) {
-          result += decoder.decode(value);
-        }
-      }
-
-      const parsedResult = JSON.parse(result.split('\n').filter(Boolean).pop() || '{}');
-      const functionCall = parsedResult.functionCalls?.[0];
-
-      if (functionCall && functionCall.name === "generate_report") {
-        const markdownContent = functionCall.args.reportContent;
-
-        const tempDiv = document.createElement("div");
-        const root = createRoot(tempDiv);
-        root.render(<ReactMarkdown remarkPlugins={[remarkGfm]}>{markdownContent}</ReactMarkdown>);
-
-        import("html2pdf.js").then(html2pdf => {
-          html2pdf.default().from(tempDiv).save("relatorio_ia.pdf");
-          toast({
-            title: "Sucesso!",
-            description: "Relatório gerado e baixado com sucesso.",
-          });
-        });
-
-      } else {
-        toast({
-          title: "Erro!",
-          description: "A IA não retornou o conteúdo do relatório esperado.",
-          variant: "destructive",
-        });
-      }
-
-    } catch (error) {
-      console.error("Erro ao gerar relatório com IA:", error);
-      toast({
-        title: "Erro!",
-        description: "Ocorreu um erro ao gerar o relatório com IA.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleGenerateReportForAI = (outputType: "print" | "download", reportContent?: string) => {
-    if (outputType === 'print') {
-        const printWindow = window.open('', '_blank');
-        printWindow?.document.write(reportContent || '');
-        printWindow?.document.close();
-        printWindow?.print();
-    } else {
-        const blob = new Blob([reportContent || ''], { type: 'text/html' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'report.html';
-        link.click();
-    }
-  };
 
   const handleGenerateReportFromModal = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => {
     console.log("Generating report with options:", options);
@@ -368,17 +267,11 @@ export function BatteryDashboard() {
     window.open(`/report?${searchParams.toString()}`, "_blank");
   };
 
-  const handleGenerateSuggestion = () => {
-    const prompt = "Com base no inventário atual, nos dados históricos diários, nas médias semanais e nas médias mensais, por favor, sugira quais baterias devo comprar e em que quantidade para manter um estoque ideal. Priorize as médias mensais, depois as semanais e, por fim, os dados diários para uma análise mais detalhada.";
-    setAiManagerInitialPrompt(prompt);
-    setIsAiManagerOpen(true);
-  };
 
-  const handleClearInitialPrompt = () => {
-    setAiManagerInitialPrompt(undefined);
-  };
 
-  const [aiManagerInitialPrompt, setAiManagerInitialPrompt] = useState<string | undefined>(undefined);
+
+
+
 
   const handleMoveBatteries = async (itemsToMove: Battery[]) => {
     for (const item of itemsToMove) {
@@ -426,8 +319,7 @@ export function BatteryDashboard() {
     });
   };
 
-  const totalBatteries = filteredBatteries.reduce((acc, b) => acc + b.quantity, 0);
-  const batteryTypesCount = new Set(filteredBatteries.map(b => b.type)).size;
+
 
 
   const brands = useMemo(() => Array.from(new Set(batteries.map(b => b.brand))), [batteries]);
@@ -473,7 +365,7 @@ export function BatteryDashboard() {
                         <RestockSuggestions itemsForInternalRestock={itemsForInternalRestock} onMoveBatteries={handleMoveBatteries} />
         </div>
         
-        <BatteryReport onGenerateReport={handleGenerateReportFromModal} onGenerateSuggestion={handleGenerateSuggestion} onGenerateAIReport={handleGenerateAIReport} brands={brands} packSizes={packSizes} />
+        <BatteryReport onGenerateReport={handleGenerateReportFromModal} brands={brands} packSizes={packSizes} />
 
         <Card>
             <CardHeader>
@@ -493,7 +385,11 @@ export function BatteryDashboard() {
                         <span className="sr-only">Ajuda</span>
                     </Button>
                 </div>
-                <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} appSettings={appSettings} />
+                {isMobile ? (
+                    <BatteryInventoryTableMobile batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} appSettings={appSettings} />
+                ) : (
+                    <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} appSettings={appSettings} />
+                )}
             </CardContent>
         </Card>
       </main>
@@ -525,21 +421,7 @@ export function BatteryDashboard() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AiOrb onClick={() => setIsAiManagerOpen(prev => !prev)} />
 
-      {isAiManagerOpen && (
-        <div className="fixed bottom-24 right-8 z-50">
-          <AiManager 
-            addBattery={handleSubmit}
-            updateBatteryQuantity={updateBatteryQuantity}
-            handleExport={handleExport}
-            handleGenerateReport={handleGenerateReportForAI}
-            batteries={filteredBatteries}
-            initialPrompt={aiManagerInitialPrompt}
-            onInitialPromptSent={handleClearInitialPrompt}
-          />
-        </div>
-      )}
     </div>
   );
 }
