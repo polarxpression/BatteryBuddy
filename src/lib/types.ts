@@ -33,6 +33,7 @@ export const BatterySchema = z.object({
   favcount: z.number().optional(),
   source: z.string().optional(),
   rating: z.string().optional(),
+  lowStockThreshold: z.number().optional(),
 });
 
 export type Battery = z.infer<typeof BatterySchema>;

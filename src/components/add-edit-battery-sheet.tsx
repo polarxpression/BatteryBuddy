@@ -50,6 +50,7 @@ const AddEditBatterySheetSchema = z.object({
   discontinued: z.boolean().optional(),
   location: z.enum(["gondola", "stock"]).optional(),
   imageUrl: z.string().optional(),
+  lowStockThreshold: z.number().optional(),
 });
 
 
@@ -81,6 +82,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       barcode: "",
       location: "gondola",
       imageUrl: "",
+      lowStockThreshold: undefined,
     },
   });
 
@@ -102,6 +104,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           discontinued: batteryToEdit.discontinued || false,
           location: batteryToEdit.location || "gondola",
           imageUrl: batteryToEdit.imageUrl || "",
+          lowStockThreshold: batteryToEdit.lowStockThreshold || undefined,
         });
         if (batteryToEdit.imageUrl) {
           setImagePreview(batteryToEdit.imageUrl);
@@ -323,6 +326,26 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         onKeyDown={(e) => handleKeyDown(e)}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="lowStockThreshold"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Limite de Estoque Baixo (por item)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Defina um limite de estoque baixo específico para esta bateria. Se deixado em branco, o limite global será usado.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
