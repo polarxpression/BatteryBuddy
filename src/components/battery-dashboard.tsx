@@ -99,16 +99,17 @@ export function BatteryDashboard() {
       if (battery.discontinued) return; // Skip discontinued batteries
 
       // Determine items for internal restock (gondola is low, stock has enough)
-      if (gondolaQuantity < currentLowStockThreshold && stockQuantity > 0) {
-        const neededInGondola = currentLowStockThreshold - gondolaQuantity;
-        if (neededInGondola <= 0) return; // No restock needed if already above or at threshold
+      const gondolaLimit = battery.lowStockThreshold !== undefined ? battery.lowStockThreshold : (appSettings?.lowStockThreshold || 5);
+      if (gondolaQuantity < gondolaLimit / 2 && stockQuantity > 0) {
+        const neededInGondola = gondolaLimit - gondolaQuantity;
+        if (neededInGondola <= 0) return;
 
         const rawCanMove = neededInGondola;
         const adjustedCanMove = Math.ceil(rawCanMove / battery.packSize) * battery.packSize;
         const finalCanMove = Math.min(adjustedCanMove, stockQuantity);
 
         if (finalCanMove > 0) {
-          internalRestock.push({ ...battery, quantity: finalCanMove, location: "stock" }); // Representing quantity to move
+          internalRestock.push({ ...battery, quantity: finalCanMove, location: "stock" });
         }
       }
 
