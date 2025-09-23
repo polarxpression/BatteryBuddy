@@ -2,7 +2,7 @@
 
 import { type Battery } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Copy } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ import { TranslationKey } from "@/lib/translations";
 interface BatteryInventoryTableMobileProps {
   batteries: Battery[];
   onEdit: (battery: Battery) => void;
+  onDuplicate: (battery: Battery) => void;
   onDelete: (id: string) => void;
   onQuantityChange: (id: string, newQuantity: number) => void;
   appSettings: AppSettings | null;
@@ -27,6 +28,7 @@ interface BatteryInventoryTableMobileProps {
 export function BatteryInventoryTableMobile({
   batteries,
   onEdit,
+  onDuplicate,
   onDelete,
   onQuantityChange,
   appSettings,
@@ -67,6 +69,9 @@ export function BatteryInventoryTableMobile({
                 <DropdownMenuLabel>Ações</DropdownMenuLabel>
                 <DropdownMenuItem onClick={() => onEdit(battery)}>
                   <Pencil className="mr-2 h-4 w-4" /> Editar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onDuplicate(battery)}>
+                  <Copy className="mr-2 h-4 w-4" /> Duplicar
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onDelete(battery.id)}>
                   <Trash2 className="mr-2 h-4 w-4" /> Excluir

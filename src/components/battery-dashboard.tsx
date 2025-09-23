@@ -176,6 +176,12 @@ export function BatteryDashboard() {
     setIsSheetOpen(true);
   };
 
+  const handleDuplicate = (battery: Battery) => {
+    const { id, ...batteryToDuplicate } = battery;
+    setBatteryToEdit(batteryToDuplicate as Battery);
+    setIsSheetOpen(true);
+  };
+
   const handleOpenSettings = () => {
     setIsSettingsOpen(true);
   };
@@ -378,9 +384,9 @@ export function BatteryDashboard() {
                     </Button>
                 </div>
                 {isMobile ? (
-                    <BatteryInventoryTableMobile batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} appSettings={appSettings} />
+                    <BatteryInventoryTableMobile batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDuplicate={handleDuplicate} onDelete={handleDelete} onQuantityChange={handleQuantityChange} appSettings={appSettings} />
                 ) : (
-                    <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDelete={handleDelete} onQuantityChange={handleQuantityChange} appSettings={appSettings} />
+                    <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDuplicate={handleDuplicate} onDelete={handleDelete} onQuantityChange={handleQuantityChange} appSettings={appSettings} />
                 )}
             </CardContent>
         </Card>
