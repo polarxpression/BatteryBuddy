@@ -7,8 +7,6 @@ import { Button } from "./ui/button";
 
 import { forwardRef } from "react";
 
-import { useAppSettings } from "@/contexts/app-settings-context";
-
 interface RestockReportProps {
   itemsForExternalPurchase: Battery[];
   layout?: 'grid' | 'single';
@@ -16,7 +14,6 @@ interface RestockReportProps {
 }
 
 export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ itemsForExternalPurchase, layout = 'grid', onExport }, ref) => {
-  const { appSettings } = useAppSettings();
 
   return (
     <div className="bg-gray-50 p-4 sm:p-6 md:p-8 light" ref={ref}>

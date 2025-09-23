@@ -50,6 +50,8 @@ import { SearchHelpSheet } from "./search-help-sheet";
 import { filterBatteries } from "@/lib/search";
 import { getAggregatedQuantitiesByLocation } from "@/lib/utils";
 
+import { Switch } from "./ui/switch";
+import { Label } from "./ui/label";
 import { useAppSettings } from "@/contexts/app-settings-context";
 
 export function BatteryDashboard() {
@@ -63,6 +65,7 @@ export function BatteryDashboard() {
   const [batteryToDelete, setBatteryToDelete] = useState<string | null>(null);
   const { appSettings } = useAppSettings();
   const [searchTerm, setSearchTerm] = useState("");
+  const [showLowStockOnly, setShowLowStockOnly] = useState(false);
 
   const aggregatedQuantitiesByLocation = useMemo(() => getAggregatedQuantitiesByLocation(batteries), [batteries]);
 
@@ -94,6 +97,7 @@ export function BatteryDashboard() {
       if (gondolaQuantity < gondolaLimit / 2) {
         const needed = gondolaLimit - gondolaQuantity;
         const canMove = Math.min(needed, stockQuantity);
+        console.log("Restock suggestion:", { battery, gondolaQuantity, gondolaLimit, stockQuantity, needed, canMove });
         if (canMove > 0) {
           internalRestock.push({ ...battery, quantity: canMove });
         }
@@ -163,8 +167,24 @@ export function BatteryDashboard() {
   }, []);
 
   const filteredBatteries = useMemo(() => {
-    return filterBatteries(batteries, searchTerm);
-  }, [batteries, searchTerm]);
+    let filtered = filterBatteries(batteries, searchTerm);
+
+    if (showLowStockOnly) {
+      filtered = filtered.filter(battery => {
+        const quantities = aggregatedQuantitiesByLocation.get(
+          `${battery.brand}-${battery.model}-${battery.type}-${battery.packSize}`
+        );
+        const gondolaQuantity = quantities?.get("gondola") || 0;
+        const gondolaLimit = battery.lowStockThreshold !== undefined
+          ? battery.lowStockThreshold
+          : (appSettings?.lowStockThreshold || 0);
+
+        return gondolaQuantity < gondolaLimit / 2;
+      });
+    }
+
+    return filtered;
+  }, [batteries, searchTerm, showLowStockOnly, appSettings, aggregatedQuantitiesByLocation]);
 
   const handleOpenAddSheet = () => {
     setBatteryToEdit(null);
@@ -177,7 +197,7 @@ export function BatteryDashboard() {
   };
 
   const handleDuplicate = (battery: Battery) => {
-    const { id, ...batteryToDuplicate } = battery;
+    const { ...batteryToDuplicate } = battery;
     setBatteryToEdit(batteryToDuplicate as Battery);
     setIsSheetOpen(true);
   };
@@ -382,6 +402,14 @@ export function BatteryDashboard() {
                         <HelpCircle className="h-4 w-4" />
                         <span className="sr-only">Ajuda</span>
                     </Button>
+                </div>
+                <div className="flex items-center gap-2 mb-4">
+                    <Switch
+                        id="low-stock-filter"
+                        checked={showLowStockOnly}
+                        onCheckedChange={setShowLowStockOnly}
+                    />
+                    <Label htmlFor="low-stock-filter">Apenas baterias com baixo estoque</Label>
                 </div>
                 {isMobile ? (
                     <BatteryInventoryTableMobile batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDuplicate={handleDuplicate} onDelete={handleDelete} onQuantityChange={handleQuantityChange} appSettings={appSettings} />
