@@ -66,6 +66,7 @@ const toPostfix = (tokens: string[]): string[] => {
 // #region: Evaluator
 const evaluateTerm = (battery: Battery, term: string): boolean => {
   term = term.trim();
+  
   if (!term) return true;
 
   // Handle quoted exact match
@@ -85,7 +86,8 @@ const evaluateTerm = (battery: Battery, term: string): boolean => {
   }
 
   // Field-specific search (e.g., score:>50)
-  const fieldMatch = term.match(/^([a-z_]+):(.+)$/);
+  const fieldMatch = term.match(/^([a-zA-Z_]+):(.+)$/);
+  
   if (fieldMatch) {
     const [, field, value] = fieldMatch;
     return evaluateFieldSearch(battery, field, value, negate);
@@ -97,13 +99,16 @@ const evaluateTerm = (battery: Battery, term: string): boolean => {
 };
 
 const evaluateFieldSearch = (battery: Battery, field: string, value: string, negate: boolean): boolean => {
+  
   const operatorMatch = value.match(/^(>=|<=|>|<|=)?(.+)$/);
-  if (!operatorMatch) return false;
+  if (!operatorMatch) {
+    return false;
+  }
 
   const [, op, valStr] = operatorMatch;
   const operator = op || '=';
   const valNum = parseFloat(valStr);
-
+  
   const batteryValue = battery[field as keyof Battery];
 
   let result = false;
@@ -142,9 +147,20 @@ const evaluateFieldSearch = (battery: Battery, field: string, value: string, neg
   }
 
   if (field === 'packSize') {
-    const packSize = battery.packSize;
-    if (typeof packSize === 'number' && !isNaN(valNum)) {
-      switch (operator) {
+
+    // Handle null/undefined
+    if (battery.packSize == null) {
+      return negate ? true : false;
+    }
+    
+    // Convert to number if it's a string
+    const packSize = typeof battery.packSize === 'string' 
+      ? parseFloat(battery.packSize) 
+      : battery.packSize;
+      
+
+    if (typeof packSize === 'number' && !isNaN(packSize) && !isNaN(valNum)) {
+     switch (operator) {
         case '>=': result = packSize >= valNum; break;
         case '<=': result = packSize <= valNum; break;
         case '>': result = packSize > valNum; break;
@@ -152,6 +168,8 @@ const evaluateFieldSearch = (battery: Battery, field: string, value: string, neg
         case '=': result = packSize === valNum; break;
         default: result = packSize === valNum; break;
       }
+    } else {
+      console.log('Type check failed - packSize or valNum is not a valid number');
     }
     return negate ? !result : result;
   }
@@ -220,6 +238,9 @@ const evaluatePostfix = (postfix: string[], battery: Battery): boolean => {
 
 // #region: Main Filter Function
 export const filterBatteries = (batteries: Battery[], searchTerm: string): Battery[] => {
+  console.log('filterBatteries called with searchTerm:', searchTerm);
+  console.log('Number of batteries:', batteries.length);
+  
   if (!searchTerm) {
     return batteries;
   }
@@ -243,10 +264,13 @@ export const filterBatteries = (batteries: Battery[], searchTerm: string): Batte
   }
 
   const tokens = tokenize(searchTerm);
+
   const postfix = toPostfix(tokens);
 
-  const filtered = batteries.filter(battery => evaluatePostfix(postfix, battery));
-
+  const filtered = batteries.filter(battery => {
+    const result = evaluatePostfix(postfix, battery);
+    return result;
+  });
   if (order) {
     filtered.sort((a, b) => {
       const aValue = a[order!.field as keyof Battery];
@@ -271,4 +295,3 @@ export const filterBatteries = (batteries: Battery[], searchTerm: string): Batte
 
   return filtered;
 };
-// #endregion
