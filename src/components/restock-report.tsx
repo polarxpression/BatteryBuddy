@@ -52,7 +52,7 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ i
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <p className="text-sm text-gray-500">Quantidade Necessária:</p>
                   <p className="text-2xl font-bold text-red-600">
-                    {Math.max(0, (appSettings?.lowStockThreshold || 5) - battery.quantity)}
+                    {battery.quantity}
                   </p>
                 </div>
               </CardContent>

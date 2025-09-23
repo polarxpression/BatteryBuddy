@@ -52,6 +52,7 @@ export function BatteryInventoryTableMobile({
               <div>
                 <p className="font-medium">{battery.brand}</p>
                 <p className="text-sm text-gray-500">{battery.type}</p>
+                <p className="text-sm text-gray-500">Tamanho do Pacote: {battery.packSize}</p>
                 <p className="text-xs text-muted-foreground">Localização: {t(`location:${battery.location}` as TranslationKey)}</p>
               </div>
             </div>
