@@ -22,18 +22,19 @@ export function InventorySummary({ batteries }: InventorySummaryProps) {
   const { appSettings } = useAppSettings();
   const isMobile = useMobile();
   const { data, chartConfig } = useMemo(() => {
-    const typeMap = new Map<string, { total: number; quantity: number }>();
+    const typeMap = new Map<string, { total: number; quantity: number; gondolaQuantity: number }>();
     batteries.forEach((battery) => {
       const total = battery.quantity * battery.packSize;
-      const existing = typeMap.get(battery.type) || { total: 0, quantity: 0 };
+      const existing = typeMap.get(battery.type) || { total: 0, quantity: 0, gondolaQuantity: 0 };
       typeMap.set(battery.type, {
         total: existing.total + total,
         quantity: existing.quantity + battery.quantity,
+        gondolaQuantity: existing.gondolaQuantity + (battery.location === "gondola" ? battery.quantity : 0),
       });
     });
 
     const sortedData = Array.from(typeMap.entries())
-      .map(([type, { total, quantity }]) => ({ type, total, quantity }))
+      .map(([type, { total, quantity, gondolaQuantity }]) => ({ type, total, quantity, gondolaQuantity }))
       .sort((a, b) => b.total - a.total);
 
     const chartConfig: ChartConfig = {};
@@ -42,7 +43,7 @@ export function InventorySummary({ batteries }: InventorySummaryProps) {
       let color = "hsl(var(--primary))"; // Default purple
       if (item.total <= 0) {
         color = "hsl(var(--destructive))"; // Red
-      } else if (item.total <= lowStockThreshold) {
+      } else if (item.gondolaQuantity <= lowStockThreshold) {
         color = "hsl(var(--warning))"; // Yellow
       }
 

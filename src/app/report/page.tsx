@@ -107,7 +107,7 @@ export default function ReportPage() {
           battery.type,
           battery.packSize,
           battery.quantity,
-          Math.max(0, (appSettings?.lowStockThreshold || 5) - battery.quantity)
+          battery.quantity
         ].join(','))
       ].join('\n');
 
@@ -135,7 +135,7 @@ export default function ReportPage() {
   const aggregatedQuantitiesByLocation = useMemo(() => getAggregatedQuantitiesByLocation(filteredBatteries), [filteredBatteries]);
 
   const itemsForExternalPurchase = useMemo(() => {
-    const lowStockThreshold = appSettings?.lowStockThreshold || 5;
+    const defaultLowStockThreshold = appSettings?.lowStockThreshold || 5;
     const externalPurchase: Battery[] = [];
 
     const uniqueBatteryTypes = new Map<string, Battery>();
@@ -150,14 +150,17 @@ export default function ReportPage() {
       const key = `${battery.brand}-${battery.model}-${battery.type}-${battery.packSize}`;
       const quantities = aggregatedQuantitiesByLocation.get(key);
       const gondolaQuantity = quantities?.get("gondola") || 0;
-      const stockQuantity = quantities?.get("stock") || 0;
-      const totalQuantity = gondolaQuantity + stockQuantity;
+      const gondolaLimit = battery.lowStockThreshold !== undefined ? battery.lowStockThreshold : defaultLowStockThreshold;
 
       if (battery.discontinued) return; // Skip discontinued batteries
 
       // Determine items for external purchase (overall low stock or out of stock)
-      if (totalQuantity <= lowStockThreshold) {
-        externalPurchase.push({ ...battery, quantity: totalQuantity });
+      if (gondolaQuantity < gondolaLimit / 2) {
+        const neededBatteries = Math.max(0, gondolaLimit - gondolaQuantity);
+        if (neededBatteries > 0) {
+          const neededPacks = Math.ceil(neededBatteries / battery.packSize);
+          externalPurchase.push({ ...battery, quantity: neededPacks });
+        }
       }
     });
 

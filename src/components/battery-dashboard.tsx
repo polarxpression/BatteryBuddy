@@ -198,7 +198,10 @@ export function BatteryDashboard() {
 
   const handleDuplicate = (battery: Battery) => {
     const { ...batteryToDuplicate } = battery;
-    setBatteryToEdit(batteryToDuplicate as Battery);
+    setBatteryToEdit({
+      ...batteryToDuplicate,
+      lowStockThreshold: battery.lowStockThreshold || appSettings?.lowStockThreshold || 0,
+    } as Battery);
     setIsSheetOpen(true);
   };
 

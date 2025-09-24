@@ -61,11 +61,12 @@ interface AddEditBatterySheetProps {
   onOpenChange: (open: boolean) => void;
   batteryToEdit?: Battery | null;
   onSubmit: (data: Battery) => void;
+  isDuplicating?: boolean;
 }
 
 type Type = z.infer<typeof AddEditBatterySheetSchema>
 
-export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmit }: AddEditBatterySheetProps) {
+export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmit, isDuplicating }: AddEditBatterySheetProps) {
   const { appSettings } = useAppSettings();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -73,18 +74,21 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
   const form = useForm<Type>({
     resolver: zodResolver(AddEditBatterySheetSchema),
     defaultValues: {
-      id: undefined,
-      type: undefined,
-      brand: "",
-      model: "",
-      quantity: "0",
-      packSize: 1,
-      barcode: "",
-      location: "gondola",
-      imageUrl: "",
-      lowStockThreshold: undefined,
+      id: batteryToEdit?.id || crypto.randomUUID(),
+      type: batteryToEdit?.type || undefined,
+      brand: batteryToEdit?.brand || "",
+      model: batteryToEdit?.model || "",
+      quantity: String(batteryToEdit?.quantity || 0),
+      packSize: batteryToEdit?.packSize || 1,
+      barcode: batteryToEdit?.barcode || "",
+      discontinued: batteryToEdit?.discontinued || false,
+      location: batteryToEdit?.location || "gondola",
+      imageUrl: batteryToEdit?.imageUrl || "",
+      lowStockThreshold: batteryToEdit?.lowStockThreshold || undefined,
     },
   });
+
+
 
   
   const quantityRef = useRef<HTMLInputElement>(null);
@@ -99,6 +103,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       if (batteryToEdit) {
         form.reset({
           ...batteryToEdit,
+          id: isDuplicating ? crypto.randomUUID() : batteryToEdit.id,
           quantity: String(batteryToEdit.quantity),
           barcode: batteryToEdit.barcode || "",
           discontinued: batteryToEdit.discontinued || false,
@@ -125,7 +130,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
         setImagePreview(null);
       }
     }
-  }, [batteryToEdit, form, open]);
+  }, [batteryToEdit, form, open, isDuplicating]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -148,7 +153,16 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
   };
 
   const handleFormSubmit = (data: z.infer<typeof AddEditBatterySheetSchema>) => {
-    const finalData = { ...data, imageUrl: imagePreview || data.imageUrl };
+    const { quantity, ...restOfData } = data;
+
+    const finalData = {
+      ...restOfData,
+      imageUrl: imagePreview || data.imageUrl,
+      quantity: quantity,
+    };
+    if (data.location === "gondola") {
+      finalData.lowStockThreshold = Number(data.lowStockThreshold);
+    }
     const parsedData = BatterySchema.parse(finalData);
     onSubmit(parsedData);
     onOpenChange(false);
@@ -330,26 +344,31 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="lowStockThreshold"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Limite de Estoque Baixo (por item)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Defina um limite de estoque baixo específico para esta bateria. Se deixado em branco, o limite global será usado.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {form.watch("location") === "gondola" && (
+                <FormField
+                  control={form.control}
+                  name="lowStockThreshold"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Limite de Estoque Baixo (por item)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          {...field}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === "" ? undefined : parseInt(value, 10));
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Defina um limite de estoque baixo específico para esta bateria. Se deixado em branco, o limite global será usado.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormItem>
                 <FormLabel>Imagem</FormLabel>
                 <Tabs defaultValue="url">
