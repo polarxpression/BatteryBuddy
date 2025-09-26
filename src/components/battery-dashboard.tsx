@@ -66,6 +66,7 @@ export function BatteryDashboard() {
   const { appSettings } = useAppSettings();
   const [searchTerm, setSearchTerm] = useState("");
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
 
   const aggregatedQuantitiesByLocation = useMemo(() => getAggregatedQuantitiesByLocation(batteries), [batteries]);
 
@@ -188,20 +189,19 @@ export function BatteryDashboard() {
 
   const handleOpenAddSheet = () => {
     setBatteryToEdit(null);
+    setIsDuplicating(false);
     setIsSheetOpen(true);
   };
 
   const handleOpenEditSheet = (battery: Battery) => {
     setBatteryToEdit(battery);
+    setIsDuplicating(false);
     setIsSheetOpen(true);
   };
 
   const handleDuplicate = (battery: Battery) => {
-    const { ...batteryToDuplicate } = battery;
-    setBatteryToEdit({
-      ...batteryToDuplicate,
-      lowStockThreshold: battery.lowStockThreshold || appSettings?.lowStockThreshold || 0,
-    } as Battery);
+    setBatteryToEdit(battery);
+    setIsDuplicating(true);
     setIsSheetOpen(true);
   };
 
@@ -210,7 +210,8 @@ export function BatteryDashboard() {
   };
 
   const handleSubmit = async (data: Battery) => {
-    const isEditing = batteries.some((b) => b.id === data.id);
+    const isEditing = !isDuplicating && batteries.some((b) => b.id === data.id);
+  
     if (isEditing) {
       await updateBattery(data);
       toast({
@@ -218,14 +219,10 @@ export function BatteryDashboard() {
         description: "Bateria atualizada com sucesso.",
       });
     } else {
-      const newBattery = {
-        ...data,
-        id: data.id || crypto.randomUUID(),
-      };
-      await addBattery(newBattery);
+      await addBattery(data);
       toast({
         title: "Sucesso!",
-        description: "Nova bateria adicionada ao seu inventário.",
+        description: isDuplicating ? "Bateria clonada com sucesso." : "Nova bateria adicionada ao seu inventário.",
       });
     }
   };
@@ -425,9 +422,15 @@ export function BatteryDashboard() {
 
       <AddEditBatterySheet
         open={isSheetOpen}
-        onOpenChange={setIsSheetOpen}
+        onOpenChange={(isOpen) => {
+          setIsSheetOpen(isOpen);
+          if (!isOpen) {
+            setIsDuplicating(false);
+          }
+        }}
         batteryToEdit={batteryToEdit}
         onSubmit={handleSubmit}
+        isDuplicating={isDuplicating}
       />
 
       <SearchHelpSheet open={isHelpSheetOpen} onOpenChange={setIsHelpSheetOpen} />

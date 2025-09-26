@@ -183,9 +183,19 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full max-w-sm sm:max-w-lg overflow-y-auto h-full">
         <SheetHeader>
-          <SheetTitle className="font-headline">{batteryToEdit ? "Editar Bateria" : "Adicionar Nova Bateria"}</SheetTitle>
+          <SheetTitle className="font-headline">
+            {isDuplicating
+              ? "Clonar Bateria"
+              : batteryToEdit
+              ? "Editar Bateria"
+              : "Adicionar Nova Bateria"}
+          </SheetTitle>
           <SheetDescription>
-            {batteryToEdit ? "Atualize os detalhes desta bateria." : "Preencha os detalhes da nova bateria."}
+            {isDuplicating
+              ? "Crie uma nova bateria a partir desta."
+              : batteryToEdit
+              ? "Atualize os detalhes desta bateria."
+              : "Preencha os detalhes da nova bateria."}
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
@@ -434,7 +444,13 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 <Button variant="outline">Cancelar</Button>
               </SheetClose>
               <Button type="submit" disabled={isUploading}>
-                {isUploading ? "Salvando Imagem..." : (batteryToEdit ? "Salvar Alterações" : "Adicionar Bateria")}
+                {isUploading
+                  ? "Salvando Imagem..."
+                  : isDuplicating
+                  ? "Clonar Bateria"
+                  : batteryToEdit
+                  ? "Salvar Alterações"
+                  : "Adicionar Bateria"}
               </Button>
             </SheetFooter>
           </form>
