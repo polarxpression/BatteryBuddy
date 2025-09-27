@@ -94,8 +94,8 @@ export function BatteryDashboard() {
         ? battery.lowStockThreshold 
         : (appSettings?.lowStockThreshold || 0);
 
-      // Restock suggestion: if gondola is less than half of the limit, suggest restock from stock
-      if (gondolaQuantity < gondolaLimit / 2) {
+      // Restock suggestion: if gondola quantity is at or below the limit, suggest restock from stock
+      if (gondolaQuantity <= gondolaLimit) {
         const needed = gondolaLimit - gondolaQuantity;
         const canMove = Math.min(needed, stockQuantity);
         console.log("Restock suggestion:", { battery, gondolaQuantity, gondolaLimit, stockQuantity, needed, canMove });
@@ -104,8 +104,8 @@ export function BatteryDashboard() {
         }
       }
 
-      // Restock report: if total quantity is less than half of the limit, suggest purchase
-      if (gondolaQuantity + stockQuantity < gondolaLimit / 2) {
+      // Restock report: if total quantity is at or below the limit, suggest purchase
+      if (gondolaQuantity + stockQuantity <= gondolaLimit) {
         const needed = gondolaLimit - (gondolaQuantity + stockQuantity);
         if (needed > 0) {
           externalPurchase.push({ ...battery, quantity: needed });
@@ -180,7 +180,7 @@ export function BatteryDashboard() {
           ? battery.lowStockThreshold
           : (appSettings?.lowStockThreshold || 0);
 
-        return gondolaQuantity < gondolaLimit / 2;
+        return gondolaQuantity <= gondolaLimit;
       });
     }
 

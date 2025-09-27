@@ -33,7 +33,7 @@ export function RestockSuggestions({ itemsForInternalRestock, onMoveBatteries }:
                         batteryType={item.type}
                         width={80}
                         height={80}
-                        className="rounded-md object-cover mb-2"
+                        className="h-full rounded-md object-cover mb-2"
                     />
                     <div className="text-center w-full">
                         <p className="font-medium break-words">{item.brand} {item.model} ({item.type})</p>
