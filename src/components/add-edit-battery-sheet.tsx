@@ -50,7 +50,7 @@ const AddEditBatterySheetSchema = z.object({
   discontinued: z.boolean().optional(),
   location: z.enum(["gondola", "stock"]).optional(),
   imageUrl: z.string().optional(),
-  lowStockThreshold: z.number().optional(),
+  gondolaCapacity: z.number().optional(),
 });
 
 
@@ -84,7 +84,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       discontinued: batteryToEdit?.discontinued || false,
       location: batteryToEdit?.location || "gondola",
       imageUrl: batteryToEdit?.imageUrl || "",
-      lowStockThreshold: batteryToEdit?.lowStockThreshold || undefined,
+      gondolaCapacity: batteryToEdit?.gondolaCapacity || undefined,
     },
   });
 
@@ -109,7 +109,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           discontinued: batteryToEdit.discontinued || false,
           location: batteryToEdit.location || "gondola",
           imageUrl: batteryToEdit.imageUrl || "",
-          lowStockThreshold: batteryToEdit.lowStockThreshold || undefined,
+          gondolaCapacity: batteryToEdit.gondolaCapacity || undefined,
         });
         if (batteryToEdit.imageUrl) {
           setImagePreview(batteryToEdit.imageUrl);
@@ -161,7 +161,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       quantity: quantity,
     };
     if (data.location === "gondola") {
-      finalData.lowStockThreshold = Number(data.lowStockThreshold);
+      finalData.gondolaCapacity = data.gondolaCapacity;
     }
     const parsedData = BatterySchema.parse(finalData);
     onSubmit(parsedData);
@@ -357,10 +357,10 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
               {form.watch("location") === "gondola" && (
                 <FormField
                   control={form.control}
-                  name="lowStockThreshold"
+                  name="gondolaCapacity"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Limite de Estoque Baixo (por item)</FormLabel>
+                      <FormLabel>Capacidade Máxima da Gôndola (por item)</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -372,7 +372,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         />
                       </FormControl>
                       <FormDescription>
-                        Defina um limite de estoque baixo específico para esta bateria. Se deixado em branco, o limite global será usado.
+                        Defina a capacidade máxima de baterias para este item na gôndola. Se deixado em branco, a capacidade global será usada.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

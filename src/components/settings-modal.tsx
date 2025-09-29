@@ -29,7 +29,7 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
   const [sizes, setSizes] = useState<Record<string, number>>({});
   const [brands, setBrands] = useState<Record<string, string>>({});
   const [models, setModels] = useState<Record<string, string>>({});
-  const [lowStockThreshold, setLowStockThreshold] = useState(appSettings?.lowStockThreshold || 5);
+  const [gondolaCapacity, setgondolaCapacity] = useState(appSettings?.gondolaCapacity || 5);
 
   useEffect(() => {
     if (appSettings) {
@@ -37,33 +37,33 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
       setSizes(appSettings.packSizes || {});
       setBrands(appSettings.batteryBrands || {});
       setModels(appSettings.batteryModels || {});
-      setLowStockThreshold(appSettings.lowStockThreshold || 5);
+      setgondolaCapacity(appSettings.gondolaCapacity || 5);
     }
   }, [appSettings]);
 
 
 
-  const handleUpdateLowStockThreshold = async () => {
-    const newThresholdString = (document.getElementById('lowStockThresholdInput') as HTMLInputElement).value;
+  const handleUpdategondolaCapacity = async () => {
+    const newThresholdString = (document.getElementById('gondolaCapacityInput') as HTMLInputElement).value;
     const newThreshold = parseInt(newThresholdString, 10);
 
     if (isNaN(newThreshold) || newThreshold < 0) {
       toast({
         title: "Erro",
-        description: "Por favor, insira um número válido e não negativo para o nível de estoque baixo.",
+        description: "Por favor, insira um número válido e não negativo para a capacidade máxima da gôndola.",
         variant: "destructive",
       });
       return;
     }
 
     try {
-      await updateAppSettings({ lowStockThreshold: newThreshold });
-      toast({ title: "Sucesso!", description: `Nível de estoque baixo atualizado para ${newThreshold}.` });
+      await updateAppSettings({ gondolaCapacity: newThreshold });
+      toast({ title: "Sucesso!", description: `Capacidade máxima da gôndola atualizada para ${newThreshold}.` });
     } catch (error) {
-      console.error("Failed to update low stock threshold:", error);
+      console.error("Failed to update gondola capacity:", error);
       toast({
         title: "Erro",
-        description: "Falha ao atualizar o nível de estoque baixo. Verifique o console para mais detalhes.",
+        description: "Falha ao atualizar a capacidade máxima da gôndola. Verifique o console para mais detalhes.",
         variant: "destructive",
       });
     }
@@ -298,20 +298,19 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Nível de Estoque Baixo</CardTitle>
-              <CardDescription>Defina o limite para alerta de estoque baixo.</CardDescription>
+              <CardTitle>Capacidade Máxima da Gôndola</CardTitle>
+              <CardDescription>Defina a capacidade máxima de baterias na gôndola.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
               <div className="flex gap-2">
                 <Input
-                  id="lowStockThresholdInput"
-                  value={lowStockThreshold}
-                  onChange={(e) => setLowStockThreshold(parseInt(e.target.value, 10))}
-                  type="number"
-                  placeholder="Limite de estoque baixo"
+                  id="gondolaCapacityInput"
+                  value={gondolaCapacity}
+                  onChange={(e) => setgondolaCapacity(parseInt(e.target.value, 10))}                  type="number"
+                  placeholder="Capacidade máxima da gôndola"
                   className="flex-grow"
                 />
-                <Button onClick={handleUpdateLowStockThreshold} className="shrink-0">Salvar</Button>
+                <Button onClick={handleUpdategondolaCapacity} className="shrink-0">Salvar</Button>
               </div>
             </CardContent>
           </Card>

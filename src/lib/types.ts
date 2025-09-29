@@ -33,7 +33,7 @@ export const BatterySchema = z.object({
   favcount: z.number().optional(),
   source: z.string().optional(),
   rating: z.string().optional(),
-  lowStockThreshold: z.number().optional(),
+  gondolaCapacity: z.number().optional(),
 });
 
 export type Battery = z.infer<typeof BatterySchema>;
@@ -43,7 +43,7 @@ export const AppSettingsSchema = z.object({
   packSizes: z.record(z.number()),
   batteryBrands: z.record(z.string()),
   batteryModels: z.record(z.string()),
-  lowStockThreshold: z.number().optional(),
+  gondolaCapacity: z.number().optional(),
 });
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>;

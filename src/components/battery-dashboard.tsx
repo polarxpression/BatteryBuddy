@@ -90,9 +90,9 @@ export function BatteryDashboard() {
       
       if (battery.discontinued) return;
 
-      const gondolaLimit = battery.lowStockThreshold !== undefined 
-        ? battery.lowStockThreshold 
-        : (appSettings?.lowStockThreshold || 0);
+const gondolaLimit = battery.gondolaCapacity !== undefined
+        ? battery.gondolaCapacity 
+        : (appSettings?.gondolaCapacity || 0);
 
       // Restock suggestion: if gondola quantity is at or below the limit, suggest restock from stock
       if (gondolaQuantity <= gondolaLimit) {
@@ -176,9 +176,9 @@ export function BatteryDashboard() {
           `${battery.brand}-${battery.model}-${battery.type}-${battery.packSize}`
         );
         const gondolaQuantity = quantities?.get("gondola") || 0;
-        const gondolaLimit = battery.lowStockThreshold !== undefined
-          ? battery.lowStockThreshold
-          : (appSettings?.lowStockThreshold || 0);
+        const gondolaLimit = battery.gondolaCapacity !== undefined
+          ? battery.gondolaCapacity
+          : (appSettings?.gondolaCapacity || 0);
 
         return gondolaQuantity <= gondolaLimit;
       });

@@ -39,8 +39,7 @@ export function BatteryInventoryTableMobile({
       {batteries.map((battery) => (
         <div
           key={battery.id}
-          className={`rounded-lg border p-4 shadow-sm ${battery.location === "gondola" && battery.quantity <= (battery.lowStockThreshold !== undefined ? battery.lowStockThreshold : (appSettings?.lowStockThreshold || 5)) ? "bg-red-50/50" : ""}`}
-        >
+          className={`rounded-lg border p-4 shadow-sm ${battery.location === "gondola" && battery.quantity <= (battery.gondolaCapacity !== undefined ? battery.gondolaCapacity : (appSettings?.gondolaCapacity || 5)) ? "bg-red-50/50" : ""}`}        >
           <div className="flex items-center justify-between">
             <div className="h-full flex items-center gap-2">
               <BatteryImageOrIcon

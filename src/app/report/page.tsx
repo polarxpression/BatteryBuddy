@@ -135,7 +135,7 @@ export default function ReportPage() {
   const aggregatedQuantitiesByLocation = useMemo(() => getAggregatedQuantitiesByLocation(filteredBatteries), [filteredBatteries]);
 
   const itemsForExternalPurchase = useMemo(() => {
-    const defaultLowStockThreshold = appSettings?.lowStockThreshold || 5;
+  const defaultgondolaCapacity = appSettings?.gondolaCapacity ?? 5;
     const externalPurchase: Battery[] = [];
 
     const uniqueBatteryTypes = new Map<string, Battery>();
@@ -150,7 +150,7 @@ export default function ReportPage() {
       const key = `${battery.brand}-${battery.model}-${battery.type}-${battery.packSize}`;
       const quantities = aggregatedQuantitiesByLocation.get(key);
       const gondolaQuantity = quantities?.get("gondola") || 0;
-      const gondolaLimit = battery.lowStockThreshold !== undefined ? battery.lowStockThreshold : defaultLowStockThreshold;
+      const gondolaLimit = battery.gondolaCapacity !== undefined ? battery.gondolaCapacity : defaultgondolaCapacity;
 
       if (battery.discontinued) return; // Skip discontinued batteries
 
