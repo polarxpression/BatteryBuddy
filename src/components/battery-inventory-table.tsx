@@ -147,7 +147,7 @@ export function BatteryInventoryTable({
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {sortedBatteries.map((battery) => (
-            <TableRow key={battery.id} className={battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity ? "bg-red-50/50" : ""}>
+            <TableRow key={battery.id} className={battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity / 2 ? "bg-red-50/50" : ""}>
               <TableCell className="text-center font-medium">
                 <Checkbox />
               </TableCell>
