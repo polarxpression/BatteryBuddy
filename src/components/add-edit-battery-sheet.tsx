@@ -51,6 +51,7 @@ const AddEditBatterySheetSchema = z.object({
   location: z.enum(["gondola", "stock"]).optional(),
   imageUrl: z.string().optional(),
   gondolaCapacity: z.number().optional(),
+  gondolaName: z.string().optional(),
 });
 
 
@@ -85,6 +86,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       location: batteryToEdit?.location || "gondola",
       imageUrl: batteryToEdit?.imageUrl || "",
       gondolaCapacity: batteryToEdit?.gondolaCapacity || undefined,
+      gondolaName: batteryToEdit?.gondolaName || "",
     },
   });
 
@@ -110,6 +112,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           location: batteryToEdit.location || "gondola",
           imageUrl: batteryToEdit.imageUrl || "",
           gondolaCapacity: batteryToEdit.gondolaCapacity || undefined,
+          gondolaName: batteryToEdit.gondolaName || "",
         });
         if (batteryToEdit.imageUrl) {
           setImagePreview(batteryToEdit.imageUrl);
@@ -126,6 +129,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
           discontinued: false,
           location: "gondola",
           imageUrl: "",
+          gondolaName: "",
         });
         setImagePreview(null);
       }
@@ -373,6 +377,27 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                       </FormControl>
                       <FormDescription>
                         Defina a capacidade máxima de baterias para este item na gôndola. Se deixado em branco, a capacidade global será usada.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              {form.watch("location") === "gondola" && (
+                <FormField
+                  control={form.control}
+                  name="gondolaName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome da Gôndola</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Dê um nome para a gôndola para facilitar a identificação.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

@@ -90,8 +90,10 @@ export function BatteryDashboard() {
       
       if (battery.discontinued) return;
 
-const gondolaLimit = battery.gondolaCapacity !== undefined
-        ? battery.gondolaCapacity 
+      const gondolaBattery = batteries.find(b => b.brand === battery.brand && b.model === battery.model && b.type === battery.type && b.packSize === battery.packSize && b.location === 'gondola');
+
+      const gondolaLimit = gondolaBattery?.gondolaCapacity !== undefined
+        ? gondolaBattery.gondolaCapacity
         : (appSettings?.gondolaCapacity || 0);
 
       // Restock suggestion: if gondola quantity is at or below the limit, suggest restock from stock
@@ -200,7 +202,14 @@ const gondolaLimit = battery.gondolaCapacity !== undefined
   };
 
   const handleDuplicate = (battery: Battery) => {
-    setBatteryToEdit(battery);
+    const sameBatteries = batteries.filter(b => b.brand === battery.brand && b.model === battery.model && b.type === battery.type && b.packSize === battery.packSize && b.location === 'gondola');
+    const gondolaNames = sameBatteries.map(b => b.gondolaName).filter(name => name && name.startsWith('Gondola '));
+    const highestNumber = gondolaNames.reduce((max, name) => {
+      const number = parseInt(name!.split(' ')[1] || '0', 10);
+      return number > max ? number : max;
+    }, 0);
+
+    setBatteryToEdit({ ...battery, gondolaName: `Gondola ${highestNumber + 1}` });
     setIsDuplicating(true);
     setIsSheetOpen(true);
   };
@@ -412,9 +421,9 @@ const gondolaLimit = battery.gondolaCapacity !== undefined
                     <Label htmlFor="low-stock-filter">Apenas baterias com baixo estoque</Label>
                 </div>
                 {isMobile ? (
-                    <BatteryInventoryTableMobile batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDuplicate={handleDuplicate} onDelete={handleDelete} onQuantityChange={handleQuantityChange} appSettings={appSettings} />
+                    <BatteryInventoryTableMobile batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDuplicate={handleDuplicate} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
                 ) : (
-                    <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDuplicate={handleDuplicate} onDelete={handleDelete} onQuantityChange={handleQuantityChange} appSettings={appSettings} />
+                    <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDuplicate={handleDuplicate} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
                 )}
             </CardContent>
         </Card>

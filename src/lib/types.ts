@@ -34,6 +34,7 @@ export const BatterySchema = z.object({
   source: z.string().optional(),
   rating: z.string().optional(),
   gondolaCapacity: z.number().optional(),
+  gondolaName: z.string().optional(),
 });
 
 export type Battery = z.infer<typeof BatterySchema>;

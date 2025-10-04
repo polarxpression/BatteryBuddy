@@ -11,7 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AppSettings } from "@/lib/types";
+
 import { EditableQuantity } from "./ui/editable-quantity";
 import { BatteryImageOrIcon } from "./battery-image-or-icon";
 import { useTranslation } from "../hooks/use-translation";
@@ -23,7 +23,6 @@ interface BatteryInventoryTableProps {
   onDelete: (id: string) => void;
   onDuplicate: (battery: Battery) => void;
   onQuantityChange: (id: string, newQuantity: number) => void;
-  appSettings: AppSettings | null;
 }
 
 export function BatteryInventoryTable({
@@ -32,7 +31,6 @@ export function BatteryInventoryTable({
   onDelete,
   onDuplicate,
   onQuantityChange,
-  appSettings,
 }: BatteryInventoryTableProps) {
   const [sortColumn, setSortColumn] = useState<keyof Battery | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -149,7 +147,7 @@ export function BatteryInventoryTable({
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {sortedBatteries.map((battery) => (
-            <TableRow key={battery.id} className={battery.location === "gondola" && battery.quantity <= (battery.gondolaCapacity !== undefined ? battery.gondolaCapacity : (appSettings?.gondolaCapacity || 5)) ? "bg-red-50/50" : ""}>
+            <TableRow key={battery.id} className={battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity ? "bg-red-50/50" : ""}>
               <TableCell className="text-center font-medium">
                 <Checkbox />
               </TableCell>
@@ -177,7 +175,11 @@ export function BatteryInventoryTable({
                   variant="default"
                 />
               </TableCell>
-              <TableCell className="text-center">{t(`location:${battery.location}` as TranslationKey)}</TableCell>
+              <TableCell className="text-center">
+                {battery.location === 'gondola' && battery.gondolaName 
+                  ? `${t(`location:${battery.location}` as TranslationKey)} - ${battery.gondolaName}`
+                  : t(`location:${battery.location}` as TranslationKey)}
+              </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

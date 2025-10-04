@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AppSettings } from "@/lib/types";
+
 import { EditableQuantity } from "./ui/editable-quantity";
 import { BatteryImageOrIcon } from "./battery-image-or-icon";
 import { useTranslation } from "../hooks/use-translation";
@@ -22,7 +22,6 @@ interface BatteryInventoryTableMobileProps {
   onDuplicate: (battery: Battery) => void;
   onDelete: (id: string) => void;
   onQuantityChange: (id: string, newQuantity: number) => void;
-  appSettings: AppSettings | null;
 }
 
 export function BatteryInventoryTableMobile({
@@ -31,7 +30,6 @@ export function BatteryInventoryTableMobile({
   onDuplicate,
   onDelete,
   onQuantityChange,
-  appSettings,
 }: BatteryInventoryTableMobileProps) {
   const { t } = useTranslation();
   return (
@@ -39,7 +37,7 @@ export function BatteryInventoryTableMobile({
       {batteries.map((battery) => (
         <div
           key={battery.id}
-          className={`rounded-lg border p-4 shadow-sm ${battery.location === "gondola" && battery.quantity <= (battery.gondolaCapacity !== undefined ? battery.gondolaCapacity : (appSettings?.gondolaCapacity || 5)) ? "bg-red-50/50" : ""}`}        >
+className={`rounded-lg border p-4 shadow-sm ${battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity ? "bg-red-50/50" : ""}`}>
           <div className="flex items-center justify-between">
             <div className="h-full flex items-center gap-2">
               <BatteryImageOrIcon
@@ -55,7 +53,7 @@ export function BatteryInventoryTableMobile({
                 <p className="text-sm text-gray-500">{battery.type}</p>
                 <p className="text-sm text-gray-500">{battery.model}</p>
                 <p className="text-sm text-gray-500">Tamanho do Pacote: {battery.packSize}</p>
-                <p className="text-xs text-muted-foreground">Localização: {t(`location:${battery.location}` as TranslationKey)}</p>
+                <p className="text-xs text-muted-foreground">Localização: {battery.location === 'gondola' && battery.gondolaName ? `${t(`location:${battery.location}` as TranslationKey)} - ${battery.gondolaName}` : t(`location:${battery.location}` as TranslationKey)}</p>
               </div>
             </div>
             <DropdownMenu>
