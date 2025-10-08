@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,12 +12,15 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+import { Battery } from "@/lib/types";
+
 interface GenerateReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onGenerate: (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => void;
+  onGenerate: (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; batteries: Battery[] }) => void;
   brands: string[];
   packSizes: string[];
+  batteries: Battery[];
 }
 
 export function GenerateReportModal({
@@ -26,6 +29,7 @@ export function GenerateReportModal({
   onGenerate,
   brands,
   packSizes,
+  batteries,
 }: GenerateReportModalProps) {
   const [layout, setLayout] = useState("grid");
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -37,33 +41,14 @@ export function GenerateReportModal({
     { value: "single", label: "Página Única" },
   ];
 
-  // Reset form state when modal is closed
-  useEffect(() => {
-    if (!isOpen) {
-      setLayout("grid");
-      setSelectedBrands([]);
-      setSelectedPackSizes([]);
-      setIsGenerating(false);
-    }
-  }, [isOpen]);
-
   const handleGenerate = async () => {
-    // Basic validation
-    if (selectedBrands.length === 0) {
-      alert('Por favor, selecione pelo menos uma marca');
-      return;
-    }
-    if (selectedPackSizes.length === 0) {
-      alert('Por favor, selecione pelo menos um tamanho de pacote');
-      return;
-    }
-
     setIsGenerating(true);
     try {
       await onGenerate({
         layout,
         selectedBrands,
         selectedPackSizes,
+        batteries,
       });
       onClose(); // Close modal after successful generation
     } catch (error) {

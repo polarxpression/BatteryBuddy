@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+
 import { Battery } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
@@ -10,7 +10,7 @@ import { forwardRef } from "react";
 interface RestockReportProps {
   itemsForExternalPurchase: Battery[];
   layout?: 'grid' | 'single';
-  onExport: (format: 'image' | 'pdf' | 'csv') => Promise<void>;
+  onExport: (format: 'image' | 'pdf' | 'zip') => Promise<void>;
 }
 
 export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ itemsForExternalPurchase, layout = 'grid', onExport }, ref) => {
@@ -23,7 +23,7 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ i
           <div id="export-buttons" className="flex gap-2">
             <Button onClick={() => onExport('image')}>Exportar como Imagem</Button>
             <Button onClick={() => onExport('pdf')}>Exportar como PDF</Button>
-            <Button onClick={() => onExport('csv')}>Exportar como CSV</Button>
+            <Button onClick={() => onExport('zip')}>Exportar como ZIP</Button>
           </div>
         </div>
         <div className={`${ 
@@ -32,21 +32,18 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ i
             : 'flex flex-col gap-4'
         }`}>
           {itemsForExternalPurchase.map((battery) => (
-            <Card key={battery.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out rounded-lg">
+            <Card key={battery.id} className="overflow-hidden transition-shadow duration-300 ease-in-out rounded-lg battery-card">
               <CardHeader className="p-0">
-                <Image
-                  src={battery.imageUrl || "/placeholder.svg"}
-                  alt={battery.model || "Battery Image"}
-                  width={300}
-                  height={200}
-                  className="w-full h-40 object-contain"
-                />
+                <div
+                  className="w-full h-40 bg-cover bg-center"
+                  style={{ backgroundImage: `url(/api/image-proxy?url=${encodeURIComponent(battery.imageUrl || '')})` }}
+                ></div>
               </CardHeader>
               <CardContent className="p-4">
                 <CardTitle className="text-lg font-semibold text-gray-800 truncate">{battery.brand} {battery.model}</CardTitle>
                 <p className="text-sm text-gray-500">{battery.type}</p>
                 <p className="text-sm text-gray-600">Embalagem com: {battery.packSize}</p>
-                <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="mt-4 pt-4">
                   <p className="text-sm text-gray-500">Cartelas Necessárias:</p>
                   <p className="text-2xl font-bold text-red-600">
                     {battery.quantity}

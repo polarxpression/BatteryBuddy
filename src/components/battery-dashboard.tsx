@@ -174,20 +174,28 @@ export function BatteryDashboard() {
 
     if (showLowStockOnly) {
       filtered = filtered.filter(battery => {
-        const quantities = aggregatedQuantitiesByLocation.get(
-          `${battery.brand}-${battery.model}-${battery.type}-${battery.packSize}`
+        const gondolaBattery = batteries.find(b => 
+          b.brand === battery.brand && 
+          b.model === battery.model && 
+          b.type === battery.type && 
+          b.packSize === battery.packSize && 
+          b.location === 'gondola'
         );
-        const gondolaQuantity = quantities?.get("gondola") || 0;
-        const gondolaLimit = battery.gondolaCapacity !== undefined
-          ? battery.gondolaCapacity
+
+        if (!gondolaBattery) {
+          return false;
+        }
+
+        const gondolaLimit = gondolaBattery.gondolaCapacity !== undefined
+          ? gondolaBattery.gondolaCapacity
           : (appSettings?.gondolaCapacity || 0);
 
-        return gondolaQuantity <= gondolaLimit;
+        return gondolaBattery.quantity <= gondolaLimit / 2;
       });
     }
 
     return filtered;
-  }, [batteries, searchTerm, showLowStockOnly, appSettings, aggregatedQuantitiesByLocation]);
+  }, [batteries, searchTerm, showLowStockOnly, appSettings]);
 
   const handleOpenAddSheet = () => {
     setBatteryToEdit(null);
@@ -285,13 +293,14 @@ export function BatteryDashboard() {
 
 
 
-  const handleGenerateReportFromModal = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => {
+  const handleGenerateReportFromModal = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; batteries: Battery[] }) => {
     console.log("Generating report with options:", options);
+    sessionStorage.setItem('reportBatteries', JSON.stringify(options.batteries));
     const searchParams = new URLSearchParams();
     searchParams.append('layout', options.layout);
-    searchParams.append('brands', options.selectedBrands.join(','));
-    searchParams.append('packSizes', options.selectedPackSizes.join(','));
-    window.open(`/report?${searchParams.toString()}`, "_blank");
+    options.selectedBrands.forEach(brand => searchParams.append('selectedBrands', brand));
+    options.selectedPackSizes.forEach(size => searchParams.append('selectedPackSizes', size));
+    window.open(`/report/view?${searchParams.toString()}`, "_blank");
   };
 
 
@@ -392,7 +401,7 @@ export function BatteryDashboard() {
                         <RestockSuggestions itemsForInternalRestock={itemsForInternalRestock} onMoveBatteries={handleMoveBatteries} />
         </div>
         
-        <BatteryReport onGenerateReport={handleGenerateReportFromModal} brands={brands} packSizes={packSizes} />
+        <BatteryReport onGenerateReport={(options) => handleGenerateReportFromModal(options)} brands={brands} packSizes={packSizes} batteries={filteredBatteries} />
 
         <Card>
             <CardHeader>

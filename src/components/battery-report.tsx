@@ -5,17 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GenerateReportModal } from "./generate-report-modal";
 
+import { Battery } from "@/lib/types";
+
 interface BatteryReportProps {
-  onGenerateReport: (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => void;
+  onGenerateReport: (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; batteries: Battery[] }) => void;
   brands: string[];
   packSizes: string[];
+  batteries: Battery[];
 }
 
-export function BatteryReport({ onGenerateReport, brands, packSizes }: BatteryReportProps) {
+export function BatteryReport({ onGenerateReport, brands, packSizes, batteries }: BatteryReportProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleGenerateReport = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => {
-    onGenerateReport(options);
+    onGenerateReport({ ...options, batteries });
     setIsModalOpen(false);
   };
 
@@ -37,6 +40,7 @@ export function BatteryReport({ onGenerateReport, brands, packSizes }: BatteryRe
         onGenerate={handleGenerateReport}
         brands={brands}
         packSizes={packSizes}
+        batteries={batteries}
       />
     </>
   );

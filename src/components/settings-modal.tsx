@@ -162,7 +162,7 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
                       <button
                         onClick={() => handleRemoveType(type)}
                         className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
-                        aria-label={`Remover tipo ${type}`}
+                        aria-label={`Remover tipo '${type}'`}
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -199,7 +199,7 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
                       <button
                         onClick={() => handleRemovePackSize(size)}
                         className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
-                        aria-label={`Remover tamanho ${size}`}
+                        aria-label={`Remover tamanho '${size}'`}
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -237,7 +237,7 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
                       <button
                         onClick={() => handleRemoveBrand(brand)}
                         className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
-                        aria-label={`Remover marca ${brand}`}
+                        aria-label={`Remover marca '${brand}'`}
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -274,7 +274,7 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
                       <button
                         onClick={() => handleRemoveModel(model)}
                         className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
-                        aria-label={`Remover modelo ${model}`}
+                        aria-label={`Remover modelo '${model}'`}
                       >
                         <X className="h-3 w-3" />
                       </button>
