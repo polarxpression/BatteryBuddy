@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const response = await fetch(imageUrl);
+    const response = await fetch(imageUrl, { credentials: 'omit' });
     if (!response.ok) {
       return new NextResponse('Failed to fetch image', { status: response.status });
     }
