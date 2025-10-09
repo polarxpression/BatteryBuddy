@@ -33,6 +33,7 @@ export const BatterySchema = z.object({
   favcount: z.number().optional(),
   source: z.string().optional(),
   rating: z.string().optional(),
+  gondola: z.string().optional(),
   gondolaCapacity: z.number().optional(),
   gondolaName: z.string().optional(),
 });

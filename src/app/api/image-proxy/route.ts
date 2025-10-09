@@ -1,31 +1,26 @@
+// src/app/api/image-proxy/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
-  const url = req.nextUrl.searchParams.get('url');
+  const imageUrl = req.nextUrl.searchParams.get('url');
 
-  if (!url) {
-    return new NextResponse('Missing url parameter', { status: 400 });
+  if (!imageUrl) {
+    return new NextResponse('URL parameter is missing', { status: 400 });
   }
 
   try {
-    const response = await fetch(url);
-
+    const response = await fetch(imageUrl);
     if (!response.ok) {
       return new NextResponse('Failed to fetch image', { status: response.status });
     }
-
-    const imageBuffer = await response.arrayBuffer();
-    const contentType = response.headers.get('content-type') || 'image/png';
-
-    return new NextResponse(imageBuffer, {
-      status: 200,
+    const imageBlob = await response.blob();
+    return new NextResponse(imageBlob, {
       headers: {
-        'Content-Type': contentType,
-        'Access-Control-Allow-Origin': '*',
+        'Content-Type': response.headers.get('Content-Type') || 'image/jpeg',
       },
     });
   } catch (error) {
     console.error('Error fetching image:', error);
-    return new NextResponse('Error fetching image', { status: 500 });
+    return new NextResponse('Internal Server Error', { status: 500 });
   }
 }

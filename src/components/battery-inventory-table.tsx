@@ -176,8 +176,8 @@ export function BatteryInventoryTable({
                 />
               </TableCell>
               <TableCell className="text-center">
-                {battery.location === 'gondola' && battery.gondolaName 
-                  ? `${t(`location:${battery.location}` as TranslationKey)} - ${battery.gondolaName}`
+                {battery.location === 'gondola' && battery.gondola 
+                  ? `${t(`location:${battery.location}` as TranslationKey)} - ${battery.gondola}`
                   : t(`location:${battery.location}` as TranslationKey)}
               </TableCell>
               <TableCell className="text-right">
