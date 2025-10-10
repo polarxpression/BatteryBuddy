@@ -9,13 +9,8 @@ const withPWA = require('@ducanh2912/next-pwa').default({
   disable: process.env.NODE_ENV === 'development',
   workboxOptions: {
     disableDevLogs: true,
-    runtimeCaching: [
-      {
-        urlPattern: /^https?.\/\/firestore.googleapis.com\/.*/,
-        handler: 'NetworkOnly',
-      },
-    ],
   },
+  offlineGoogleAnalytics: false,
 });
 
 const nextConfig = {
