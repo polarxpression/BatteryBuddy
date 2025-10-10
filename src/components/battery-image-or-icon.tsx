@@ -25,7 +25,7 @@ export function BatteryImageOrIcon({ imageUrl, alt, batteryType, width, height, 
   if (imageUrl && !imageError) {
     return (
       <Image
-        src={`/api/image-proxy?url=${encodeURIComponent(imageUrl)}`}
+        src={imageUrl}
         alt={alt}
         width={width}
         height={height}
