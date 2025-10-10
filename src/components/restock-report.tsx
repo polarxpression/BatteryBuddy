@@ -4,6 +4,7 @@
 import { Battery } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
+import { BatteryImageOrIcon } from "./battery-image-or-icon";
 
 import { forwardRef } from "react";
 
@@ -34,10 +35,14 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ i
           {itemsForExternalPurchase.map((battery) => (
             <Card key={battery.id} className="overflow-hidden transition-shadow duration-300 ease-in-out rounded-lg battery-card">
               <CardHeader className="p-0">
-                <div
-                  className="w-full h-40 bg-cover bg-center"
-                  style={{ backgroundImage: `url(/api/image-proxy?url=${encodeURIComponent(battery.imageUrl || '')})` }}
-                ></div>
+                <BatteryImageOrIcon
+                  imageUrl={battery.imageUrl}
+                  alt={`${battery.brand} ${battery.model}`}
+                  batteryType={battery.type}
+                  width={160}
+                  height={160}
+                  className="w-full h-40 object-contain"
+                />
               </CardHeader>
               <CardContent className="p-4">
                 <CardTitle className="text-lg font-semibold text-gray-800 truncate">{battery.brand} {battery.model}</CardTitle>
