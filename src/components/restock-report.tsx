@@ -42,7 +42,6 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ i
                   width={160}
                   height={160}
                   className="w-full h-40 object-contain"
-                  useProxy={true}
                 />
               </CardHeader>
               <CardContent className="p-4">

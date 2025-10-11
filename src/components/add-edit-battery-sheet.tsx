@@ -156,20 +156,47 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
     }
   };
 
-  const handleFormSubmit = (data: z.infer<typeof AddEditBatterySheetSchema>) => {
-    const { quantity, ...restOfData } = data;
+  const handleFormSubmit = async (data: z.infer<typeof AddEditBatterySheetSchema>) => {
+    setIsUploading(true);
+    try {
+      let finalImageUrl = imagePreview || data.imageUrl;
 
-    const finalData = {
-      ...restOfData,
-      imageUrl: imagePreview || data.imageUrl,
-      quantity: quantity,
-    };
-    if (data.location === "gondola") {
-      finalData.gondolaCapacity = data.gondolaCapacity;
+      if (finalImageUrl && !finalImageUrl.includes('firebasestorage.googleapis.com')) {
+        const response = await fetch('/api/upload-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageUrl: finalImageUrl }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to upload image');
+        }
+
+        const { downloadURL } = await response.json();
+        finalImageUrl = downloadURL;
+      }
+
+      const { quantity, ...restOfData } = data;
+
+      const finalData = {
+        ...restOfData,
+        imageUrl: finalImageUrl,
+        quantity: quantity,
+      };
+      if (data.location === "gondola") {
+        finalData.gondolaCapacity = data.gondolaCapacity;
+      }
+      const parsedData = BatterySchema.parse(finalData);
+      onSubmit(parsedData);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      // Optionally, show a toast message to the user
+    } finally {
+      setIsUploading(false);
     }
-    const parsedData = BatterySchema.parse(finalData);
-    onSubmit(parsedData);
-    onOpenChange(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>, nextFieldRef?: React.RefObject<HTMLElement>) => {

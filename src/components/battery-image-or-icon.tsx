@@ -12,10 +12,9 @@ interface BatteryImageOrIconProps {
   width: number;
   height: number;
   className?: string;
-  useProxy?: boolean;
 }
 
-export function BatteryImageOrIcon({ imageUrl, alt, batteryType, width, height, className, useProxy = false }: BatteryImageOrIconProps) {
+export function BatteryImageOrIcon({ imageUrl, alt, batteryType, width, height, className }: BatteryImageOrIconProps) {
   const [imageError, setImageError] = useState(false);
 
   // Reset error state if imageUrl changes
@@ -23,12 +22,10 @@ export function BatteryImageOrIcon({ imageUrl, alt, batteryType, width, height, 
     setImageError(false);
   }, [imageUrl]);
 
-  const src = useProxy && imageUrl ? `/api/image-proxy?url=${encodeURIComponent(imageUrl)}` : imageUrl;
-
   if (imageUrl && !imageError) {
     return (
       <Image
-        src={src || ''}
+        src={imageUrl}
         alt={alt}
         width={width}
         height={height}
