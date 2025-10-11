@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
-  const { imageUrl } = await req.json();
+  const { base64Image } = await req.json();
 
-  if (!imageUrl) {
-    return new NextResponse('Image URL is missing', { status: 400 });
+  if (!base64Image) {
+    return new NextResponse('Base64 image is missing', { status: 400 });
   }
 
   try {
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const formData = new FormData();
-    formData.append('image', imageUrl);
+    formData.append('image', base64Image);
 
     const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
       method: 'POST',

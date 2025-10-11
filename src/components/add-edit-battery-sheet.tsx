@@ -136,16 +136,28 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       let finalImageUrl = imagePreview || data.imageUrl;
 
       if (finalImageUrl) {
+        // Fetch the image from the URL, convert to Base64
+        const imageResponse = await fetch(finalImageUrl);
+        const imageBlob = await imageResponse.blob();
+        const base64Image = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(imageBlob);
+        });
+
+        // Send the Base64 image to the backend
         const response = await fetch('/api/reupload-image', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ imageUrl: finalImageUrl }),
+          body: JSON.stringify({ base64Image: base64Image.split(',')[1] }), // Send only the Base64 part
         });
 
         if (!response.ok) {
-          throw new Error('Failed to re-upload image');
+          const errorText = await response.text();
+          throw new Error(`Failed to re-upload image: ${errorText}`);
         }
 
         const { downloadURL } = await response.json();
