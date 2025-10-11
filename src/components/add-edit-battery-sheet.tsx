@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Battery, BatterySchema } from "@/lib/types";
 
 const AddEditBatterySheetSchema = z.object({
@@ -68,6 +69,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
   const { appSettings } = useAppSettings();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
 
   const form = useForm<Type>({
     resolver: zodResolver(AddEditBatterySheetSchema),
@@ -127,32 +129,48 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
         });
         setImagePreview(null);
       }
+      setFileToUpload(null);
     }
   }, [batteryToEdit, form, open, isDuplicating]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFileToUpload(file);
+      setImagePreview(URL.createObjectURL(file));
+      form.setValue("imageUrl", ""); // Clear imageUrl if a file is selected
+    }
+  };
 
   const handleFormSubmit = async (data: z.infer<typeof AddEditBatterySheetSchema>) => {
     setIsUploading(true);
     try {
-      let finalImageUrl = imagePreview || data.imageUrl;
+      let finalImageUrl = batteryToEdit?.imageUrl || "";
+      let base64Image: string | null = null;
 
-      if (finalImageUrl) {
-        // Fetch the image from the URL, convert to Base64
-        const imageResponse = await fetch(finalImageUrl);
-        const imageBlob = await imageResponse.blob();
-        const base64Image = await new Promise<string>((resolve, reject) => {
+      if (fileToUpload) {
+        base64Image = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
+          reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(fileToUpload);
+        });
+      } else if (data.imageUrl && data.imageUrl !== batteryToEdit?.imageUrl) {
+        const imageResponse = await fetch(data.imageUrl);
+        const imageBlob = await imageResponse.blob();
+        base64Image = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
           reader.onerror = reject;
           reader.readAsDataURL(imageBlob);
         });
+      }
 
-        // Send the Base64 image to the backend
+      if (base64Image) {
         const response = await fetch('/api/reupload-image', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ base64Image: base64Image.split(',')[1] }), // Send only the Base64 part
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64Image }),
         });
 
         if (!response.ok) {
@@ -165,12 +183,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       }
 
       const { quantity, ...restOfData } = data;
-
-      const finalData = {
-        ...restOfData,
-        imageUrl: finalImageUrl,
-        quantity: quantity,
-      };
+      const finalData = { ...restOfData, imageUrl: finalImageUrl, quantity: quantity };
       if (data.location === "gondola") {
         finalData.gondolaCapacity = data.gondolaCapacity;
       }
@@ -179,9 +192,9 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       onOpenChange(false);
     } catch (error) {
       console.error("Error submitting form:", error);
-      // Optionally, show a toast message to the user
     } finally {
       setIsUploading(false);
+      setFileToUpload(null);
     }
   };
 
@@ -418,21 +431,37 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 />
               )}
               <FormItem>
-                <FormLabel>URL da Imagem</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="imageUrl"
-                  render={({ field }) => (
-                    <Input
-                      placeholder="https://exemplo.com/imagem.png"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        setImagePreview(e.target.value);
-                      }}
+                <FormLabel>Imagem</FormLabel>
+                <Tabs defaultValue="url">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="url">URL</TabsTrigger>
+                    <TabsTrigger value="upload">Upload</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="url">
+                    <FormField
+                      control={form.control}
+                      name="imageUrl"
+                      render={({ field }) => (
+                        <Input
+                          placeholder="https://exemplo.com/imagem.png"
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            setImagePreview(e.target.value);
+                            setFileToUpload(null); // Clear file if a URL is entered
+                          }}
+                        />
+                      )}
                     />
-                  )}
-                />
+                  </TabsContent>
+                  <TabsContent value="upload">
+                    <Input
+                      type="file"
+                      onChange={handleFileChange}
+                      disabled={isUploading}
+                    />
+                  </TabsContent>
+                </Tabs>
                 {imagePreview && (
                   <div className="mt-4">
                     <Image src={imagePreview} alt="Battery preview" width={80} height={80} className="h-20 w-20 object-cover rounded-md" />
