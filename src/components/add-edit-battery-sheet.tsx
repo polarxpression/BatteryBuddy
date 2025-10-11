@@ -67,6 +67,7 @@ type Type = z.infer<typeof AddEditBatterySheetSchema>
 export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmit, isDuplicating }: AddEditBatterySheetProps) {
   const { appSettings } = useAppSettings();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<Type>({
     resolver: zodResolver(AddEditBatterySheetSchema),
@@ -85,10 +86,6 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       gondolaName: batteryToEdit?.gondolaName || "",
     },
   });
-
-
-
-
 
   const quantityRef = useRef<HTMLInputElement>(null);
   const barcodeRef = useRef<HTMLInputElement>(null);
@@ -134,12 +131,32 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
   }, [batteryToEdit, form, open, isDuplicating]);
 
   const handleFormSubmit = async (data: z.infer<typeof AddEditBatterySheetSchema>) => {
+    setIsUploading(true);
     try {
+      let finalImageUrl = imagePreview || data.imageUrl;
+
+      if (finalImageUrl) {
+        const response = await fetch('/api/reupload-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageUrl: finalImageUrl }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to re-upload image');
+        }
+
+        const { downloadURL } = await response.json();
+        finalImageUrl = downloadURL;
+      }
+
       const { quantity, ...restOfData } = data;
 
       const finalData = {
         ...restOfData,
-        imageUrl: imagePreview || data.imageUrl,
+        imageUrl: finalImageUrl,
         quantity: quantity,
       };
       if (data.location === "gondola") {
@@ -151,6 +168,8 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
     } catch (error) {
       console.error("Error submitting form:", error);
       // Optionally, show a toast message to the user
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -435,8 +454,8 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
               <SheetClose asChild>
                 <Button variant="outline">Cancelar</Button>
               </SheetClose>
-              <Button type="submit">
-                {isDuplicating
+              <Button type="submit" disabled={isUploading}>
+                {isUploading ? "Salvando Imagem..." : isDuplicating
                   ? "Clonar Bateria"
                   : batteryToEdit
                   ? "Salvar Alterações"
