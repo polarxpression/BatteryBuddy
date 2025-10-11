@@ -34,9 +34,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { storage } from "@/lib/firebase";
-import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
 import { Battery, BatterySchema } from "@/lib/types";
 
 const AddEditBatterySheetSchema = z.object({
@@ -70,7 +67,6 @@ type Type = z.infer<typeof AddEditBatterySheetSchema>
 export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmit, isDuplicating }: AddEditBatterySheetProps) {
   const { appSettings } = useAppSettings();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<Type>({
     resolver: zodResolver(AddEditBatterySheetSchema),
@@ -92,7 +88,8 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
 
 
 
-  
+
+
   const quantityRef = useRef<HTMLInputElement>(null);
   const barcodeRef = useRef<HTMLInputElement>(null);
   const typeRef = useRef<HTMLButtonElement>(null);
@@ -136,53 +133,13 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
     }
   }, [batteryToEdit, form, open, isDuplicating]);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImagePreview(URL.createObjectURL(file));
-      setIsUploading(true);
-      try {
-        const fileRef = storageRef(storage, `batteries/${Date.now()}_${file.name}`);
-        await uploadBytes(fileRef, file);
-        const imageUrl = await getDownloadURL(fileRef);
-        form.setValue("imageUrl", imageUrl);
-        setImagePreview(imageUrl);
-      } catch (error) {
-        console.error("Error uploading image:", error);
-        // Optionally, show a toast message to the user
-      } finally {
-        setIsUploading(false);
-      }
-    }
-  };
-
   const handleFormSubmit = async (data: z.infer<typeof AddEditBatterySheetSchema>) => {
-    setIsUploading(true);
     try {
-      let finalImageUrl = imagePreview || data.imageUrl;
-
-      if (finalImageUrl && !finalImageUrl.includes('firebasestorage.googleapis.com')) {
-        const response = await fetch('/api/upload-image', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ imageUrl: finalImageUrl }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to upload image');
-        }
-
-        const { downloadURL } = await response.json();
-        finalImageUrl = downloadURL;
-      }
-
       const { quantity, ...restOfData } = data;
 
       const finalData = {
         ...restOfData,
-        imageUrl: finalImageUrl,
+        imageUrl: imagePreview || data.imageUrl,
         quantity: quantity,
       };
       if (data.location === "gondola") {
@@ -194,8 +151,6 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
     } catch (error) {
       console.error("Error submitting form:", error);
       // Optionally, show a toast message to the user
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -432,36 +387,21 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 />
               )}
               <FormItem>
-                <FormLabel>Imagem</FormLabel>
-                <Tabs defaultValue="url">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="url">URL</TabsTrigger>
-                    <TabsTrigger value="upload">Upload</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="url">
-                    <FormField
-                      control={form.control}
-                      name="imageUrl"
-                      render={({ field }) => (
-                        <Input
-                          placeholder="https://exemplo.com/imagem.png"
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            setImagePreview(e.target.value);
-                          }}
-                        />
-                      )}
-                    />
-                  </TabsContent>
-                  <TabsContent value="upload">
+                <FormLabel>URL da Imagem</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
                     <Input
-                      type="file"
-                      onChange={handleFileChange}
-                      disabled={isUploading}
+                      placeholder="https://exemplo.com/imagem.png"
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setImagePreview(e.target.value);
+                      }}
                     />
-                  </TabsContent>
-                </Tabs>
+                  )}
+                />
                 {imagePreview && (
                   <div className="mt-4">
                     <Image src={imagePreview} alt="Battery preview" width={80} height={80} className="h-20 w-20 object-cover rounded-md" />
@@ -495,10 +435,8 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
               <SheetClose asChild>
                 <Button variant="outline">Cancelar</Button>
               </SheetClose>
-              <Button type="submit" disabled={isUploading}>
-                {isUploading
-                  ? "Salvando Imagem..."
-                  : isDuplicating
+              <Button type="submit">
+                {isDuplicating
                   ? "Clonar Bateria"
                   : batteryToEdit
                   ? "Salvar Alterações"
