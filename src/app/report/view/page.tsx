@@ -75,6 +75,8 @@ function ReportView() {
       allowTaint: true,
       scale: 2,
       logging: false,
+      windowHeight: element.scrollHeight,
+      height: element.scrollHeight,
       onclone: (clonedDoc) => {
         // Fix image dimensions in the cloned document
         const clonedImages = clonedDoc.querySelectorAll('.battery-card img');
@@ -84,6 +86,23 @@ function ReportView() {
           htmlImg.style.maxWidth = '100%';
           htmlImg.style.height = 'auto';
           htmlImg.style.display = 'block';
+        });
+
+        // Fix text rendering - ensure proper line height and padding
+        const clonedCards = clonedDoc.querySelectorAll('.battery-card');
+        clonedCards.forEach((card: Element) => {
+          const htmlCard = card as HTMLElement;
+          htmlCard.style.paddingBottom = '8px';
+          htmlCard.style.overflow = 'visible';
+        });
+
+        // Fix all text elements
+        const textElements = clonedDoc.querySelectorAll('.battery-card p, .battery-card h1, .battery-card h2, .battery-card h3, .battery-card h4, .battery-card span, .battery-card div');
+        textElements.forEach((el: Element) => {
+          const htmlEl = el as HTMLElement;
+          htmlEl.style.lineHeight = '1.5';
+          htmlEl.style.paddingBottom = '2px';
+          htmlEl.style.overflow = 'visible';
         });
       }
     });
@@ -127,6 +146,8 @@ function ReportView() {
             allowTaint: true,
             scale: 2,
             logging: false,
+            windowHeight: card.scrollHeight,
+            height: card.scrollHeight,
             onclone: (clonedDoc) => {
               const clonedImages = clonedDoc.querySelectorAll('img');
               clonedImages.forEach((img: Element) => {
@@ -135,6 +156,15 @@ function ReportView() {
                 htmlImg.style.maxWidth = '100%';
                 htmlImg.style.height = 'auto';
                 htmlImg.style.display = 'block';
+              });
+
+              // Fix text rendering
+              const textElements = clonedDoc.querySelectorAll('p, h1, h2, h3, h4, span, div');
+              textElements.forEach((el: Element) => {
+                const htmlEl = el as HTMLElement;
+                htmlEl.style.lineHeight = '1.5';
+                htmlEl.style.paddingBottom = '2px';
+                htmlEl.style.overflow = 'visible';
               });
             }
           });
