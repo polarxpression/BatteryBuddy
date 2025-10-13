@@ -73,7 +73,7 @@ function ReportView() {
     const canvas = await html2canvas(element, { 
       useCORS: true,
       allowTaint: true,
-      scale: 2,
+      scale: 3,
       logging: false,
       windowHeight: element.scrollHeight,
       height: element.scrollHeight,
@@ -88,7 +88,7 @@ function ReportView() {
           htmlImg.style.display = 'block';
         });
 
-        // Fix text rendering - ensure proper line height and padding
+        // Fix text rendering - ensure proper padding and overflow
         const clonedCards = clonedDoc.querySelectorAll('.battery-card');
         clonedCards.forEach((card: Element) => {
           const htmlCard = card as HTMLElement;
@@ -96,12 +96,10 @@ function ReportView() {
           htmlCard.style.overflow = 'visible';
         });
 
-        // Fix all text elements
+        // Fix text overflow
         const textElements = clonedDoc.querySelectorAll('.battery-card p, .battery-card h1, .battery-card h2, .battery-card h3, .battery-card h4, .battery-card span, .battery-card div');
         textElements.forEach((el: Element) => {
           const htmlEl = el as HTMLElement;
-          htmlEl.style.lineHeight = '1.5';
-          htmlEl.style.paddingBottom = '2px';
           htmlEl.style.overflow = 'visible';
         });
       }
@@ -120,7 +118,7 @@ function ReportView() {
         link.click();
         break;
       case 'pdf':
-        const pdfDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+        const pdfDataUrl = canvas.toDataURL('image/png', 1.0);
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -129,7 +127,7 @@ function ReportView() {
         const ratio = Math.min(pdfWidth / canvasWidth, pdfHeight / canvasHeight);
         const width = canvasWidth * ratio;
         const height = canvasHeight * ratio;
-        pdf.addImage(pdfDataUrl, 'JPEG', 0, 0, width, height);
+        pdf.addImage(pdfDataUrl, 'PNG', 0, 0, width, height);
         pdf.save('relatorio-reabastecimento.pdf');
         break;
       case 'zip':
@@ -144,7 +142,7 @@ function ReportView() {
           const cardCanvas = await html2canvas(card, { 
             useCORS: true,
             allowTaint: true,
-            scale: 2,
+            scale: 3,
             logging: false,
             windowHeight: card.scrollHeight,
             height: card.scrollHeight,
@@ -158,12 +156,10 @@ function ReportView() {
                 htmlImg.style.display = 'block';
               });
 
-              // Fix text rendering
+              // Fix text overflow
               const textElements = clonedDoc.querySelectorAll('p, h1, h2, h3, h4, span, div');
               textElements.forEach((el: Element) => {
                 const htmlEl = el as HTMLElement;
-                htmlEl.style.lineHeight = '1.5';
-                htmlEl.style.paddingBottom = '2px';
                 htmlEl.style.overflow = 'visible';
               });
             }
