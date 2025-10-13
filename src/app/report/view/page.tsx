@@ -45,6 +45,19 @@ function ReportView() {
     fetchData();
   }, [searchParams]);
 
+  const waitForImagesToLoad = async (element: HTMLElement): Promise<void> => {
+    const images = element.querySelectorAll('img');
+    await Promise.all(
+      Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise<void>((resolve) => {
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+        });
+      })
+    );
+  };
+
   const handleExport = async (format: 'image' | 'pdf' | 'zip') => {
     if (!reportRef.current) return;
 
@@ -54,7 +67,26 @@ function ReportView() {
       (exportButtons as HTMLElement).style.display = 'none';
     }
 
-    const canvas = await html2canvas(element, { useCORS: true });
+    // Wait for all images to load
+    await waitForImagesToLoad(element);
+
+    const canvas = await html2canvas(element, { 
+      useCORS: true,
+      allowTaint: true,
+      scale: 2,
+      logging: false,
+      onclone: (clonedDoc) => {
+        // Fix image dimensions in the cloned document
+        const clonedImages = clonedDoc.querySelectorAll('.battery-card img');
+        clonedImages.forEach((img: Element) => {
+          const htmlImg = img as HTMLImageElement;
+          htmlImg.style.objectFit = 'contain';
+          htmlImg.style.maxWidth = '100%';
+          htmlImg.style.height = 'auto';
+          htmlImg.style.display = 'block';
+        });
+      }
+    });
 
     if (exportButtons) {
       (exportButtons as HTMLElement).style.display = 'flex';
@@ -86,7 +118,26 @@ function ReportView() {
         const cardElements = element.querySelectorAll('.battery-card');
         for (let i = 0; i < cardElements.length; i++) {
           const card = cardElements[i] as HTMLElement;
-          const cardCanvas = await html2canvas(card, { useCORS: true });
+          
+          // Wait for images in this card to load
+          await waitForImagesToLoad(card);
+          
+          const cardCanvas = await html2canvas(card, { 
+            useCORS: true,
+            allowTaint: true,
+            scale: 2,
+            logging: false,
+            onclone: (clonedDoc) => {
+              const clonedImages = clonedDoc.querySelectorAll('img');
+              clonedImages.forEach((img: Element) => {
+                const htmlImg = img as HTMLImageElement;
+                htmlImg.style.objectFit = 'contain';
+                htmlImg.style.maxWidth = '100%';
+                htmlImg.style.height = 'auto';
+                htmlImg.style.display = 'block';
+              });
+            }
+          });
           const cardDataUrl = cardCanvas.toDataURL('image/png');
           zip.file(`bateria-${i + 1}.png`, cardDataUrl.split(',')[1], { base64: true });
         }
