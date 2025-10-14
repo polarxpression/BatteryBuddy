@@ -233,30 +233,6 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
             <div className="space-y-4">
               <FormField
                 control={form.control}
-                name="model"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Modelo</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger ref={modelRef} onKeyDown={(e) => handleKeyDown(e, brandRef)}>
-                          <SelectValue placeholder="Selecione um modelo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {appSettings?.batteryModels && Object.values(appSettings.batteryModels).map((model) => (
-                          <SelectItem key={model} value={model}>
-                            {model}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
                 name="brand"
                 render={({ field }) => (
                   <FormItem>
@@ -271,6 +247,30 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         {appSettings?.batteryBrands && Object.values(appSettings.batteryBrands).map((brand) => (
                           <SelectItem key={brand} value={brand}>
                             {brand}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+                            <FormField
+                control={form.control}
+                name="model"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Modelo</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger ref={modelRef} onKeyDown={(e) => handleKeyDown(e, brandRef)}>
+                          <SelectValue placeholder="Selecione um modelo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {appSettings?.batteryModels && Object.values(appSettings.batteryModels).map((model) => (
+                          <SelectItem key={model} value={model}>
+                            {model}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -366,24 +366,6 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="barcode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Código de Barras</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="text" 
-                        {...field}
-                        ref={barcodeRef}
-                        onKeyDown={(e) => handleKeyDown(e)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               {form.watch("location") === "gondola" && (
                 <FormField
                   control={form.control}
@@ -468,6 +450,24 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                   </div>
                 )}
               </FormItem>
+                            <FormField
+                control={form.control}
+                name="barcode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Código de Barras</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="text" 
+                        {...field}
+                        ref={barcodeRef}
+                        onKeyDown={(e) => handleKeyDown(e)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="discontinued"
