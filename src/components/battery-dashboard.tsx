@@ -44,13 +44,6 @@ import { SettingsModal } from "./settings-modal";
 import { useMobile } from "@/hooks/use-mobile";
 import Papa from "papaparse";
 import { Input } from "./ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { BatteryReport } from "./battery-report";
 
 import { SearchHelpSheet } from "./search-help-sheet";
@@ -73,25 +66,7 @@ export function BatteryDashboard() {
   const { appSettings } = useAppSettings();
   const [searchTerm, setSearchTerm] = useState("");
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedPackSizes, setSelectedPackSizes] = useState<string[]>([]);
   const [isDuplicating, setIsDuplicating] = useState(false);
-
-  const handleBrandChange = (brand: string) => {
-    setSelectedBrands((prev) =>
-        prev.includes(brand)
-        ? prev.filter((b) => b !== brand)
-        : [...prev, brand]
-    );
-  };
-
-  const handlePackSizeChange = (size: string) => {
-    setSelectedPackSizes((prev) =>
-        prev.includes(size)
-        ? prev.filter((s) => s !== size)
-        : [...prev, size]
-    );
-  };
 
   const aggregatedQuantitiesByLocation = useMemo(() => getAggregatedQuantitiesByLocation(batteries), [batteries]);
 
@@ -221,14 +196,6 @@ export function BatteryDashboard() {
       });
     });
 
-    if (selectedBrands.length > 0) {
-      filtered = filtered.filter(battery => selectedBrands.includes(battery.brand));
-    }
-
-    if (selectedPackSizes.length > 0) {
-      filtered = filtered.filter(battery => selectedPackSizes.includes(battery.packSize.toString()));
-    }
-
     if (showLowStockOnly) {
       filtered = filtered.filter(battery => {
         const gondolaBattery = batteries.find(b => 
@@ -252,7 +219,7 @@ export function BatteryDashboard() {
     }
 
     return filtered;
-  }, [batteries, searchTerm, showLowStockOnly, appSettings, selectedBrands, selectedPackSizes]);
+  }, [batteries, searchTerm, showLowStockOnly, appSettings]);
 
   const handleOpenAddSheet = () => {
     setBatteryToEdit(null);
@@ -473,40 +440,6 @@ export function BatteryDashboard() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="max-w-sm"
                     />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">Marcas</Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuLabel>Filtrar por Marca</DropdownMenuLabel>
-                            {brands.map((brand) => (
-                                <DropdownMenuCheckboxItem
-                                    key={brand}
-                                    checked={selectedBrands.includes(brand)}
-                                    onCheckedChange={() => handleBrandChange(brand)}
-                                >
-                                    {brand}
-                                </DropdownMenuCheckboxItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">Tamanho do Pacote</Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuLabel>Filtrar por Tamanho do Pacote</DropdownMenuLabel>
-                            {packSizes.map((size) => (
-                                <DropdownMenuCheckboxItem
-                                    key={size}
-                                    checked={selectedPackSizes.includes(size)}
-                                    onCheckedChange={() => handlePackSizeChange(size)}
-                                >
-                                    {size}
-                                </DropdownMenuCheckboxItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                     <Button variant="outline" size="icon" onClick={() => setIsHelpSheetOpen(true)}>
                         <HelpCircle className="h-4 w-4" />
                         <span className="sr-only">Ajuda</span>
