@@ -30,7 +30,7 @@ export function RestockSuggestions({ itemsForInternalRestock, onMoveBatteries }:
                     <BatteryImageOrIcon
                         imageUrl={item.imageUrl}
                         alt={item.brand}
-                        batteryType={item.type}
+                        batteryType={item.type || ''}
                         width={80}
                         height={80}
                         className="h-full rounded-md object-cover mb-2"

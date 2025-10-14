@@ -38,7 +38,7 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ i
                 <BatteryImageOrIcon
                   imageUrl={battery.imageUrl}
                   alt={`${battery.brand} ${battery.model}`}
-                  batteryType={battery.type}
+                  batteryType={battery.type || ''}
                   width={160}
                   height={160}
                   className="w-full h-40 object-contain"

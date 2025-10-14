@@ -25,8 +25,9 @@ export function InventorySummary({ batteries }: InventorySummaryProps) {
     const typeMap = new Map<string, { total: number; quantity: number; gondolaQuantity: number }>();
     batteries.forEach((battery) => {
       const total = battery.quantity * battery.packSize;
-      const existing = typeMap.get(battery.type) || { total: 0, quantity: 0, gondolaQuantity: 0 };
-      typeMap.set(battery.type, {
+      const type = battery.type || '';
+      const existing = typeMap.get(type) || { total: 0, quantity: 0, gondolaQuantity: 0 };
+      typeMap.set(type, {
         total: existing.total + total,
         quantity: existing.quantity + battery.quantity,
         gondolaQuantity: existing.gondolaQuantity + (battery.location === "gondola" ? battery.quantity : 0),

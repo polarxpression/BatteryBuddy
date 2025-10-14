@@ -39,9 +39,9 @@ import { Battery, BatterySchema } from "@/lib/types";
 
 const AddEditBatterySheetSchema = z.object({
   id: z.string(),
-  type: z.string({ required_error: "Selecione um tipo de bateria." }),
+  model: z.string({ required_error: "Selecione um tipo de bateria." }),
   brand: z.string({ required_error: "Selecione uma marca." }),
-  model: z.string().min(1, "O modelo é obrigatório."),
+  type: z.string().min(1, "O modelo é obrigatório."),
   quantity: z.string(),
   packSize: z.number(),
   barcode: z.string().min(1, "O código de barras é obrigatório."),
@@ -75,9 +75,9 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
     resolver: zodResolver(AddEditBatterySheetSchema),
     defaultValues: {
       id: batteryToEdit?.id || crypto.randomUUID(),
-      type: batteryToEdit?.type || undefined,
+      model: batteryToEdit?.model || undefined,
       brand: batteryToEdit?.brand || "",
-      model: batteryToEdit?.model || "",
+      type: batteryToEdit?.type || "",
       quantity: String(batteryToEdit?.quantity || 0),
       packSize: batteryToEdit?.packSize || 1,
       barcode: batteryToEdit?.barcode || "",
@@ -91,9 +91,9 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
 
   const quantityRef = useRef<HTMLInputElement>(null);
   const barcodeRef = useRef<HTMLInputElement>(null);
-  const typeRef = useRef<HTMLButtonElement>(null);
-  const brandRef = useRef<HTMLButtonElement>(null);
   const modelRef = useRef<HTMLButtonElement>(null);
+  const brandRef = useRef<HTMLButtonElement>(null);
+  const typeRef = useRef<HTMLButtonElement>(null);
   const packSizeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -116,9 +116,9 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       } else {
         form.reset({
           id: crypto.randomUUID(),
-          type: undefined,
+          model: undefined,
           brand: "",
-          model: "",
+          type: "",
           quantity: "0",
           packSize: 1,
           barcode: "",
@@ -185,7 +185,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
       const { quantity, ...restOfData } = data;
       const finalData = { ...restOfData, imageUrl: finalImageUrl, quantity: quantity };
       if (data.location === "gondola") {
-        finalData.gondolaCapacity = data.gondolaCapacity;
+        finalData.gondolaCapacity = data.gondolaCapacity || appSettings?.gondolaCapacity;
       }
       const parsedData = BatterySchema.parse(finalData);
       onSubmit(parsedData);
@@ -233,20 +233,20 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
             <div className="space-y-4">
               <FormField
                 control={form.control}
-                name="type"
+                name="model"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tipo de Bateria</FormLabel>
+                    <FormLabel>Modelo</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger ref={typeRef} onKeyDown={(e) => handleKeyDown(e, brandRef)}>
-                          <SelectValue placeholder="Selecione um tipo de bateria" />
+                        <SelectTrigger ref={modelRef} onKeyDown={(e) => handleKeyDown(e, brandRef)}>
+                          <SelectValue placeholder="Selecione um modelo" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {appSettings?.batteryTypes && Object.values(appSettings.batteryTypes).map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
+                        {appSettings?.batteryModels && Object.values(appSettings.batteryModels).map((model) => (
+                          <SelectItem key={model} value={model}>
+                            {model}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -263,7 +263,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                     <FormLabel>Marca</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger ref={brandRef} onKeyDown={(e) => handleKeyDown(e, modelRef)}>
+                        <SelectTrigger ref={brandRef} onKeyDown={(e) => handleKeyDown(e, typeRef)}>
                           <SelectValue placeholder="Selecione uma marca" />
                         </SelectTrigger>
                       </FormControl>
@@ -281,20 +281,20 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
               />
               <FormField
                 control={form.control}
-                name="model"
+                name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Modelo</FormLabel>
+                    <FormLabel>Tipo de Bateria</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger ref={modelRef} onKeyDown={(e) => handleKeyDown(e, quantityRef)}>
-                          <SelectValue placeholder="Selecione um modelo" />
+                        <SelectTrigger ref={typeRef} onKeyDown={(e) => handleKeyDown(e, quantityRef)}>
+                          <SelectValue placeholder="Selecione um tipo de bateria" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {appSettings?.batteryModels && Object.values(appSettings.batteryModels).map((model) => (
-                          <SelectItem key={model} value={model}>
-                            {model}
+                        {appSettings?.batteryTypes && Object.values(appSettings.batteryTypes).map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
                           </SelectItem>
                         ))}
                       </SelectContent>

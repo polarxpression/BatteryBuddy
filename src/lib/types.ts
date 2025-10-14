@@ -5,9 +5,9 @@ const mexp = new Mexp();
 
 export const BatterySchema = z.object({
   id: z.string(),
-  type: z.string({ required_error: "Selecione um tipo de bateria." }),
+  model: z.string({ required_error: "Selecione um tipo de bateria." }),
   brand: z.string({ required_error: "Selecione uma marca." }),
-  model: z.string().optional(),
+  type: z.string().optional(),
   quantity: z.string().transform((val) => {
     try {
       return mexp.eval(val);
@@ -36,7 +36,18 @@ export const BatterySchema = z.object({
   gondola: z.string().optional(),
   gondolaCapacity: z.number().optional(),
   gondolaName: z.string().optional(),
-});
+}).refine(
+  (data) => {
+    if (data.location === "gondola") {
+      return typeof data.gondolaCapacity === "number";
+    }
+    return true;
+  },
+  {
+    message: "A capacidade da gôndola deve ser definida se a localização for gôndola.",
+    path: ["gondolaCapacity"],
+  }
+);
 
 export type Battery = z.infer<typeof BatterySchema>;
 
@@ -56,13 +67,13 @@ export type CalculatorResult = {
 
 export interface DailyBatteryRecord {
   date: string;
-  batteries: Array<Pick<Battery, "id" | "brand" | "model" | "type" | "quantity" | "packSize">>;
+  batteries: Array<Pick<Battery, "id" | "brand" | "type" | "model" | "quantity" | "packSize">>;
 }
 
 export interface AggregatedBatteryData {
   brand: string;
-  model: string;
   type: string;
+  model: string;
   averageQuantity: number;
 }
 

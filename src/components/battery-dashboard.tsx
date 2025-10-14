@@ -47,7 +47,7 @@ import { Input } from "./ui/input";
 import { BatteryReport } from "./battery-report";
 
 import { SearchHelpSheet } from "./search-help-sheet";
-import { filterBatteries } from "@/lib/search";
+
 import { getAggregatedQuantitiesByLocation } from "@/lib/utils";
 
 import { Switch } from "./ui/switch";
@@ -123,7 +123,7 @@ export function BatteryDashboard() {
       setBatteries(
         newBatteries.sort(
           (a, b) =>
-            a.type.localeCompare(b.type) || a.brand.localeCompare(b.brand)
+            (a.type || '').localeCompare(b.type || '') || a.brand.localeCompare(b.brand)
         )
       );
     });
@@ -170,7 +170,15 @@ export function BatteryDashboard() {
   }, []);
 
   const filteredBatteries = useMemo(() => {
-    let filtered = filterBatteries(batteries, searchTerm);
+    let filtered = batteries.filter(battery => {
+      const searchTermLower = searchTerm.toLowerCase();
+      return (
+        battery.brand.toLowerCase().includes(searchTermLower) ||
+        (battery.model && battery.model.toLowerCase().includes(searchTermLower)) ||
+        (battery.type && battery.type.toLowerCase().includes(searchTermLower)) ||
+        battery.barcode.toLowerCase().includes(searchTermLower)
+      );
+    });
 
     if (showLowStockOnly) {
       filtered = filtered.filter(battery => {

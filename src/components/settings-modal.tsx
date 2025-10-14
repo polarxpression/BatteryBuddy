@@ -20,15 +20,15 @@ interface SettingsModalProps {
 
 export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModalProps) {
   const { toast } = useToast();
-  const [newType, setNewType] = useState("");
+  const [newModel, setNewModel] = useState("");
   const [newPackSize, setNewPackSize] = useState("");
   const [newBrand, setNewBrand] = useState("");
 
-  const [newModel, setNewModel] = useState("");
-  const [types, setTypes] = useState<Record<string, string>>({});
+  const [newType, setNewType] = useState("");
+  const [models, setModels] = useState<Record<string, string>>({});
   const [sizes, setSizes] = useState<Record<string, number>>({});
   const [brands, setBrands] = useState<Record<string, string>>({});
-  const [models, setModels] = useState<Record<string, string>>({});
+  const [types, setTypes] = useState<Record<string, string>>({});
   const [gondolaCapacity, setgondolaCapacity] = useState(appSettings?.gondolaCapacity || 5);
 
   useEffect(() => {

@@ -43,7 +43,7 @@ className={`rounded-lg border p-4 shadow-sm ${battery.location === "gondola" && 
               <BatteryImageOrIcon
                 imageUrl={battery.imageUrl}
                 alt={battery.brand}
-                batteryType={battery.type}
+                batteryType={battery.type || ''}
                 width={40}
                 height={40}
                 className="object-cover rounded-md"
