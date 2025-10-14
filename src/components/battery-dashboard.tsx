@@ -170,9 +170,44 @@ export function BatteryDashboard() {
   }, []);
 
   const filteredBatteries = useMemo(() => {
-    const searchTerms = searchTerm.match(/\"[^\"]+\"|\S+/g) || [];
+    const filters: { [key: string]: string } = {};
+    const searchTerms: string[] = [];
+
+    const termParts = searchTerm.match(/(\w+):(\"[^\"]+\"|\S+)|\"[^\"]+\"|\S+/g) || [];
+
+    termParts.forEach(part => {
+      const filterMatch = part.match(/(\w+):(\"[^\"]+\"|\S+)/);
+      if (filterMatch) {
+        const key = filterMatch[1].toLowerCase();
+        let value = filterMatch[2];
+        if (value.startsWith('"') && value.endsWith('"')) {
+          value = value.substring(1, value.length - 1);
+        }
+        filters[key] = value;
+      } else {
+        searchTerms.push(part);
+      }
+    });
 
     let filtered = batteries.filter(battery => {
+      const filterMatch = Object.entries(filters).every(([key, value]) => {
+        const batteryValue = battery[key as keyof Battery];
+        if (typeof batteryValue === 'string') {
+          return batteryValue.toLowerCase().includes(value.toLowerCase());
+        } else if (typeof batteryValue === 'number') {
+          return batteryValue.toString().toLowerCase() === value.toLowerCase();
+        }
+        return false;
+      });
+
+      if (!filterMatch) {
+        return false;
+      }
+
+      if (searchTerms.length === 0) {
+        return true;
+      }
+
       return searchTerms.every(term => {
         const isExact = term.startsWith('"') && term.endsWith('"');
         const termLower = isExact ? term.substring(1, term.length - 1).toLowerCase() : term.toLowerCase();
