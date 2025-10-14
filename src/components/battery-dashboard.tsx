@@ -170,26 +170,30 @@ export function BatteryDashboard() {
   }, []);
 
   const filteredBatteries = useMemo(() => {
-    const isExactMatch = searchTerm.startsWith('"') && searchTerm.endsWith('"');
-    const searchTermLower = isExactMatch
-      ? searchTerm.substring(1, searchTerm.length - 1).toLowerCase()
-      : searchTerm.toLowerCase();
+    const searchTerms = searchTerm.match(/\"[^\"]+\"|\S+/g) || [];
 
     let filtered = batteries.filter(battery => {
-      if (isExactMatch) {
-        return (
-          battery.brand.toLowerCase() === searchTermLower ||
-          (battery.model && battery.model.toLowerCase() === searchTermLower) ||
-          (battery.type && battery.type.toLowerCase() === searchTermLower) ||
-          battery.barcode.toLowerCase() === searchTermLower
-        );
-      }
-      return (
-        battery.brand.toLowerCase().includes(searchTermLower) ||
-        (battery.model && battery.model.toLowerCase().includes(searchTermLower)) ||
-        (battery.type && battery.type.toLowerCase().includes(searchTermLower)) ||
-        battery.barcode.toLowerCase().includes(searchTermLower)
-      );
+      return searchTerms.every(term => {
+        const isExact = term.startsWith('"') && term.endsWith('"');
+        const termLower = isExact ? term.substring(1, term.length - 1).toLowerCase() : term.toLowerCase();
+
+        const brandMatch = battery.brand.toLowerCase();
+        const modelMatch = battery.model ? battery.model.toLowerCase() : '';
+        const typeMatch = battery.type ? battery.type.toLowerCase() : '';
+        const barcodeMatch = battery.barcode.toLowerCase();
+
+        if (isExact) {
+          return brandMatch === termLower ||
+                 modelMatch === termLower ||
+                 typeMatch === termLower ||
+                 barcodeMatch === termLower;
+        } else {
+          return brandMatch.includes(termLower) ||
+                 modelMatch.includes(termLower) ||
+                 typeMatch.includes(termLower) ||
+                 barcodeMatch.includes(termLower);
+        }
+      });
     });
 
     if (showLowStockOnly) {
