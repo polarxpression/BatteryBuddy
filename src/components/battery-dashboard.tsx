@@ -170,8 +170,20 @@ export function BatteryDashboard() {
   }, []);
 
   const filteredBatteries = useMemo(() => {
+    const isExactMatch = searchTerm.startsWith('"') && searchTerm.endsWith('"');
+    const searchTermLower = isExactMatch
+      ? searchTerm.substring(1, searchTerm.length - 1).toLowerCase()
+      : searchTerm.toLowerCase();
+
     let filtered = batteries.filter(battery => {
-      const searchTermLower = searchTerm.toLowerCase();
+      if (isExactMatch) {
+        return (
+          battery.brand.toLowerCase() === searchTermLower ||
+          (battery.model && battery.model.toLowerCase() === searchTermLower) ||
+          (battery.type && battery.type.toLowerCase() === searchTermLower) ||
+          battery.barcode.toLowerCase() === searchTermLower
+        );
+      }
       return (
         battery.brand.toLowerCase().includes(searchTermLower) ||
         (battery.model && battery.model.toLowerCase().includes(searchTermLower)) ||
