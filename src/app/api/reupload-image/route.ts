@@ -1,4 +1,6 @@
+
 import { NextRequest, NextResponse } from 'next/server';
+import sharp from 'sharp';
 
 export async function POST(req: NextRequest) {
   const { base64Image } = await req.json();
@@ -13,8 +15,30 @@ export async function POST(req: NextRequest) {
       throw new Error('ImgBB API key is not configured');
     }
 
+    const imageBuffer = Buffer.from(base64Image, 'base64');
+    const image = sharp(imageBuffer);
+    const metadata = await image.metadata();
+    const height = metadata.height || 200;
+
+    // Process the image with sharp
+    const processedImageBuffer = await image
+      .resize({ height, fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+      .extend({
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: { r: 255, g: 255, b: 255, alpha: 1 }
+      })
+      .flatten({ background: { r: 255, g: 255, b: 255 } })
+      .resize(height, height)
+      .toFormat('png')
+      .toBuffer();
+
+    const processedBase64Image = processedImageBuffer.toString('base64');
+
     const formData = new FormData();
-    formData.append('image', base64Image);
+    formData.append('image', processedBase64Image);
 
     const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
       method: 'POST',
