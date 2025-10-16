@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +36,14 @@ export function GenerateReportModal({
   const [selectedPackSizes, setSelectedPackSizes] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  const filteredBatteries = useMemo(() => {
+    return batteries.filter(battery => {
+      const brandMatch = selectedBrands.length === 0 || selectedBrands.includes(battery.brand);
+      const packSizeMatch = selectedPackSizes.length === 0 || selectedPackSizes.includes(battery.packSize.toString());
+      return brandMatch && packSizeMatch;
+    });
+  }, [batteries, selectedBrands, selectedPackSizes]);
+
   const layoutOptions = [
     { value: "grid", label: "Grade" },
     { value: "single", label: "Página Única" },
@@ -48,7 +56,7 @@ export function GenerateReportModal({
         layout,
         selectedBrands,
         selectedPackSizes,
-        batteries,
+        batteries: filteredBatteries,
       });
       onClose(); // Close modal after successful generation
     } catch (error) {
@@ -91,7 +99,12 @@ export function GenerateReportModal({
         </DialogHeader>
 
         <ScrollArea className="flex-1 px-6">
-          <form id="reportForm" className="space-y-6 py-4">
+          {filteredBatteries.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              <p>There is no batteries to purchase with the selected filters.</p>
+            </div>
+          ) : (
+            <form id="reportForm" className="space-y-6 py-4">
 
 
             <div className="space-y-4">
@@ -207,6 +220,7 @@ export function GenerateReportModal({
               <div className="text-xs text-muted-foreground italic">Filtrar por tamanhos de pacote de bateria</div>
             </div>
           </form>
+          )}
         </ScrollArea>
 
         <DialogFooter className="px-6 py-4 border-t">

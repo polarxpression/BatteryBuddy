@@ -48,7 +48,7 @@ import { BatteryReport } from "./battery-report";
 
 import { SearchHelpSheet } from "./search-help-sheet";
 
-import { getAggregatedQuantitiesByLocation } from "@/lib/utils";
+
 
 import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
@@ -69,55 +69,68 @@ export function BatteryDashboard() {
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
 
-  const aggregatedQuantitiesByLocation = useMemo(() => getAggregatedQuantitiesByLocation(batteries), [batteries]);
 
-  const { itemsForInternalRestock, itemsForExternalPurchase } = useMemo(() => {
-    const internalRestock: Battery[] = [];
-    const externalPurchase: Battery[] = [];
 
-    const uniqueBatteryTypes = new Map<string, Battery>();
+  const { itemsForInternalRestock, itemsForExternalPurchase }: { itemsForInternalRestock: Battery[]; itemsForExternalPurchase: Battery[] } = useMemo(() => {
+    const internalRestockMap = new Map<string, { item: Battery, quantity: number }>();
+    const externalPurchaseMap = new Map<string, { item: Battery, quantity: number }>();
+    const batteriesByKey = new Map<string, Battery[]>();
+
     batteries.forEach(battery => {
       const key = `${battery.brand}-${battery.model}-${battery.type}-${battery.packSize}`;
-      if (!uniqueBatteryTypes.has(key)) {
-        uniqueBatteryTypes.set(key, battery);
+      if (!batteriesByKey.has(key)) {
+        batteriesByKey.set(key, []);
       }
+      batteriesByKey.get(key)!.push(battery);
     });
 
-    uniqueBatteryTypes.forEach(battery => {
-      const key = `${battery.brand}-${battery.model}-${battery.type}-${battery.packSize}`;
-      const quantities = aggregatedQuantitiesByLocation.get(key);
-      const gondolaQuantity = quantities?.get("gondola") || 0;
-      const stockQuantity = quantities?.get("stock") || 0;
-      
-      if (battery.discontinued) return;
+    batteriesByKey.forEach((batteriesOfType) => {
+      const representativeBattery = batteriesOfType[0];
+      if (!representativeBattery || representativeBattery.discontinued) return;
 
-      const gondolaBattery = batteries.find(b => b.brand === battery.brand && b.model === battery.model && b.type === battery.type && b.packSize === battery.packSize && b.location === 'gondola');
+      const gondolaBatteries = batteriesOfType.filter(b => b.location === 'gondola');
+      const stockBattery = batteriesOfType.find(b => b.location === 'stock');
+      let stockQuantity = stockBattery ? stockBattery.quantity : 0;
 
-      const gondolaLimit = gondolaBattery?.gondolaCapacity !== undefined
-        ? gondolaBattery.gondolaCapacity
-        : (appSettings?.gondolaCapacity || 0);
+      gondolaBatteries.forEach(gondolaBattery => {
+        const gondolaLimit = (gondolaBattery.gondolaCapacity && gondolaBattery.gondolaCapacity > 0) ? gondolaBattery.gondolaCapacity : (appSettings?.gondolaCapacity || 0);
+        
+        if (gondolaBattery.quantity < gondolaLimit / 2) {
+          const neededOnGondola = gondolaLimit - gondolaBattery.quantity;
+          const canMoveFromStock = Math.min(neededOnGondola, stockQuantity);
 
-      // Restock suggestion: if gondola quantity is at or below the limit, suggest restock from stock
-      if (gondolaQuantity <= gondolaLimit) {
-        const needed = gondolaLimit - gondolaQuantity;
-        const canMove = Math.min(needed, stockQuantity);
-        console.log("Restock suggestion:", { battery, gondolaQuantity, gondolaLimit, stockQuantity, needed, canMove });
-        if (canMove > 0) {
-          internalRestock.push({ ...battery, quantity: canMove });
+          if (canMoveFromStock > 0) {
+            if (stockBattery) {
+              const key = `${stockBattery.brand}-${stockBattery.model}-${stockBattery.type}-${stockBattery.packSize}`;
+              const existing = internalRestockMap.get(key);
+              if (existing) {
+                existing.quantity += canMoveFromStock;
+              } else {
+                internalRestockMap.set(key, { item: stockBattery, quantity: canMoveFromStock });
+              }
+              stockQuantity -= canMoveFromStock;
+            }
+          }
+          
+          const neededFromExternal = neededOnGondola - canMoveFromStock;
+          if (neededFromExternal > 0) {
+            const key = `${gondolaBattery.brand}-${gondolaBattery.model}-${gondolaBattery.type}-${gondolaBattery.packSize}`;
+            const existing = externalPurchaseMap.get(key);
+            if (existing) {
+              existing.quantity += neededFromExternal;
+            } else {
+              externalPurchaseMap.set(key, { item: gondolaBattery, quantity: neededFromExternal });
+            }
+          }
         }
-      }
-
-      // Restock report: if total quantity is at or below the limit, suggest purchase
-      if (gondolaQuantity + stockQuantity <= gondolaLimit) {
-        const needed = gondolaLimit - (gondolaQuantity + stockQuantity);
-        if (needed > 0) {
-          externalPurchase.push({ ...battery, quantity: needed });
-        }
-      }
+      });
     });
 
-    return { itemsForInternalRestock: internalRestock, itemsForExternalPurchase: externalPurchase };
-  }, [batteries, appSettings, aggregatedQuantitiesByLocation]);
+    const itemsForInternalRestock = Array.from(internalRestockMap.values()).map(v => ({ ...v.item, quantity: v.quantity }));
+    const itemsForExternalPurchase = Array.from(externalPurchaseMap.values()).map(v => ({ ...v.item, quantity: v.quantity }));
+
+    return { itemsForInternalRestock, itemsForExternalPurchase };
+  }, [batteries, appSettings]);
 
   useEffect(() => {
     const unsubscribe = onBatteriesSnapshot((newBatteries) => {
@@ -295,8 +308,14 @@ export function BatteryDashboard() {
 
 
   const handleGenerateReportFromModal = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; batteries: Battery[] }) => {
+    const filteredForReport = itemsForExternalPurchase.filter(battery => {
+      const brandMatch = options.selectedBrands.length === 0 || options.selectedBrands.includes(battery.brand);
+      const packSizeMatch = options.selectedPackSizes.length === 0 || options.selectedPackSizes.includes(battery.packSize.toString());
+      return brandMatch && packSizeMatch;
+    });
+
     console.log("Generating report with options:", options);
-    sessionStorage.setItem('reportBatteries', JSON.stringify(options.batteries));
+    sessionStorage.setItem('reportBatteries', JSON.stringify(filteredForReport));
     const searchParams = new URLSearchParams();
     searchParams.append('layout', options.layout);
     options.selectedBrands.forEach(brand => searchParams.append('selectedBrands', brand));

@@ -7,7 +7,7 @@ import { Battery } from "@/lib/types";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import JSZip from "jszip";
-import { getBatteries, getAppSettings } from "@/lib/firebase";
+
 
 function ReportView() {
   const searchParams = useSearchParams();
@@ -17,10 +17,8 @@ function ReportView() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const settings = await getAppSettings();
-      const gondolaCapacity = settings?.gondolaCapacity || 5;
       const batteriesString = sessionStorage.getItem('reportBatteries');
-      const batteries = batteriesString ? JSON.parse(batteriesString) : await getBatteries();
+      const reportData = batteriesString ? JSON.parse(batteriesString) : [];
       if (batteriesString) {
         sessionStorage.removeItem('reportBatteries');
       }
@@ -28,16 +26,6 @@ function ReportView() {
       const layout = searchParams.get('layout') || 'grid';
       const selectedBrands = searchParams.getAll('selectedBrands');
       const selectedPackSizes = searchParams.getAll('selectedPackSizes');
-
-      const reportData = batteries
-        .filter((battery: Battery) => !battery.discontinued)
-        .filter((battery: Battery) => selectedBrands.length === 0 || selectedBrands.includes(battery.brand))
-        .filter((battery: Battery) => selectedPackSizes.length === 0 || selectedPackSizes.includes(battery.packSize.toString()))
-        .filter((battery: Battery) => battery.quantity <= ((battery.gondolaCapacity || gondolaCapacity) / 2))
-        .map((battery: Battery) => ({
-          ...battery,
-          quantity: Math.max(0, (battery.gondolaCapacity || gondolaCapacity) - battery.quantity),
-        }));
 
       setReportData(reportData);
       setReportOptions({ layout, selectedBrands, selectedPackSizes });
