@@ -37,7 +37,7 @@ export function BatteryInventoryTableMobile({
       {batteries.map((battery) => (
         <div
           key={battery.id}
-className={`rounded-lg border p-4 shadow-sm ${battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity / 2 ? "bg-red-50/50" : ""}`}>
+className={`rounded-lg border border-border bg-card p-4 shadow-sm ${battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity / 2 ? "bg-red-50/50" : ""}`}>
           <div className="flex items-center justify-between">
             <div className="h-full flex items-center gap-2">
               <BatteryImageOrIcon
@@ -49,10 +49,10 @@ className={`rounded-lg border p-4 shadow-sm ${battery.location === "gondola" && 
                 className="object-cover rounded-md"
               />
               <div>
-                <p className="font-medium">{battery.brand}</p>
-                <p className="text-sm text-gray-500">{battery.type}</p>
-                <p className="text-sm text-gray-500">{battery.model}</p>
-                <p className="text-sm text-gray-500">Tamanho do Pacote: {battery.packSize}</p>
+                <p className="font-medium text-foreground">{battery.brand}</p>
+                <p className="text-sm text-muted-foreground">{battery.type}</p>
+                <p className="text-sm text-muted-foreground">{battery.model}</p>
+                <p className="text-sm text-muted-foreground">Tamanho do Pacote: {battery.packSize}</p>
                 <p className="text-xs text-muted-foreground">Localização: {battery.location === 'gondola' && battery.gondolaName ? `${t(`location:${battery.location}` as TranslationKey)} - ${battery.gondolaName}` : t(`location:${battery.location}` as TranslationKey)}</p>
               </div>
             </div>

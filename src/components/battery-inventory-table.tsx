@@ -65,18 +65,18 @@ export function BatteryInventoryTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-border">
+        <thead className="bg-card">
           <tr>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider"
             >
               <Checkbox />
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("brand")}
             >
               <div className="flex items-center">
@@ -86,7 +86,7 @@ export function BatteryInventoryTable({
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("model")}
             >
               <div className="flex items-center">
@@ -96,7 +96,7 @@ export function BatteryInventoryTable({
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("type")}
             >
               <div className="flex items-center">
@@ -106,13 +106,13 @@ export function BatteryInventoryTable({
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider"
             >
               Código de Barras
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("packSize")}
             >
               <div className="flex items-center">
@@ -122,7 +122,7 @@ export function BatteryInventoryTable({
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("quantity")}
             >
               <div className="flex items-center">
@@ -132,7 +132,7 @@ export function BatteryInventoryTable({
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("location")}
             >
               <div className="flex items-center">
@@ -145,7 +145,7 @@ export function BatteryInventoryTable({
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-background divide-y divide-border">
           {sortedBatteries.map((battery) => (
             <TableRow key={battery.id} className={battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity / 2 ? "bg-red-50/50" : ""}>
               <TableCell className="text-center font-medium">

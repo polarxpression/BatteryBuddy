@@ -24,13 +24,13 @@ export function BatteryReport({ onGenerateReport, brands, packSizes, batteries }
 
   return (
     <>
-      <Card>
+      <Card className="bg-polar-2 text-polar-6">
         <CardHeader>
           <CardTitle>Relatório de Baterias</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex justify-end gap-2 flex-wrap">
-            <Button onClick={() => setIsModalOpen(true)}>Gerar Relatório de Reabastecimento</Button>
+            <Button onClick={() => setIsModalOpen(true)} className="bg-polar-7 text-white">Gerar Relatório de Reabastecimento</Button>
           </div>
         </CardContent>
       </Card>

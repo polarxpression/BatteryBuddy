@@ -11,7 +11,7 @@ interface RestockSuggestionsProps {
 
 export function RestockSuggestions({ itemsForInternalRestock, onMoveBatteries }: RestockSuggestionsProps) {
   return (
-    <Card>
+    <Card className="bg-polar-2 text-polar-6">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">
           Sugestões de Reabastecimento (Estoque &rarr; Gôndola)
@@ -26,7 +26,7 @@ export function RestockSuggestions({ itemsForInternalRestock, onMoveBatteries }:
         ) : (
             <div className="flex flex-wrap justify-center gap-4">
             {itemsForInternalRestock.map((item) => (
-                <Card key={item.id} className="flex flex-col items-center gap-2 p-4 shadow-sm max-w-sm">
+                <Card key={item.id} className="flex flex-col items-center gap-2 p-4 shadow-sm max-w-sm bg-polar-3">
                     <BatteryImageOrIcon
                         imageUrl={item.imageUrl}
                         alt={item.brand}
@@ -40,7 +40,7 @@ export function RestockSuggestions({ itemsForInternalRestock, onMoveBatteries }:
                         <p className="text-sm text-muted-foreground">Embalagem com {item.packSize}</p>
                     </div>
                     <div className="mt-auto mx-auto font-bold">
-                        <Button onClick={() => onMoveBatteries([item])} size="sm" className="flex items-center gap-1">
+                        <Button onClick={() => onMoveBatteries([item])} size="sm" className="flex items-center gap-1 bg-polar-7 text-white">
                             Mover: {item.quantity} <ArrowRight className="h-4 w-4" /> Gôndola
                         </Button>
                     </div>

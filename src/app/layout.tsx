@@ -1,10 +1,11 @@
-import { Inter } from 'next/font/google';
+import { Montserrat, Lato } from 'next/font/google';
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-sans' });
+const lato = Lato({ subsets: ['latin'], variable: '--font-headline', weight: ['400', '700'] });
 
 export const metadata: Metadata = {
   title: 'Battery Buddy',
@@ -19,15 +20,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`font-sans ${inter.variable} antialiased`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`font-body ${montserrat.variable} ${lato.variable} antialiased`}>
         <AppSettingsProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
+            defaultTheme="dark"
           >
-            {children}
+            <div className="bg-polar-2">
+              {children}
+            </div>
             <Toaster />
           </ThemeProvider>
         </AppSettingsProvider>

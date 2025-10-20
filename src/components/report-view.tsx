@@ -6,27 +6,24 @@ import { Battery } from "@/lib/types";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import JSZip from "jszip";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Zap } from "lucide-react";
 
-interface ReportViewProps {
-  searchParams: { [key: string]: string | string[] | undefined };
-}
-
-export function ReportView({ searchParams }: ReportViewProps) {
+export function ReportView() {
   const reportRef = useRef<HTMLDivElement>(null);
   const [reportData, setReportData] = useState<Battery[] | null>(null);
   const [reportOptions, setReportOptions] = useState<{ layout: string; selectedBrands: string[]; selectedPackSizes: string[]; } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const batteriesString = searchParams.batteries as string;
-    const reportData = batteriesString ? JSON.parse(batteriesString) : [];
-
-    const layout = (searchParams.layout as string) || 'grid';
-    const selectedBrands = (searchParams.selectedBrands as string[]) || [];
-    const selectedPackSizes = (searchParams.selectedPackSizes as string[]) || [];
-
-    setReportData(reportData);
-    setReportOptions({ layout, selectedBrands, selectedPackSizes });
-  }, [searchParams]);
+    const reportDataString = sessionStorage.getItem('reportData');
+    if (reportDataString) {
+      const { batteries, layout, selectedBrands, selectedPackSizes } = JSON.parse(reportDataString);
+      setReportData(batteries);
+      setReportOptions({ layout, selectedBrands, selectedPackSizes });
+    }
+    setLoading(false);
+  }, []);
 
   const waitForImagesToLoad = async (element: HTMLElement): Promise<void> => {
     const images = element.querySelectorAll('img');
@@ -164,17 +161,51 @@ export function ReportView({ searchParams }: ReportViewProps) {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Card className="w-full max-w-md">
+          <CardHeader className="flex flex-row items-center justify-center text-center">
+            <Zap className="h-8 w-8 mr-2 text-primary animate-pulse" />
+            <CardTitle className="text-2xl font-bold">Carregando Relatório...</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-muted-foreground">
+              Aguarde enquanto preparamos seu relatório.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <>
       {reportData && reportOptions && (
-        <div>
-          <RestockReport
-            ref={reportRef}
-            itemsForExternalPurchase={reportData}
-            layout={reportOptions.layout as 'grid' | 'single'}
-            onExport={handleExport}
-          />
-        </div>
+        reportData.length > 0 ? (
+          <div>
+            <RestockReport
+              ref={reportRef}
+              itemsForExternalPurchase={reportData}
+              layout={reportOptions.layout as 'grid' | 'single'}
+              onExport={handleExport}
+            />
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-screen">
+            <Card className="w-full max-w-md">
+              <CardHeader className="flex flex-row items-center justify-center text-center">
+                <Zap className="h-8 w-8 mr-2 text-primary" />
+                <CardTitle className="text-2xl font-bold">Nenhuma Bateria Encontrada</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-muted-foreground">
+                  Não há baterias para serem compradas com os filtros selecionados.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )
       )}
     </>
   );

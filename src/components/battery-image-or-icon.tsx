@@ -24,14 +24,16 @@ export function BatteryImageOrIcon({ imageUrl, alt, batteryType, width, height, 
 
   if (imageUrl && !imageError) {
     return (
-      <Image
-        src={imageUrl}
-        alt={alt}
-        width={width}
-        height={height}
-        className={className}
-        onError={() => setImageError(true)}
-      />
+      <div className="bg-white rounded-t-lg">
+        <Image
+          src={imageUrl}
+          alt={alt}
+          width={width}
+          height={height}
+          className={className}
+          onError={() => setImageError(true)}
+        />
+      </div>
     );
   }
 

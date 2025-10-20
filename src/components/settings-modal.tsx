@@ -142,13 +142,13 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-sm overflow-y-auto max-h-[80vh]">
+      <DialogContent className="w-full max-w-sm overflow-y-auto max-h-[80vh] bg-background text-foreground border border-border">
         <DialogHeader>
           <DialogTitle>Configurações</DialogTitle>
           <DialogDescription>Gerencie os tipos de bateria, tamanhos de embalagem e marcas.</DialogDescription>
         </DialogHeader>
         <div className="space-y-6">
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Tipos de Bateria</CardTitle>
               <CardDescription>Gerencie os tipos de bateria disponíveis para seus registros.</CardDescription>
@@ -157,11 +157,10 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
               <div className="flex flex-wrap gap-2">
                 {Object.keys(types).length > 0 ? (
                   Object.keys(types).map(type => (
-                    <Badge key={type} variant="secondary" className="flex items-center gap-1 pr-1">
+                    <Badge key={type} variant="secondary" className="flex items-center gap-1 pr-1 bg-primary text-primary-foreground">
                       {type}
                       <button
-                        onClick={() => handleRemoveType(type)}
-                        className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                        className="ml-1 rounded-full p-0.5 hover:bg-primary/80 transition-colors focus-visible:ring-2 focus-visible:ring-ring"
                         aria-label={`Remover tipo '${type}'`}
                       >
                         <X className="h-3 w-3" />
@@ -178,14 +177,14 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
                   onChange={(e) => setNewType(e.target.value)}
                   placeholder="Novo tipo de bateria"
                   onKeyDown={(e) => e.key === 'Enter' && handleAddType()}
-                  className="flex-grow"
+                  className="flex-grow bg-card border-border text-foreground"
                 />
-                <Button onClick={handleAddType} className="shrink-0">Adicionar</Button>
+                <Button onClick={handleAddType} className="shrink-0 bg-primary text-primary-foreground">Adicionar</Button>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Tamanhos de Embalagem</CardTitle>
               <CardDescription>Defina os tamanhos de embalagem para suas baterias.</CardDescription>
@@ -194,11 +193,11 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
               <div className="flex flex-wrap gap-2">
                 {Object.values(sizes).length > 0 ? (
                   Object.values(sizes).sort((a,b) => a-b).map(size => (
-                    <Badge key={size} variant="secondary" className="flex items-center gap-1 pr-1">
+                    <Badge key={size} variant="secondary" className="flex items-center gap-1 pr-1 bg-primary text-primary-foreground">
                       {size}
                       <button
                         onClick={() => handleRemovePackSize(size)}
-                        className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                        className="ml-1 rounded-full p-0.5 hover:bg-primary/80 transition-colors focus-visible:ring-2 focus-visible:ring-ring"
                         aria-label={`Remover tamanho '${size}'`}
                       >
                         <X className="h-3 w-3" />
@@ -216,14 +215,14 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
                   type="number"
                   placeholder="Novo tamanho de embalagem"
                   onKeyDown={(e) => e.key === 'Enter' && handleAddPackSize()}
-                  className="flex-grow"
+                  className="flex-grow bg-card border-border text-foreground"
                 />
-                <Button onClick={handleAddPackSize} className="shrink-0">Adicionar</Button>
+                <Button onClick={handleAddPackSize} className="shrink-0 bg-primary text-primary-foreground">Adicionar</Button>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Marcas de Bateria</CardTitle>
               <CardDescription>Gerencie as marcas de bateria que você utiliza.</CardDescription>
@@ -232,11 +231,11 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
               <div className="flex flex-wrap gap-2">
                 {Object.keys(brands).length > 0 ? (
                   Object.keys(brands).map(brand => (
-                    <Badge key={brand} variant="secondary" className="flex items-center gap-1 pr-1">
+                    <Badge key={brand} variant="secondary" className="flex items-center gap-1 pr-1 bg-primary text-primary-foreground">
                       {brand}
                       <button
                         onClick={() => handleRemoveBrand(brand)}
-                        className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                        className="ml-1 rounded-full p-0.5 hover:bg-primary/80 transition-colors focus-visible:ring-2 focus-visible:ring-ring"
                         aria-label={`Remover marca '${brand}'`}
                       >
                         <X className="h-3 w-3" />
@@ -253,14 +252,14 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
                   onChange={(e) => setNewBrand(e.target.value)}
                   placeholder="Nova marca de bateria"
                   onKeyDown={(e) => e.key === 'Enter' && handleAddBrand()}
-                  className="flex-grow"
+                  className="flex-grow bg-card border-border text-foreground"
                 />
-                <Button onClick={handleAddBrand} className="shrink-0">Adicionar</Button>
+                <Button onClick={handleAddBrand} className="shrink-0 bg-primary text-primary-foreground">Adicionar</Button>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Modelos de Bateria</CardTitle>
               <CardDescription>Gerencie os modelos de bateria que você utiliza.</CardDescription>
@@ -269,11 +268,11 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
               <div className="flex flex-wrap gap-2">
                 {Object.keys(models).length > 0 ? (
                   Object.keys(models).map(model => (
-                    <Badge key={model} variant="secondary" className="flex items-center gap-1 pr-1">
+                    <Badge key={model} variant="secondary" className="flex items-center gap-1 pr-1 bg-primary text-primary-foreground">
                       {model}
                       <button
                         onClick={() => handleRemoveModel(model)}
-                        className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                        className="ml-1 rounded-full p-0.5 hover:bg-primary/80 transition-colors focus-visible:ring-2 focus-visible:ring-ring"
                         aria-label={`Remover modelo '${model}'`}
                       >
                         <X className="h-3 w-3" />
@@ -290,13 +289,13 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
                   onChange={(e) => setNewModel(e.target.value)}
                   placeholder="Novo modelo de bateria"
                   onKeyDown={(e) => e.key === 'Enter' && handleAddModel()}
-                  className="flex-grow"
+                  className="flex-grow bg-card border-border text-foreground"
                 />
-                <Button onClick={handleAddModel} className="shrink-0">Adicionar</Button>
+                <Button onClick={handleAddModel} className="shrink-0 bg-primary text-primary-foreground">Adicionar</Button>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Capacidade Máxima da Gôndola</CardTitle>
               <CardDescription>Defina a capacidade máxima de baterias na gôndola.</CardDescription>
@@ -308,15 +307,26 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
                   value={gondolaCapacity}
                   onChange={(e) => setgondolaCapacity(parseInt(e.target.value, 10))}                  type="number"
                   placeholder="Capacidade máxima da gôndola"
-                  className="flex-grow"
+                  className="flex-grow bg-card border-border text-foreground"
                 />
-                <Button onClick={handleUpdategondolaCapacity} className="shrink-0">Salvar</Button>
+                <Button onClick={handleUpdategondolaCapacity} className="shrink-0 bg-primary text-primary-foreground">Salvar</Button>
               </div>
             </CardContent>
           </Card>
+          <Card className="bg-card">
+            <CardHeader>
+              <CardTitle>Limpar Cookies</CardTitle>
+              <CardDescription>Limpa todos os cookies da aplicação. Use se estiver com problemas de login ou se a aplicação não estiver funcionando corretamente.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => {
+                window.location.href = '/api/clear-cookies-redirect';
+              }} variant="destructive">Limpar Cookies</Button>
+            </CardContent>
+          </Card>
         </div>
-        <DialogFooter>
-          <Button onClick={() => onOpenChange(false)}>Fechar</Button>
+        <DialogFooter className="border-t border-border pt-4">
+          <Button onClick={() => onOpenChange(false)} className="bg-primary text-primary-foreground">Fechar</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

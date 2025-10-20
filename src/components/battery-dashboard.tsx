@@ -71,66 +71,10 @@ export function BatteryDashboard() {
 
 
 
-  const { itemsForInternalRestock, itemsForExternalPurchase }: { itemsForInternalRestock: Battery[]; itemsForExternalPurchase: Battery[] } = useMemo(() => {
-    const internalRestockMap = new Map<string, { item: Battery, quantity: number }>();
-    const externalPurchaseMap = new Map<string, { item: Battery, quantity: number }>();
-    const batteriesByKey = new Map<string, Battery[]>();
-
-    batteries.forEach(battery => {
-      const key = `${battery.brand}-${battery.model}-${battery.type}-${battery.packSize}`;
-      if (!batteriesByKey.has(key)) {
-        batteriesByKey.set(key, []);
-      }
-      batteriesByKey.get(key)!.push(battery);
-    });
-
-    batteriesByKey.forEach((batteriesOfType) => {
-      const representativeBattery = batteriesOfType[0];
-      if (!representativeBattery || representativeBattery.discontinued) return;
-
-      const gondolaBatteries = batteriesOfType.filter(b => b.location === 'gondola');
-      const stockBattery = batteriesOfType.find(b => b.location === 'stock');
-      let stockQuantity = stockBattery ? stockBattery.quantity : 0;
-
-      gondolaBatteries.forEach(gondolaBattery => {
-        const gondolaLimit = (gondolaBattery.gondolaCapacity && gondolaBattery.gondolaCapacity > 0) ? gondolaBattery.gondolaCapacity : (appSettings?.gondolaCapacity || 0);
-        
-        if (gondolaBattery.quantity < gondolaLimit / 2) {
-          const neededOnGondola = gondolaLimit - gondolaBattery.quantity;
-          const canMoveFromStock = Math.min(neededOnGondola, stockQuantity);
-
-          if (canMoveFromStock > 0) {
-            if (stockBattery) {
-              const key = `${stockBattery.brand}-${stockBattery.model}-${stockBattery.type}-${stockBattery.packSize}`;
-              const existing = internalRestockMap.get(key);
-              if (existing) {
-                existing.quantity += canMoveFromStock;
-              } else {
-                internalRestockMap.set(key, { item: stockBattery, quantity: canMoveFromStock });
-              }
-              stockQuantity -= canMoveFromStock;
-            }
-          }
-          
-          const neededFromExternal = neededOnGondola - canMoveFromStock;
-          if (neededFromExternal > 0) {
-            const key = `${gondolaBattery.brand}-${gondolaBattery.model}-${gondolaBattery.type}-${gondolaBattery.packSize}`;
-            const existing = externalPurchaseMap.get(key);
-            if (existing) {
-              existing.quantity += neededFromExternal;
-            } else {
-              externalPurchaseMap.set(key, { item: gondolaBattery, quantity: neededFromExternal });
-            }
-          }
-        }
-      });
-    });
-
-    const itemsForInternalRestock = Array.from(internalRestockMap.values()).map(v => ({ ...v.item, quantity: v.quantity }));
-    const itemsForExternalPurchase = Array.from(externalPurchaseMap.values()).map(v => ({ ...v.item, quantity: v.quantity }));
-
-    return { itemsForInternalRestock, itemsForExternalPurchase };
-  }, [batteries, appSettings]);
+  const { itemsForInternalRestock, itemsForExternalPurchase }: { itemsForInternalRestock: Battery[]; itemsForExternalPurchase: Battery[] } = {
+    itemsForInternalRestock: [],
+    itemsForExternalPurchase: [],
+  };
 
   useEffect(() => {
     const unsubscribe = onBatteriesSnapshot((newBatteries) => {
@@ -309,11 +253,13 @@ export function BatteryDashboard() {
 
   const handleGenerateReportFromModal = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => {
     console.log("Generating report with options:", options);
-    const searchParams = new URLSearchParams();
-    searchParams.append('layout', options.layout);
-    options.selectedBrands.forEach(brand => searchParams.append('selectedBrands', brand));
-    options.selectedPackSizes.forEach(size => searchParams.append('selectedPackSizes', size));
-    window.open(`/report/view?${searchParams.toString()}`, "_blank");
+    const reportData = {
+      batteries: filteredBatteries,
+      ...options,
+    };
+
+    sessionStorage.setItem('reportData', JSON.stringify(reportData));
+    window.open("/report/view", "_blank");
   };
 
 
@@ -375,11 +321,11 @@ export function BatteryDashboard() {
   const packSizes = useMemo(() => Array.from(new Set(batteries.map(b => b.packSize.toString()))), [batteries]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6 w-full">
+    <div className="flex min-h-screen w-full flex-col">
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-card px-4 sm:px-6 w-full">
         <div className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <Zap className="h-6 w-6 text-primary" />
-          <h1 className="text-xl font-bold">Battery Buddy</h1>
+          <h1 className="text-xl font-bold font-headline text-foreground">Battery Buddy</h1>
         </div>
         <div className="ml-auto flex items-center gap-4">
           <ThemeToggle />
@@ -391,7 +337,7 @@ export function BatteryDashboard() {
             <Download className="h-4 w-4" />
             <span className="sr-only">Exportar CSV</span>
           </Button>
-          <Button onClick={handleOpenAddSheet} size={isMobile ? "icon" : "default"}>
+          <Button onClick={handleOpenAddSheet} size={isMobile ? "icon" : "default"} className="bg-primary text-primary-foreground">
             <PlusCircle className={isMobile ? "h-4 w-4" : "mr-2 h-4 w-4"} />
             {isMobile ? null : "Adicionar Bateria"}
           </Button>
@@ -399,7 +345,7 @@ export function BatteryDashboard() {
       </header>
       <main className="flex-1 space-y-4 p-4 md:p-8 w-full">
         <div className="grid grid-cols-1 gap-4">
-            <Card>
+            <Card className="bg-card text-foreground">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Visão Geral do Reabastecimento</CardTitle>
                     <Warehouse className="h-4 w-4 text-muted-foreground" />
@@ -414,9 +360,9 @@ export function BatteryDashboard() {
                         <RestockSuggestions itemsForInternalRestock={itemsForInternalRestock} onMoveBatteries={handleMoveBatteries} />
         </div>
         
-        <BatteryReport onGenerateReport={(options) => handleGenerateReportFromModal(options)} brands={brands} packSizes={packSizes} batteries={filteredBatteries} />
+        <BatteryReport onGenerateReport={(options) => handleGenerateReportFromModal(options)} brands={brands} packSizes={packSizes} batteries={batteries} />
 
-        <Card>
+        <Card className="bg-card text-foreground">
             <CardHeader>
                 <h2 className="text-2xl font-bold">Inventário Completo</h2>
                 <p className="text-muted-foreground">Todas as baterias em sua coleção.</p>
@@ -427,7 +373,7 @@ export function BatteryDashboard() {
                         placeholder="Pesquisar..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="max-w-sm"
+                        className="max-w-sm bg-card border-border text-foreground"
                     />
                     <Button variant="outline" size="icon" onClick={() => setIsHelpSheetOpen(true)}>
                         <HelpCircle className="h-4 w-4" />
@@ -439,8 +385,9 @@ export function BatteryDashboard() {
                         id="low-stock-filter"
                         checked={showLowStockOnly}
                         onCheckedChange={setShowLowStockOnly}
+                        className="data-[state=checked]:bg-primary"
                     />
-                    <Label htmlFor="low-stock-filter">Apenas baterias com baixo estoque</Label>
+                    <Label htmlFor="low-stock-filter" className="text-foreground">Apenas baterias com baixo estoque</Label>
                 </div>
                 {isMobile ? (
                     <BatteryInventoryTableMobile batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDuplicate={handleDuplicate} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />

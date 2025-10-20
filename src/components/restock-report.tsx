@@ -17,10 +17,10 @@ interface RestockReportProps {
 export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ itemsForExternalPurchase, layout = 'grid', onExport }, ref) => {
 
   return (
-    <div className="bg-gray-50 p-4 sm:p-6 md:p-8 light" ref={ref}>
+    <div className="p-4 sm:p-6 md:p-8" ref={ref}>
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Relatório de Reabastecimento</h1>
+          <h1 className="text-3xl font-bold text-foreground">Relatório de Reabastecimento</h1>
           <div id="export-buttons" className="flex gap-2">
             <Button onClick={() => onExport('image')}>Exportar como Imagem</Button>
             <Button onClick={() => onExport('pdf')}>Exportar como PDF</Button>
@@ -45,11 +45,11 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ i
                 />
               </CardHeader>
               <CardContent className="p-4">
-                <CardTitle className="text-lg font-semibold text-gray-800 truncate">{battery.brand} {battery.model}</CardTitle>
-                <p className="text-sm text-gray-500">{battery.type}</p>
-                <p className="text-sm text-gray-600">Embalagem com: {battery.packSize}</p>
+                <CardTitle className="text-lg font-semibold text-foreground truncate">{battery.brand} {battery.model}</CardTitle>
+                <p className="text-sm text-muted-foreground">{battery.type}</p>
+                <p className="text-sm text-muted-foreground">Embalagem com: {battery.packSize}</p>
                 <div className="mt-4 pt-4">
-                  <p className="text-sm text-gray-500">Cartelas Necessárias:</p>
+                  <p className="text-sm text-muted-foreground">Cartelas Necessárias:</p>
                   <p className="text-2xl font-bold text-red-600">
                     {battery.quantity}
                   </p>

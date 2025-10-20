@@ -211,9 +211,9 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full max-w-sm sm:max-w-lg overflow-y-auto h-full">
+      <SheetContent className="w-full max-w-sm sm:max-w-lg overflow-y-auto h-full bg-background text-foreground">
         <SheetHeader>
-          <SheetTitle className="font-headline">
+          <SheetTitle className="font-headline text-foreground">
             {isDuplicating
               ? "Clonar Bateria"
               : batteryToEdit
@@ -239,11 +239,11 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                     <FormLabel>Marca</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger ref={brandRef} onKeyDown={(e) => handleKeyDown(e, typeRef)}>
+                        <SelectTrigger ref={brandRef} onKeyDown={(e) => handleKeyDown(e, typeRef)} className="bg-card border-border text-foreground">
                           <SelectValue placeholder="Selecione uma marca" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-card border-border text-foreground">
                         {appSettings?.batteryBrands && Object.values(appSettings.batteryBrands).map((brand) => (
                           <SelectItem key={brand} value={brand}>
                             {brand}
@@ -263,11 +263,11 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                     <FormLabel>Modelo</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger ref={modelRef} onKeyDown={(e) => handleKeyDown(e, brandRef)}>
+                        <SelectTrigger ref={modelRef} onKeyDown={(e) => handleKeyDown(e, brandRef)} className="bg-card border-border text-foreground">
                           <SelectValue placeholder="Selecione um modelo" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-card border-border text-foreground">
                         {appSettings?.batteryModels && Object.values(appSettings.batteryModels).map((model) => (
                           <SelectItem key={model} value={model}>
                             {model}
@@ -287,11 +287,11 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                     <FormLabel>Tipo de Bateria</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger ref={typeRef} onKeyDown={(e) => handleKeyDown(e, quantityRef)}>
+                        <SelectTrigger ref={typeRef} onKeyDown={(e) => handleKeyDown(e, quantityRef)} className="bg-card border-border text-foreground">
                           <SelectValue placeholder="Selecione um tipo de bateria" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-card border-border text-foreground">
                         {appSettings?.batteryTypes && Object.values(appSettings.batteryTypes).map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
@@ -315,6 +315,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         {...field} 
                         ref={quantityRef} 
                         onKeyDown={(e) => handleKeyDown(e, packSizeRef)}
+                        className="bg-card border-border text-foreground"
                       />
                     </FormControl>
                     <FormMessage />
@@ -329,11 +330,11 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                     <FormLabel>Unidades por Embalagem</FormLabel>
                     <Select onValueChange={(value) => field.onChange(parseInt(value, 10))} defaultValue={String(field.value)}>
                       <FormControl>
-                        <SelectTrigger ref={packSizeRef} onKeyDown={(e) => handleKeyDown(e, barcodeRef)}>
+                        <SelectTrigger ref={packSizeRef} onKeyDown={(e) => handleKeyDown(e, barcodeRef)} className="bg-card border-border text-foreground">
                           <SelectValue placeholder="Selecione o tamanho da embalagem" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-card border-border text-foreground">
                         {appSettings?.packSizes && Object.values(appSettings.packSizes).sort((a, b) => a - b).map((size) => (
                           <SelectItem key={size} value={String(size)}>
                             {size}
@@ -353,11 +354,11 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                     <FormLabel>Localização</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-card border-border text-foreground">
                           <SelectValue placeholder="Selecione a localização" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-card border-border text-foreground">
                         <SelectItem value="gondola">Gôndola</SelectItem>
                         <SelectItem value="stock">Estoque</SelectItem>
                       </SelectContent>
@@ -381,6 +382,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                             const value = e.target.value;
                             field.onChange(value === "" ? undefined : parseInt(value, 10));
                           }}
+                          className="bg-card border-border text-foreground"
                         />
                       </FormControl>
                       <FormDescription>
@@ -402,6 +404,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         <Input
                           type="text"
                           {...field}
+                          className="bg-card border-border text-foreground"
                         />
                       </FormControl>
                       <FormDescription>
@@ -415,9 +418,9 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
               <FormItem>
                 <FormLabel>Imagem</FormLabel>
                 <Tabs defaultValue="url">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="url">URL</TabsTrigger>
-                    <TabsTrigger value="upload">Upload</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-2 bg-card">
+                    <TabsTrigger value="url" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">URL</TabsTrigger>
+                    <TabsTrigger value="upload" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Upload</TabsTrigger>
                   </TabsList>
                   <TabsContent value="url">
                     <FormField
@@ -432,6 +435,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                             setImagePreview(e.target.value);
                             setFileToUpload(null); // Clear file if a URL is entered
                           }}
+                          className="bg-card border-border text-foreground"
                         />
                       )}
                     />
@@ -441,6 +445,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                       type="file"
                       onChange={handleFileChange}
                       disabled={isUploading}
+                      className="bg-card border-border text-foreground"
                     />
                   </TabsContent>
                 </Tabs>
@@ -462,6 +467,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                         {...field}
                         ref={barcodeRef}
                         onKeyDown={(e) => handleKeyDown(e)}
+                        className="bg-card border-border text-foreground"
                       />
                     </FormControl>
                     <FormMessage />
@@ -472,7 +478,7 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                 control={form.control}
                 name="discontinued"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 border-border">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">
                         Descontinuada
@@ -485,17 +491,18 @@ export function AddEditBatterySheet({ open, onOpenChange, batteryToEdit, onSubmi
                       <Switch
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        className="data-[state=checked]:bg-primary"
                       />
                     </FormControl>
                   </FormItem>
                 )}
               />
             </div>
-            <SheetFooter className="mt-8 pt-4 border-t">
+            <SheetFooter className="mt-8 pt-4 border-t border-border">
               <SheetClose asChild>
                 <Button variant="outline">Cancelar</Button>
               </SheetClose>
-              <Button type="submit" disabled={isUploading}>
+              <Button type="submit" disabled={isUploading} className="bg-primary text-primary-foreground">
                 {isUploading ? "Salvando Imagem..." : isDuplicating
                   ? "Clonar Bateria"
                   : batteryToEdit
