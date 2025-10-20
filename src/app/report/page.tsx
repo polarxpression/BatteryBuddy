@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation';
 import { GenerateReportModal } from "@/components/generate-report-modal";
 import { getBatteries } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ export default function ReportPage() {
   const [brands, setBrands] = useState<string[]>([]);
   const [packSizes, setPackSizes] = useState<string[]>([]);
   const [batteries, setBatteries] = useState<Battery[]>([]);
-  const router = useRouter();
+
 
   useEffect(() => {
     const fetchFilterOptions = async () => {
@@ -27,15 +26,7 @@ export default function ReportPage() {
     fetchFilterOptions();
   }, []);
 
-  const handleGenerateReport = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; batteries: Battery[] }) => {
-    const { layout, selectedBrands, selectedPackSizes, batteries } = options;
-    const query = new URLSearchParams();
-    query.set('layout', layout);
-    selectedBrands.forEach(brand => query.append('selectedBrands', brand));
-    selectedPackSizes.forEach(size => query.append('selectedPackSizes', size));
-    query.set('batteries', JSON.stringify(batteries));
-    router.push(`/report/view?${query.toString()}`);
-  };
+
 
   return (
     <div className="flex justify-center items-center h-screen">
@@ -43,7 +34,6 @@ export default function ReportPage() {
       <GenerateReportModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onGenerate={handleGenerateReport}
         brands={brands}
         packSizes={packSizes}
         batteries={batteries}

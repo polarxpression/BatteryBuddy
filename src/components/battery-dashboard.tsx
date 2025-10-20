@@ -307,15 +307,8 @@ export function BatteryDashboard() {
 
 
 
-  const handleGenerateReportFromModal = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; batteries: Battery[] }) => {
-    const filteredForReport = itemsForExternalPurchase.filter(battery => {
-      const brandMatch = options.selectedBrands.length === 0 || options.selectedBrands.includes(battery.brand);
-      const packSizeMatch = options.selectedPackSizes.length === 0 || options.selectedPackSizes.includes(battery.packSize.toString());
-      return brandMatch && packSizeMatch;
-    });
-
+  const handleGenerateReportFromModal = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => {
     console.log("Generating report with options:", options);
-    sessionStorage.setItem('reportBatteries', JSON.stringify(filteredForReport));
     const searchParams = new URLSearchParams();
     searchParams.append('layout', options.layout);
     options.selectedBrands.forEach(brand => searchParams.append('selectedBrands', brand));

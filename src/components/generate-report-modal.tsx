@@ -17,7 +17,7 @@ import { Battery } from "@/lib/types";
 interface GenerateReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onGenerate: (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; batteries: Battery[] }) => void;
+  onGenerate?: (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => void;
   brands: string[];
   packSizes: string[];
   batteries: Battery[];
@@ -26,7 +26,6 @@ interface GenerateReportModalProps {
 export function GenerateReportModal({
   isOpen,
   onClose,
-  onGenerate,
   brands,
   packSizes,
   batteries,
@@ -52,13 +51,16 @@ export function GenerateReportModal({
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
-      await onGenerate({
-        layout,
-        selectedBrands,
-        selectedPackSizes,
-        batteries: filteredBatteries,
-      });
-      onClose(); // Close modal after successful generation
+      const params = new URLSearchParams();
+      params.set("layout", layout);
+      selectedBrands.forEach(brand => params.append("selectedBrands", brand));
+      selectedPackSizes.forEach(size => params.append("selectedPackSizes", size));
+      params.set("batteries", JSON.stringify(filteredBatteries));
+
+      // Navigate to the report view page with the parameters
+      window.open(`/report/view?${params.toString()}`, '_blank');
+      
+      onClose(); // Close modal after opening new tab
     } catch (error) {
       console.error('Error generating report:', error);
       alert('Ocorreu um erro ao gerar o relatório. Por favor, tente novamente.');
