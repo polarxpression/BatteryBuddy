@@ -84,6 +84,7 @@ export const onAppSettingsSnapshot = (callback: (settings: AppSettings | null) =
                 batteryBrands: data?.batteryBrands || {},
                 batteryModels: data?.batteryModels || {},
                 gondolaCapacity: data?.gondolaCapacity || 5,
+                showDiscontinuedBatteries: data?.showDiscontinuedBatteries || false,
             };
             callback(settings);
         } else {

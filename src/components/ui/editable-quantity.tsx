@@ -80,17 +80,17 @@ export function EditableQuantity({ value, onChange, variant }: EditableQuantityP
 
   return (
     <div className="flex items-center gap-1">
-      <Button variant="outline" size="icon" className="h-7 w-7" onClick={handleDecrease}>
+      <Button variant="outline" size="icon" className="transition h-7 w-7" onClick={handleDecrease}>
         <Minus className="h-4 w-4" />
       </Button>
       <Badge
         variant={variant}
-        className="min-w-10 justify-center text-base cursor-pointer"
+        className="transition min-w-10 justify-center text-base cursor-pointer"
         onClick={handleBadgeClick}
       >
         {value}
       </Badge>
-      <Button variant="outline" size="icon" className="h-7 w-7" onClick={handleIncrease}>
+      <Button variant="outline" size="icon" className="transition h-7 w-7" onClick={handleIncrease}>
         <Plus className="h-4 w-4" />
       </Button>
     </div>

@@ -54,6 +54,7 @@ import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
 import { useAppSettings } from "@/contexts/app-settings-context";
 import { filterBatteries } from "@/lib/search";
+import FallingSnow from "./falling-snow";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
@@ -130,28 +131,23 @@ export function BatteryDashboard() {
   const filteredBatteries = useMemo(() => {
     let filtered = filterBatteries(batteries, searchTerm);
 
+    if (!appSettings?.showDiscontinuedBatteries) {
+      filtered = filtered.filter(battery => !battery.discontinued);
+    }
+
     if (showLowStockOnly) {
       filtered = filtered.filter(battery => {
-        const gondolaBattery = batteries.find(b => 
-          b.brand === battery.brand && 
-          b.model === battery.model && 
-          b.type === battery.type && 
-          b.packSize === battery.packSize && 
-          b.location === 'gondola'
-        );
-
-        if (!gondolaBattery) {
+        if (battery.location !== 'gondola') {
           return false;
         }
 
-        const gondolaLimit = gondolaBattery.gondolaCapacity !== undefined
-          ? gondolaBattery.gondolaCapacity
+        const gondolaLimit = battery.gondolaCapacity !== undefined
+          ? battery.gondolaCapacity
           : (appSettings?.gondolaCapacity || 0);
 
-        return gondolaBattery.quantity <= gondolaLimit / 2;
+        return battery.quantity <= gondolaLimit / 2;
       });
     }
-
     return filtered;
   }, [batteries, searchTerm, showLowStockOnly, appSettings]);
 
@@ -322,22 +318,23 @@ export function BatteryDashboard() {
 
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-card px-4 sm:px-6 w-full">
+      <FallingSnow />
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background/50 backdrop-blur-sm px-4 sm:px-6 w-full">
         <div className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <Zap className="h-6 w-6 text-primary" />
           <h1 className="text-xl font-bold font-headline text-foreground">Battery Buddy</h1>
         </div>
         <div className="ml-auto flex items-center gap-4">
           <ThemeToggle />
-          <Button variant="outline" size="icon" onClick={handleOpenSettings}>
+          <Button className="transition" variant="outline" size="icon" onClick={handleOpenSettings}>
             <Settings className="h-4 w-4" />
             <span className="sr-only">Configurações</span>
           </Button>
-          <Button variant="outline" size="icon" onClick={handleExport}>
+          <Button className="transition" variant="outline" size="icon" onClick={handleExport}>
             <Download className="h-4 w-4" />
             <span className="sr-only">Exportar CSV</span>
           </Button>
-          <Button onClick={handleOpenAddSheet} size={isMobile ? "icon" : "default"} className="bg-primary text-primary-foreground">
+          <Button onClick={handleOpenAddSheet} size={isMobile ? "icon" : "default"} className="transition bg-primary text-primary-foreground">
             <PlusCircle className={isMobile ? "h-4 w-4" : "mr-2 h-4 w-4"} />
             {isMobile ? null : "Adicionar Bateria"}
           </Button>
@@ -345,7 +342,7 @@ export function BatteryDashboard() {
       </header>
       <main className="flex-1 space-y-4 p-4 md:p-8 w-full">
         <div className="grid grid-cols-1 gap-4">
-            <Card className="bg-card text-foreground">
+            <Card className="bg-card/50 backdrop-blur-xs text-foreground"> 
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Visão Geral do Reabastecimento</CardTitle>
                     <Warehouse className="h-4 w-4 text-muted-foreground" />
@@ -362,7 +359,7 @@ export function BatteryDashboard() {
         
         <BatteryReport onGenerateReport={(options) => handleGenerateReportFromModal(options)} brands={brands} packSizes={packSizes} batteries={batteries} />
 
-        <Card className="bg-card text-foreground">
+        <Card className="bg-card/50 backdrop-blur-xs text-foreground">
             <CardHeader>
                 <h2 className="text-2xl font-bold">Inventário Completo</h2>
                 <p className="text-muted-foreground">Todas as baterias em sua coleção.</p>
@@ -373,9 +370,9 @@ export function BatteryDashboard() {
                         placeholder="Pesquisar..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="max-w-sm bg-card border-border text-foreground"
+                        className="max-w-sm border-border text-foreground"
                     />
-                    <Button variant="outline" size="icon" onClick={() => setIsHelpSheetOpen(true)}>
+                    <Button className="transition" variant="outline" size="icon" onClick={() => setIsHelpSheetOpen(true)}>
                         <HelpCircle className="h-4 w-4" />
                         <span className="sr-only">Ajuda</span>
                     </Button>
@@ -413,7 +410,7 @@ export function BatteryDashboard() {
 
       <SearchHelpSheet open={isHelpSheetOpen} onOpenChange={setIsHelpSheetOpen} />
 
-      <SettingsModal key={JSON.stringify(appSettings)} open={isSettingsOpen} onOpenChange={setIsSettingsOpen} appSettings={appSettings} />
+      <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} appSettings={appSettings} />
       
       <AlertDialog open={!!batteryToDelete} onOpenChange={() => setBatteryToDelete(null)}>
         <AlertDialogContent>

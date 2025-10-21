@@ -11,7 +11,7 @@ interface RestockSuggestionsProps {
 
 export function RestockSuggestions({ itemsForInternalRestock, onMoveBatteries }: RestockSuggestionsProps) {
   return (
-    <Card className="bg-polar-2 text-polar-6">
+    <Card className="text-polar-6">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">
           Sugestões de Reabastecimento (Estoque &rarr; Gôndola)
@@ -26,7 +26,7 @@ export function RestockSuggestions({ itemsForInternalRestock, onMoveBatteries }:
         ) : (
             <div className="flex flex-wrap justify-center gap-4">
             {itemsForInternalRestock.map((item) => (
-                <Card key={item.id} className="flex flex-col items-center gap-2 p-4 shadow-sm max-w-sm bg-polar-3">
+                <Card key={item.id} className="flex flex-col items-center gap-2 p-4 shadow-sm max-w-sm">
                     <BatteryImageOrIcon
                         imageUrl={item.imageUrl}
                         alt={item.brand}

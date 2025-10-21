@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { X } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Badge } from "./ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { AppSettings } from "@/lib/types";
@@ -142,7 +144,7 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-sm overflow-y-auto max-h-[80vh] bg-background text-foreground border border-border">
+      <DialogContent className="w-full overflow-y-auto max-h-[80vh] bg-background text-foreground border border-border">
         <DialogHeader>
           <DialogTitle>Configurações</DialogTitle>
           <DialogDescription>Gerencie os tipos de bateria, tamanhos de embalagem e marcas.</DialogDescription>
@@ -160,6 +162,7 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
                     <Badge key={type} variant="secondary" className="flex items-center gap-1 pr-1 bg-primary text-primary-foreground">
                       {type}
                       <button
+                        onClick={() => handleRemoveType(type)}
                         className="ml-1 rounded-full p-0.5 hover:bg-primary/80 transition-colors focus-visible:ring-2 focus-visible:ring-ring"
                         aria-label={`Remover tipo '${type}'`}
                       >
@@ -310,6 +313,25 @@ export function SettingsModal({ open, onOpenChange, appSettings }: SettingsModal
                   className="flex-grow bg-card border-border text-foreground"
                 />
                 <Button onClick={handleUpdategondolaCapacity} className="shrink-0 bg-primary text-primary-foreground">Salvar</Button>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-card">
+            <CardHeader>
+              <CardTitle>Mostrar Baterias Descontinuadas</CardTitle>
+              <CardDescription>Ative para mostrar baterias marcadas como descontinuadas no inventário.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="show-discontinued"
+                  checked={appSettings?.showDiscontinuedBatteries || false}
+                  onCheckedChange={async (checked) => {
+                    await updateAppSettings({ showDiscontinuedBatteries: checked });
+                    toast({ title: "Sucesso!", description: `Baterias descontinuadas ${checked ? 'serão mostradas' : 'serão ocultadas'}.` });
+                  }}
+                />
+                <Label htmlFor="show-discontinued">Mostrar baterias descontinuadas</Label>
               </div>
             </CardContent>
           </Card>

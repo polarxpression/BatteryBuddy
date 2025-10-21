@@ -57,6 +57,7 @@ export const AppSettingsSchema = z.object({
   batteryBrands: z.record(z.string()),
   batteryModels: z.record(z.string()),
   gondolaCapacity: z.number().optional(),
+  showDiscontinuedBatteries: z.boolean().optional(),
 });
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>;

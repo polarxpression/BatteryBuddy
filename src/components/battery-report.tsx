@@ -30,7 +30,7 @@ export function BatteryReport({ onGenerateReport, brands, packSizes, batteries }
         </CardHeader>
         <CardContent>
           <div className="flex justify-end gap-2 flex-wrap">
-            <Button onClick={() => setIsModalOpen(true)} className="bg-polar-7 text-white">Gerar Relatório de Reabastecimento</Button>
+            <Button onClick={() => setIsModalOpen(true)} className="bg-card border text-white transition">Gerar Relatório de Reabastecimento</Button>
           </div>
         </CardContent>
       </Card>

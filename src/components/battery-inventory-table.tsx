@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { type Battery } from "@/lib/types";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ interface BatteryInventoryTableProps {
   onDelete: (id: string) => void;
   onDuplicate: (battery: Battery) => void;
   onQuantityChange: (id: string, newQuantity: number) => void;
+  onSelectionChange?: (selectedIds: string[]) => void;
 }
 
 export function BatteryInventoryTable({
@@ -31,10 +32,16 @@ export function BatteryInventoryTable({
   onDelete,
   onDuplicate,
   onQuantityChange,
+  onSelectionChange,
 }: BatteryInventoryTableProps) {
   const [sortColumn, setSortColumn] = useState<keyof Battery | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [selectedBatteries, setSelectedBatteries] = useState<string[]>([]);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    onSelectionChange?.(selectedBatteries);
+  }, [selectedBatteries, onSelectionChange]);
 
   const sortedBatteries = [...batteries].sort((a, b) => {
     if (!sortColumn) return 0;
@@ -63,20 +70,43 @@ export function BatteryInventoryTable({
     }
   };
 
+  const handleSelectAll = (checked: boolean | "indeterminate") => {
+    if (checked === true) {
+      setSelectedBatteries(sortedBatteries.map((battery) => battery.id));
+    } else {
+      setSelectedBatteries([]);
+    }
+  };
+
+  const handleSelect = (id: string) => {
+    setSelectedBatteries((prev) =>
+      prev.includes(id) ? prev.filter((bId) => bId !== id) : [...prev, id]
+    );
+  };
+
+  const isAllSelected =
+    selectedBatteries.length === sortedBatteries.length && sortedBatteries.length > 0;
+  const isIndeterminate =
+    selectedBatteries.length > 0 && !isAllSelected;
+
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-lg border border-opacity-50 bg-card/50 backdrop-blur-lg">
       <table className="min-w-full divide-y divide-border">
-        <thead className="bg-card">
+        <thead className="">
           <tr>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider"
+              className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider"
             >
-              <Checkbox />
+              <Checkbox
+                checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+                onCheckedChange={handleSelectAll}
+                aria-label="Selecionar todas as linhas"
+              />
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("brand")}
             >
               <div className="flex items-center">
@@ -86,7 +116,7 @@ export function BatteryInventoryTable({
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("model")}
             >
               <div className="flex items-center">
@@ -96,7 +126,7 @@ export function BatteryInventoryTable({
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("type")}
             >
               <div className="flex items-center">
@@ -106,13 +136,13 @@ export function BatteryInventoryTable({
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider"
+              className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider"
             >
               Código de Barras
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("packSize")}
             >
               <div className="flex items-center">
@@ -125,14 +155,14 @@ export function BatteryInventoryTable({
               className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("quantity")}
             >
-              <div className="flex items-center">
+              <div className="flex items-center justify-center">
                 Quantidade
                 <ArrowUpDown className="ml-1 h-3 w-3" />
               </div>
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
+              className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider cursor-pointer"
               onClick={() => handleSort("location")}
             >
               <div className="flex items-center">
@@ -145,14 +175,22 @@ export function BatteryInventoryTable({
             </th>
           </tr>
         </thead>
-        <tbody className="bg-background divide-y divide-border">
+        <tbody className="divide-y divide-border">
           {sortedBatteries.map((battery) => (
-            <TableRow key={battery.id} className={battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity / 2 ? "bg-red-50/50" : ""}>
-              <TableCell className="text-center font-medium">
-                <Checkbox />
+            <TableRow
+              key={battery.id}
+              className={battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity / 2 ? "bg-red-700/30" : ""}
+              data-state={selectedBatteries.includes(battery.id) ? "selected" : ""}
+            >
+              <TableCell>
+                <Checkbox
+                  checked={selectedBatteries.includes(battery.id)}
+                  onCheckedChange={() => handleSelect(battery.id)}
+                  aria-label={`Selecionar ${battery.brand} ${battery.model}`}
+                />
               </TableCell>
-              <TableCell className="text-center font-medium">
-                <div className="flex items-center gap-2 justify-center">
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-2">
                   <BatteryImageOrIcon
                     imageUrl={battery.imageUrl}
                     alt={battery.brand}
@@ -164,10 +202,10 @@ export function BatteryInventoryTable({
                   {battery.brand}
                 </div>
               </TableCell>
-              <TableCell className="text-center">{battery.model}</TableCell>
-              <TableCell className="text-center">{battery.type}</TableCell>
-              <TableCell className="text-center">{battery.barcode}</TableCell>
-              <TableCell className="text-center">{battery.packSize}</TableCell>
+              <TableCell>{battery.model}</TableCell>
+              <TableCell>{battery.type}</TableCell>
+              <TableCell>{battery.barcode}</TableCell>
+              <TableCell>{battery.packSize}</TableCell>
               <TableCell className="text-center">
                 <EditableQuantity
                   value={battery.quantity}
@@ -175,7 +213,7 @@ export function BatteryInventoryTable({
                   variant="default"
                 />
               </TableCell>
-              <TableCell className="text-center">
+              <TableCell>
                 {battery.location === 'gondola' && battery.gondola 
                   ? `${t(`location:${battery.location}` as TranslationKey)} - ${battery.gondola}`
                   : t(`location:${battery.location}` as TranslationKey)}
