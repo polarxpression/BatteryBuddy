@@ -74,12 +74,54 @@ export function BatteryDashboard() {
   const [isGenerateReportModalOpen, setIsGenerateReportModalOpen] = useState(false);
   const [isBulkDeleteAlertOpen, setIsBulkDeleteAlertOpen] = useState(false);
 
+  const itemsForInternalRestock = useMemo(() => {
+    const gondolaBatteries = batteries.filter(b => b.location === "gondola" && b.gondolaCapacity !== undefined && b.quantity < b.gondolaCapacity && b.quantity <= b.gondolaCapacity / 2);
+    const stockBatteries = batteries.filter(b => b.location === "stock");
 
+    const restockItems: Battery[] = [];
 
-  const { itemsForInternalRestock, itemsForExternalPurchase }: { itemsForInternalRestock: Battery[]; itemsForExternalPurchase: Battery[] } = {
-    itemsForInternalRestock: [],
-    itemsForExternalPurchase: [],
-  };
+    gondolaBatteries.forEach(gondolaBattery => {
+      const neededQuantity = gondolaBattery.gondolaCapacity! - gondolaBattery.quantity;
+      const correspondingStockBattery = stockBatteries.find(stockBattery => 
+        stockBattery.brand === gondolaBattery.brand &&
+        stockBattery.model === gondolaBattery.model &&
+        stockBattery.type === gondolaBattery.type &&
+        stockBattery.packSize === gondolaBattery.packSize
+      );
+
+      if (correspondingStockBattery && neededQuantity > 0) {
+        const quantityToMove = Math.min(neededQuantity, correspondingStockBattery.quantity);
+        if (quantityToMove > 0) {
+          restockItems.push({
+            ...correspondingStockBattery,
+            quantity: quantityToMove,
+            location: "gondola", // Indicate it's for gondola restock
+          });
+        }
+      }
+    });
+    return restockItems;
+  }, [batteries]);
+
+  const itemsForExternalPurchase = useMemo(() => {
+    return batteries.filter(battery => {
+      if (battery.location !== 'gondola' || battery.discontinued) {
+        return false;
+      }
+
+      const gondolaLimit = battery.gondolaCapacity !== undefined
+        ? battery.gondolaCapacity
+        : (appSettings?.gondolaCapacity || 0);
+
+      return battery.quantity <= gondolaLimit / 2;
+    }).map(battery => {
+      const gondolaLimit = battery.gondolaCapacity !== undefined
+        ? battery.gondolaCapacity
+        : (appSettings?.gondolaCapacity || 0);
+      const neededQuantity = gondolaLimit - battery.quantity;
+      return { ...battery, quantity: neededQuantity > 0 ? neededQuantity : 0 };
+    });
+  }, [batteries, appSettings]);
 
   useEffect(() => {
     const unsubscribe = onBatteriesSnapshot((newBatteries) => {
