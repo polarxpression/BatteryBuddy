@@ -27,12 +27,26 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ i
             <Button onClick={() => onExport('zip')}>Exportar como ZIP</Button>
           </div>
         </div>
-        <div className={`${ 
-          layout === 'grid' 
-            ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'
-            : 'flex flex-col gap-4'
-        }`}>
-          {itemsForExternalPurchase.map((battery) => (
+        {itemsForExternalPurchase.length === 0 ? (
+          <div className="flex items-center justify-center h-64">
+            <Card className="w-full max-w-md">
+              <CardHeader className="flex flex-row items-center justify-center text-center">
+                <CardTitle className="text-2xl font-bold">Nenhuma Bateria Encontrada</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-muted-foreground">
+                  Não há baterias para exibir neste relatório com os filtros selecionados.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div className={`${ 
+            layout === 'grid' 
+              ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'
+              : 'flex flex-col gap-4'
+          }`}>
+            {itemsForExternalPurchase.map((battery) => (
             <Card key={battery.id} className="overflow-hidden transition-shadow duration-300 ease-in-out rounded-lg battery-card">
               <CardHeader className="p-0">
                 <BatteryImageOrIcon
@@ -57,7 +71,9 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ i
               </CardContent>
             </Card>
           ))}
-        </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

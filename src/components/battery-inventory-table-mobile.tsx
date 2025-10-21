@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { type Battery } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Pencil, Trash2, Copy } from "lucide-react";
@@ -10,6 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import { EditableQuantity } from "./ui/editable-quantity";
 import { BatteryImageOrIcon } from "./battery-image-or-icon";
@@ -22,6 +24,7 @@ interface BatteryInventoryTableMobileProps {
   onDuplicate: (battery: Battery) => void;
   onDelete: (id: string) => void;
   onQuantityChange: (id: string, newQuantity: number) => void;
+  onSelectionChange?: (selectedIds: string[]) => void;
 }
 
 export function BatteryInventoryTableMobile({
@@ -30,16 +33,57 @@ export function BatteryInventoryTableMobile({
   onDuplicate,
   onDelete,
   onQuantityChange,
+  onSelectionChange,
 }: BatteryInventoryTableMobileProps) {
+  const [selectedBatteries, setSelectedBatteries] = useState<string[]>([]);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    onSelectionChange?.(selectedBatteries);
+  }, [selectedBatteries, onSelectionChange]);
+
+  const handleSelectAll = (checked: boolean | "indeterminate") => {
+    if (checked === true) {
+      setSelectedBatteries(batteries.map((battery) => battery.id));
+    } else {
+      setSelectedBatteries([]);
+    }
+  };
+
+  const handleSelect = (id: string) => {
+    setSelectedBatteries((prev) =>
+      prev.includes(id) ? prev.filter((bId) => bId !== id) : [...prev, id]
+    );
+  };
+
+  const isAllSelected =
+    selectedBatteries.length === batteries.length && batteries.length > 0;
+  const isIndeterminate =
+    selectedBatteries.length > 0 && !isAllSelected;
+
   return (
     <div className="grid grid-cols-1 gap-4">
+      <div className="flex items-center justify-between px-4 py-2 bg-card/50 backdrop-blur-lg rounded-lg">
+        <Checkbox
+          checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+          onCheckedChange={handleSelectAll}
+          aria-label="Selecionar todas as linhas"
+        />
+        <span className="text-sm font-medium text-foreground">Selecionar Todos</span>
+      </div>
       {batteries.map((battery) => (
         <div
           key={battery.id}
-className={`rounded-lg border border-border bg-card/50 backdrop-blur-lg p-4 shadow-sm ${battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity / 2 ? "bg-red-700/30" : ""}`}>
+          className={`rounded-lg border border-border bg-card/50 backdrop-blur-lg p-4 shadow-sm ${battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity / 2 ? "bg-red-700/30" : ""}`}
+        >
           <div className="flex items-center justify-between">
             <div className="h-full flex items-center gap-2">
+              <Checkbox
+                checked={selectedBatteries.includes(battery.id)}
+                onCheckedChange={() => handleSelect(battery.id)}
+                aria-label={`Selecionar ${battery.brand} ${battery.model}`}
+                className="mr-2"
+              />
               <BatteryImageOrIcon
                 imageUrl={battery.imageUrl}
                 alt={battery.brand}

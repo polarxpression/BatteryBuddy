@@ -55,6 +55,7 @@ export function GenerateReportModal({
     setIsGenerating(true);
     try {
       const batteriesToReport = filteredBatteries
+        .filter(battery => !battery.discontinued)
         .filter(battery => {
           const gondolaLimit = (battery.gondolaCapacity && battery.gondolaCapacity > 0) ? battery.gondolaCapacity : (appSettings?.gondolaCapacity || 0);
           return battery.quantity <= gondolaLimit / 2;
@@ -112,7 +113,7 @@ export function GenerateReportModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md h-[85vh] p-0 bg-polar-2 text-polar-6">
+      <DialogContent className="sm:max-w-md h-[85vh] p-0 bg-polar-1 text-polar-6">
         <DialogHeader className="px-6 py-4 border-b border-polar-4">
           <DialogTitle>Gerar Relatório</DialogTitle>
         </DialogHeader>
@@ -144,7 +145,7 @@ export function GenerateReportModal({
                       htmlFor={`layout-${value}`} 
                       className={`flex items-center justify-center py-2 px-3 border-2 rounded-md cursor-pointer text-sm font-medium transition ${
                         layout === value 
-                          ? "border-polar-7 bg-polar-7/10 text-polar-7" 
+                          ? "border-polar-7 bg-polar-7 text-white" 
                           : "border-polar-4 bg-polar-3 text-polar-6 hover:bg-polar-4 hover:text-polar-7"
                       }`}
                     >
@@ -161,7 +162,7 @@ export function GenerateReportModal({
               <div className="flex justify-between items-center">
                 <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Marcas de Bateria</div>
                 <label 
-                  className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-polar-6"
+                  className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-polar-7"
                   onClick={handleSelectAllBrands}
                 >
                   <span className="w-4 h-4 border rounded flex items-center justify-center transition hover:border-polar-7">
@@ -184,7 +185,7 @@ export function GenerateReportModal({
                     />
                     <label 
                       htmlFor={`brand-${brand}`} 
-                      className="flex items-center py-2 px-3 border rounded-md cursor-pointer transition text-sm peer-checked:border-polar-7 peer-checked:bg-polar-7/10 peer-checked:text-polar-7 border-polar-4 bg-polar-3 text-polar-6 hover:bg-polar-4 hover:text-polar-7"
+                      className="flex items-center py-2 px-3 border rounded-md cursor-pointer transition text-sm peer-checked:border-polar-7 peer-checked:bg-polar-7 peer-checked:text-white border-polar-4 bg-polar-3 text-polar-6 hover:bg-polar-4 hover:text-polar-7"
                     >
                       <span className="w-4 h-4 border rounded mr-2 flex items-center justify-center transition peer-checked:bg-polar-7 peer-checked:border-polar-7">
                         {selectedBrands.includes(brand) && <Check className="h-3 w-3 text-white" />}
@@ -203,7 +204,7 @@ export function GenerateReportModal({
               <div className="flex justify-between items-center">
                 <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Filtro de Tamanho do Pacote</div>
                 <label 
-                  className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-polar-6"
+                  className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-polar-7"
                   onClick={handleSelectAllPackSizes}
                 >
                   <span className="w-4 h-4 border rounded flex items-center justify-center transition hover:border-polar-7">
@@ -226,7 +227,7 @@ export function GenerateReportModal({
                     />
                     <label 
                       htmlFor={`pack-${size}`} 
-                      className="flex items-center py-2 px-3 border rounded-md cursor-pointer transition text-sm peer-checked:border-polar-7 peer-checked:bg-polar-7/10 peer-checked:text-polar-7 border-polar-4 bg-polar-3 text-polar-6 hover:bg-polar-4 hover:text-polar-7"
+                      className="flex items-center py-2 px-3 border rounded-md cursor-pointer transition text-sm peer-checked:border-polar-7 peer-checked:bg-polar-7 peer-checked:text-white border-polar-4 bg-polar-3 text-polar-6 hover:bg-polar-4 hover:text-polar-7"
                     >
                       <span className="w-4 h-4 border rounded mr-2 flex items-center justify-center transition peer-checked:bg-polar-7 peer-checked:border-polar-7">
                         {selectedPackSizes.includes(size) && <Check className="h-3 w-3 text-white" />}
@@ -243,13 +244,13 @@ export function GenerateReportModal({
         </ScrollArea>
 
         <DialogFooter className="px-6 py-4 border-t border-polar-4">
-          <Button variant="outline" onClick={onClose} className="border-polar-7 text-polar-7">
+          <Button variant="outline" onClick={onClose} className="border-red-500 text-red-500 hover:bg-red-500/10">
             Cancelar
           </Button>
           <Button 
             onClick={handleGenerate} 
             disabled={isGenerating}
-            className="bg-polar-7 text-white hover:bg-polar-7/90"
+            className="bg-card border text-white transition"
           >
             {isGenerating ? "Gerando..." : "Gerar Relatório"}
           </Button>

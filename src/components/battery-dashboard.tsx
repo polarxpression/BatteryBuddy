@@ -45,6 +45,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import Papa from "papaparse";
 import { Input } from "./ui/input";
 import { BatteryReport } from "./battery-report";
+import { GenerateReportModal } from "./generate-report-modal";
 
 import { SearchHelpSheet } from "./search-help-sheet";
 
@@ -69,6 +70,9 @@ export function BatteryDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
+  const [selectedBatteries, setSelectedBatteries] = useState<string[]>([]);
+  const [isGenerateReportModalOpen, setIsGenerateReportModalOpen] = useState(false);
+  const [isBulkDeleteAlertOpen, setIsBulkDeleteAlertOpen] = useState(false);
 
 
 
@@ -387,13 +391,20 @@ export function BatteryDashboard() {
                     <Label htmlFor="low-stock-filter" className="text-foreground">Apenas baterias com baixo estoque</Label>
                 </div>
                 {isMobile ? (
-                    <BatteryInventoryTableMobile batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDuplicate={handleDuplicate} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
+                    <BatteryInventoryTableMobile batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDuplicate={handleDuplicate} onDelete={handleDelete} onQuantityChange={handleQuantityChange} onSelectionChange={setSelectedBatteries} />
                 ) : (
-                    <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDuplicate={handleDuplicate} onDelete={handleDelete} onQuantityChange={handleQuantityChange} />
+                    <BatteryInventoryTable batteries={filteredBatteries} onEdit={handleOpenEditSheet} onDuplicate={handleDuplicate} onDelete={handleDelete} onQuantityChange={handleQuantityChange} onSelectionChange={setSelectedBatteries} />
                 )}
             </CardContent>
         </Card>
       </main>
+
+      {selectedBatteries.length > 0 && (
+        <div className="fixed bottom-4 right-4 z-40 flex gap-2">
+          <Button onClick={() => setIsGenerateReportModalOpen(true)}>Gerar Relatório para Selecionados ({selectedBatteries.length})</Button>
+          <Button variant="destructive" onClick={() => setIsBulkDeleteAlertOpen(true)}>Excluir Selecionados ({selectedBatteries.length})</Button>
+        </div>
+      )}
 
       <AddEditBatterySheet
         open={isSheetOpen}
@@ -427,6 +438,48 @@ export function BatteryDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={isBulkDeleteAlertOpen} onOpenChange={setIsBulkDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente {selectedBatteries.length} baterias
+              do seu inventário.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsBulkDeleteAlertOpen(false)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => {
+              await Promise.all(selectedBatteries.map(id => deleteBattery(id)));
+              toast({
+                title: "Excluídos",
+                description: `${selectedBatteries.length} baterias removidas do inventário.`,
+              });
+              setSelectedBatteries([]);
+              setIsBulkDeleteAlertOpen(false);
+            }}>Continuar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <GenerateReportModal
+        isOpen={isGenerateReportModalOpen}
+        onClose={() => setIsGenerateReportModalOpen(false)}
+        onGenerate={(options) => {
+          const reportData = {
+            batteries: batteries.filter(b => selectedBatteries.includes(b.id)),
+            ...options,
+          };
+          sessionStorage.setItem('reportData', JSON.stringify(reportData));
+          window.open("/report/view", "_blank");
+          setIsGenerateReportModalOpen(false);
+          setSelectedBatteries([]);
+        }}
+        brands={brands}
+        packSizes={packSizes}
+        batteries={batteries.filter(b => selectedBatteries.includes(b.id))}
+      />
 
 
     </div>
