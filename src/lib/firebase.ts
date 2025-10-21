@@ -34,7 +34,8 @@ const settingsDoc = doc(db, "settings", "app-settings");
 
 export const getBatteries = async (): Promise<Battery[]> => {
     const snapshot = await getDocs(batteriesCollection);
-    return snapshot.docs.map(doc => doc.data() as Battery);
+    const allBatteries = snapshot.docs.map(doc => doc.data() as Battery);
+    return allBatteries.filter(battery => !battery.discontinued);
 }
 
 export const addBattery = async (battery: Battery) => {

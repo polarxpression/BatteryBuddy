@@ -11,6 +11,11 @@ const withPWA = require('@ducanh2912/next-pwa').default({
     disableDevLogs: true,
     runtimeCaching: [
       {
+        urlPattern: /^https:\/\/firestore\.googleapis\.com\/google\.firestore\.v1\.Firestore\/Listen\/channel\?.*/,
+        handler: 'NetworkOnly',
+        method: 'POST',
+      },
+      {
         urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/,
         handler: 'NetworkOnly',
       },
