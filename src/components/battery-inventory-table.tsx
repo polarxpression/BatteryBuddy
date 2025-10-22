@@ -16,6 +16,7 @@ import { EditableQuantity } from "./ui/editable-quantity";
 import { BatteryImageOrIcon } from "./battery-image-or-icon";
 import { useTranslation } from "../hooks/use-translation";
 import { TranslationKey } from "@/lib/translations";
+import { useAppSettings } from "@/contexts/app-settings-context";
 
 interface BatteryInventoryTableProps {
   batteries: Battery[];
@@ -38,6 +39,7 @@ export function BatteryInventoryTable({
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [selectedBatteries, setSelectedBatteries] = useState<string[]>([]);
   const { t } = useTranslation();
+  const { appSettings } = useAppSettings();
 
   useEffect(() => {
     onSelectionChange?.(selectedBatteries);
@@ -176,12 +178,19 @@ export function BatteryInventoryTable({
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
-          {sortedBatteries.map((battery) => (
-            <TableRow
-              key={battery.id}
-              className={battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity / 2 ? "bg-red-700/30" : ""}
-              data-state={selectedBatteries.includes(battery.id) ? "selected" : ""}
-            >
+          {sortedBatteries.map((battery) => {
+            const gondolaLimit = battery.gondolaCapacity !== undefined
+              ? battery.gondolaCapacity
+              : (appSettings?.gondolaCapacity || 0);
+
+            const isLowStock = battery.location === "gondola" && battery.quantity <= gondolaLimit / 2;
+
+            return (
+              <TableRow
+                key={battery.id}
+                className={isLowStock ? "bg-red-700/30" : ""}
+                data-state={selectedBatteries.includes(battery.id) ? "selected" : ""}
+              >
               <TableCell>
                 <Checkbox
                   checked={selectedBatteries.includes(battery.id)}
@@ -241,7 +250,7 @@ export function BatteryInventoryTable({
                 </DropdownMenu>
               </TableCell>
             </TableRow>
-          ))}
+          )})}
         </tbody>
       </table>
     </div>

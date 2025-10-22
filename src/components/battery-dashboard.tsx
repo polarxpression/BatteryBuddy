@@ -75,13 +75,18 @@ export function BatteryDashboard() {
   const [isBulkDeleteAlertOpen, setIsBulkDeleteAlertOpen] = useState(false);
 
   const itemsForInternalRestock = useMemo(() => {
-    const gondolaBatteries = batteries.filter(b => b.location === "gondola" && b.gondolaCapacity !== undefined && b.quantity < b.gondolaCapacity && b.quantity <= b.gondolaCapacity / 2);
+    const gondolaBatteries = batteries.filter(b => {
+      if (b.location !== "gondola") return false;
+      const gondolaLimit = b.gondolaCapacity !== undefined ? b.gondolaCapacity : (appSettings?.gondolaCapacity || 0);
+      return b.quantity < gondolaLimit && b.quantity <= gondolaLimit / 2;
+    });
     const stockBatteries = batteries.filter(b => b.location === "stock");
 
     const restockItems: Battery[] = [];
 
     gondolaBatteries.forEach(gondolaBattery => {
-      const neededQuantity = gondolaBattery.gondolaCapacity! - gondolaBattery.quantity;
+      const gondolaLimit = gondolaBattery.gondolaCapacity !== undefined ? gondolaBattery.gondolaCapacity : (appSettings?.gondolaCapacity || 0);
+      const neededQuantity = gondolaLimit - gondolaBattery.quantity;
       const correspondingStockBattery = stockBatteries.find(stockBattery => 
         stockBattery.brand === gondolaBattery.brand &&
         stockBattery.model === gondolaBattery.model &&
@@ -101,7 +106,7 @@ export function BatteryDashboard() {
       }
     });
     return restockItems;
-  }, [batteries]);
+  }, [batteries, appSettings]);
 
   const itemsForExternalPurchase = useMemo(() => {
     return batteries.filter(battery => {

@@ -24,7 +24,7 @@ export function BatteryImageOrIcon({ imageUrl, alt, batteryType, width, height, 
 
   if (imageUrl && !imageError) {
     return (
-      <div className="bg-white rounded-t-lg">
+      <div className="bg-white rounded-md p-1">
         <Image
           src={imageUrl}
           alt={alt}

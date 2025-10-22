@@ -17,6 +17,7 @@ import { EditableQuantity } from "./ui/editable-quantity";
 import { BatteryImageOrIcon } from "./battery-image-or-icon";
 import { useTranslation } from "../hooks/use-translation";
 import { TranslationKey } from "@/lib/translations";
+import { useAppSettings } from "@/contexts/app-settings-context";
 
 interface BatteryInventoryTableMobileProps {
   batteries: Battery[];
@@ -37,6 +38,7 @@ export function BatteryInventoryTableMobile({
 }: BatteryInventoryTableMobileProps) {
   const [selectedBatteries, setSelectedBatteries] = useState<string[]>([]);
   const { t } = useTranslation();
+  const { appSettings } = useAppSettings();
 
   useEffect(() => {
     onSelectionChange?.(selectedBatteries);
@@ -71,11 +73,18 @@ export function BatteryInventoryTableMobile({
         />
         <span className="text-sm font-medium text-foreground">Selecionar Todos</span>
       </div>
-      {batteries.map((battery) => (
-        <div
-          key={battery.id}
-          className={`rounded-lg border border-border bg-card/50 backdrop-blur-lg p-4 shadow-sm ${battery.location === "gondola" && battery.gondolaCapacity !== undefined && battery.quantity <= battery.gondolaCapacity / 2 ? "bg-red-700/30" : ""}`}
-        >
+      {batteries.map((battery) => {
+        const gondolaLimit = battery.gondolaCapacity !== undefined
+          ? battery.gondolaCapacity
+          : (appSettings?.gondolaCapacity || 0);
+
+        const isLowStock = battery.location === "gondola" && battery.quantity <= gondolaLimit / 2;
+
+        return (
+          <div
+            key={battery.id}
+            className={`rounded-lg border border-border bg-card/50 backdrop-blur-lg p-4 shadow-sm ${isLowStock ? "bg-red-700/30" : ""}`}
+          >
           <div className="flex items-center justify-between">
             <div className="h-full flex items-center gap-2">
               <Checkbox
@@ -130,7 +139,7 @@ export function BatteryInventoryTableMobile({
             />
           </div>
         </div>
-      ))}
+      )})}
     </div>
   );
 }

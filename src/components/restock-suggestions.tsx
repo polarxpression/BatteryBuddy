@@ -40,7 +40,7 @@ export function RestockSuggestions({ itemsForInternalRestock, onMoveBatteries }:
                         <p className="text-sm text-muted-foreground">Embalagem com {item.packSize}</p>
                     </div>
                     <div className="mt-auto mx-auto font-bold">
-                        <Button onClick={() => onMoveBatteries([item])} size="sm" className="flex items-center gap-1 bg-polar-7 text-white">
+                        <Button onClick={() => onMoveBatteries([item])} size="sm" className="flex items-center gap-1 bg-polar-7 text-white border border-gray-400 hover:bg-polar-8">
                             Mover: {item.quantity} <ArrowRight className="h-4 w-4" /> Gôndola
                         </Button>
                     </div>
