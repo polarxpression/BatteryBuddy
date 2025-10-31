@@ -7,7 +7,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import JSZip from "jszip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Zap } from "lucide-react";
+import { Zap, ArrowLeft } from "lucide-react";
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -356,13 +356,11 @@ export function ReportView() {
 
   
 
-              <div>
-
-                <Button id="back-button" onClick={() => router.push('/')} className="mb-4">
-                  Voltar ao Dashboard
+              <div className="w-full flex justify-start">
+                <Button id="back-button" onClick={() => router.push('/')} className="mr-4 mt-4" size="icon">
+                  <ArrowLeft className="h-4 w-4" />
                 </Button>
-
-                <RestockReport
+              </div>
 
   
 
