@@ -16,7 +16,7 @@ export function ReportView() {
   const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-    const reportDataString = sessionStorage.getItem('reportData');
+    const reportDataString = localStorage.getItem('reportData');
     console.log('reportDataString:', reportDataString);
     if (reportDataString) {
       const { batteries, layout, selectedBrands, selectedPackSizes } = JSON.parse(reportDataString);

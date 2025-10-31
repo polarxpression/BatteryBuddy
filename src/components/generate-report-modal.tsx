@@ -79,7 +79,7 @@ export function GenerateReportModal({
 
       console.log('Report data:', reportData);
 
-      sessionStorage.setItem('reportData', JSON.stringify(reportData));
+      localStorage.setItem('reportData', JSON.stringify(reportData));
 
       // Navigate to the report view page
       window.open('/report/view', '_blank');
