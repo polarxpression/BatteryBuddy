@@ -298,16 +298,7 @@ export function BatteryDashboard() {
 
 
 
-  const handleGenerateReportFromModal = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => {
-    console.log("Generating report with options:", options);
-    const reportData = {
-      batteries: filteredBatteries,
-      ...options,
-    };
 
-    sessionStorage.setItem('reportData', JSON.stringify(reportData));
-    window.open("/report/view", "_blank");
-  };
 
 
 
@@ -408,7 +399,7 @@ export function BatteryDashboard() {
                         <RestockSuggestions itemsForInternalRestock={itemsForInternalRestock} onMoveBatteries={handleMoveBatteries} />
         </div>
         
-        <BatteryReport onGenerateReport={(options) => handleGenerateReportFromModal(options)} brands={brands} packSizes={packSizes} batteries={batteries} />
+        <BatteryReport brands={brands} packSizes={packSizes} batteries={batteries} />
 
         <Card className="bg-card/50 backdrop-blur-xs text-foreground">
             <CardHeader>
@@ -513,16 +504,6 @@ export function BatteryDashboard() {
       <GenerateReportModal
         isOpen={isGenerateReportModalOpen}
         onClose={() => setIsGenerateReportModalOpen(false)}
-        onGenerate={(options) => {
-          const reportData = {
-            batteries: batteries.filter(b => selectedBatteries.includes(b.id)),
-            ...options,
-          };
-          sessionStorage.setItem('reportData', JSON.stringify(reportData));
-          window.open("/report/view", "_blank");
-          setIsGenerateReportModalOpen(false);
-          setSelectedBatteries([]);
-        }}
         brands={brands}
         packSizes={packSizes}
         batteries={batteries.filter(b => selectedBatteries.includes(b.id))}

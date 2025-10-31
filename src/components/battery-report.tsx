@@ -8,19 +8,15 @@ import { GenerateReportModal } from "./generate-report-modal";
 import { Battery } from "@/lib/types";
 
 interface BatteryReportProps {
-  onGenerateReport: (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => void;
   brands: string[];
   packSizes: string[];
   batteries: Battery[];
 }
 
-export function BatteryReport({ onGenerateReport, brands, packSizes, batteries }: BatteryReportProps) {
+export function BatteryReport({ brands, packSizes, batteries }: BatteryReportProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleGenerateReport = (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => {
-    onGenerateReport(options);
-    setIsModalOpen(false);
-  };
+
 
   return (
     <>
@@ -37,7 +33,6 @@ export function BatteryReport({ onGenerateReport, brands, packSizes, batteries }
       <GenerateReportModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onGenerate={handleGenerateReport}
         brands={brands}
         packSizes={packSizes}
         batteries={batteries}
