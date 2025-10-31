@@ -82,7 +82,7 @@ export function GenerateReportModal({
       localStorage.setItem('reportData', JSON.stringify(reportData));
 
       // Navigate to the report view page
-      window.open('/report/view', '_blank');
+      window.location.href = '/report/view';
       
       onClose(); // Close modal after opening new tab
     } catch (error) {
