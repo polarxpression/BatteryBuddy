@@ -356,34 +356,18 @@ export function ReportView() {
 
   
 
-              <div className="w-full flex justify-start">
-                <Button id="back-button" onClick={() => router.push('/')} className="mr-4 mt-4" size="icon">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </div>
-
-  
-
-                  ref={reportRef}
-
-  
-
-                  itemsForExternalPurchase={reportData}
-
-  
-
-                  layout={'grid'}
-
-  
-
-                  onExport={handleExport}
-
-  
-
+              <div className="w-full flex flex-col items-center">
+                <div className="w-full flex justify-start">
+                    <Button id="back-button" onClick={() => router.push('/')} className="mr-4 mt-4" size="icon">
+                    <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                </div>
+                <RestockReport
+                    ref={reportRef}
+                    itemsForExternalPurchase={reportData}
+                    layout={'grid'}
+                    onExport={handleExport}
                 />
-
-  
-
               </div>
 
   
