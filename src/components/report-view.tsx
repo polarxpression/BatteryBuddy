@@ -53,6 +53,9 @@ export function ReportView() {
 
       const element = reportRef.current;
 
+      const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      const backgroundColor = theme === 'dark' ? getComputedStyle(document.body).backgroundColor : '#ffffff';
+
       const exportButtons = element.querySelector('#export-buttons');
 
       const backButton = element.querySelector('#back-button');
@@ -84,7 +87,7 @@ export function ReportView() {
 
         logging: false,
 
-        backgroundColor: '#ffffff',
+        backgroundColor: backgroundColor,
 
         onclone: (clonedDoc) => {
 
@@ -224,7 +227,7 @@ export function ReportView() {
 
               logging: false,
 
-              backgroundColor: '#ffffff',
+              backgroundColor: backgroundColor,
 
               onclone: (clonedDoc) => {
 
