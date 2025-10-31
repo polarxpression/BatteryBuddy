@@ -15,10 +15,12 @@ export function ReportView() {
   const [reportOptions, setReportOptions] = useState<{ layout: string; selectedBrands: string[]; selectedPackSizes: string[]; } | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+    useEffect(() => {
     const reportDataString = sessionStorage.getItem('reportData');
+    console.log('reportDataString:', reportDataString);
     if (reportDataString) {
       const { batteries, layout, selectedBrands, selectedPackSizes } = JSON.parse(reportDataString);
+      console.log('Parsed batteries:', batteries);
       setReportData(batteries);
       setReportOptions({ layout, selectedBrands, selectedPackSizes });
     }
