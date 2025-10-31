@@ -9,11 +9,15 @@ import JSZip from "jszip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Zap } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+
 export function ReportView() {
   const reportRef = useRef<HTMLDivElement>(null);
   const [reportData, setReportData] = useState<Battery[] | null>(null);
   const [reportOptions, setReportOptions] = useState<{ layout: string; selectedBrands: string[]; selectedPackSizes: string[]; } | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
     useEffect(() => {
     console.log('localStorage:', localStorage);
@@ -51,9 +55,16 @@ export function ReportView() {
 
       const exportButtons = element.querySelector('#export-buttons');
 
+      const backButton = element.querySelector('#back-button');
+
       if (exportButtons) {
 
         (exportButtons as HTMLElement).style.display = 'none';
+
+      }
+      if (backButton) {
+
+        (backButton as HTMLElement).style.display = 'none';
 
       }
 
@@ -138,6 +149,12 @@ export function ReportView() {
       if (exportButtons) {
 
         (exportButtons as HTMLElement).style.display = 'flex';
+
+      }
+
+      if (backButton) {
+
+        (backButton as HTMLElement).style.display = 'block';
 
       }
 
@@ -341,7 +358,9 @@ export function ReportView() {
 
               <div>
 
-  
+                <Button id="back-button" onClick={() => router.push('/')} className="mb-4">
+                  Voltar ao Dashboard
+                </Button>
 
                 <RestockReport
 
