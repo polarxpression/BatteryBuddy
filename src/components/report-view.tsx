@@ -80,15 +80,11 @@ export function ReportView() {
 
         useCORS: true,
 
-        allowTaint: true,
-
         scale: 3,
 
         logging: false,
 
-        windowHeight: element.scrollHeight,
-
-        height: element.scrollHeight,
+        backgroundColor: '#ffffff',
 
         onclone: (clonedDoc) => {
 
@@ -224,15 +220,11 @@ export function ReportView() {
 
               useCORS: true,
 
-              allowTaint: true,
-
               scale: 3,
 
               logging: false,
 
-              windowHeight: card.scrollHeight,
-
-              height: card.scrollHeight,
+              backgroundColor: '#ffffff',
 
               onclone: (clonedDoc) => {
 

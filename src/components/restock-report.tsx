@@ -47,7 +47,7 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ i
               : 'flex flex-col gap-4'
           }`}>
             {itemsForExternalPurchase.map((battery) => (
-            <Card key={battery.id} className="overflow-hidden transition-shadow duration-300 ease-in-out rounded-lg battery-card">
+                        <Card key={battery.id} className="transition-shadow duration-300 ease-in-out rounded-lg battery-card">
               <CardHeader className="p-0">
                 <BatteryImageOrIcon
                   imageUrl={battery.imageUrl}
