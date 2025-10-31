@@ -1,28 +1,6 @@
 /** @type {import('next').NextConfig} */
 
-const withPWA = require('@ducanh2912/next-pwa').default({
-  dest: 'public',
-  cacheOnFrontEndNav: false,
-  aggressiveFrontEndNavCaching: false,
-  reloadOnOnline: true,
-  swcMinify: true,
-  disable: process.env.NODE_ENV === 'development',
-  workboxOptions: {
-    disableDevLogs: true,
-    runtimeCaching: [
-      {
-        urlPattern: /^https:\/\/firestore\.googleapis\.com\/google\.firestore\.v1\.Firestore\/Listen\/channel\?.*/,
-        handler: 'NetworkOnly',
-        method: 'POST',
-      },
-      {
-        urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/,
-        handler: 'NetworkOnly',
-      },
-    ],
-  },
-  offlineGoogleAnalytics: false,
-});
+
 
 const nextConfig = {
   basePath: process.env.PAGES_BASE_PATH,
@@ -51,4 +29,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withPWA(nextConfig);
+module.exports = nextConfig;
