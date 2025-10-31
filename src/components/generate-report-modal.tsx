@@ -156,9 +156,8 @@ export function GenerateReportModal({
                       onChange={() => handleBrandChange(brand)} 
                     />
                     <label 
-                      htmlFor={`brand-${brand}`} 
-                      className="flex items-center py-2 px-3 border rounded-md cursor-pointer transition text-sm peer-checked:border-polar-7 peer-checked:bg-polar-7 peer-checked:text-white border-polar-4 bg-polar-3 text-polar-6 hover:bg-polar-4 hover:text-polar-7"
-                    >
+                                            htmlFor={`brand-${brand}`}
+                                            className="flex items-center py-2 px-3 border rounded-md cursor-pointer transition text-sm peer-checked:border-polar-7 peer-checked:bg-polar-7 peer-checked:text-white bg-card border text-white transition hover:bg-card/80"                    >
                       <span className="w-4 h-4 border rounded mr-2 flex items-center justify-center transition peer-checked:bg-polar-7 peer-checked:border-polar-7">
                         {selectedBrands.includes(brand) && <Check className="h-3 w-3 text-white" />}
                       </span>
@@ -199,7 +198,7 @@ export function GenerateReportModal({
                     />
                     <label 
                       htmlFor={`pack-${size}`} 
-                      className="flex items-center py-2 px-3 border rounded-md cursor-pointer transition text-sm peer-checked:border-polar-7 peer-checked:bg-polar-7 peer-checked:text-white border-polar-4 bg-polar-3 text-polar-6 hover:bg-polar-4 hover:text-polar-7"
+                      className="flex items-center py-2 px-3 border rounded-md cursor-pointer transition text-sm peer-checked:border-polar-7 peer-checked:bg-polar-7 peer-checked:text-white bg-card border text-white transition hover:bg-card/80"
                     >
                       <span className="w-4 h-4 border rounded mr-2 flex items-center justify-center transition peer-checked:bg-polar-7 peer-checked:border-polar-7">
                         {selectedPackSizes.includes(size) && <Check className="h-3 w-3 text-white" />}
