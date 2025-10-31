@@ -54,6 +54,8 @@ export function GenerateReportModal({
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
+      console.log('Filtered batteries:', filteredBatteries);
+
       const batteriesToReport = filteredBatteries
         .filter(battery => !battery.discontinued)
         .filter(battery => {
@@ -66,12 +68,16 @@ export function GenerateReportModal({
           return { ...battery, quantity: neededQuantity > 0 ? neededQuantity : 0 };
         });
 
+      console.log('Batteries to report:', batteriesToReport);
+
       const reportData = {
         batteries: batteriesToReport,
         layout,
         selectedBrands,
         selectedPackSizes,
       };
+
+      console.log('Report data:', reportData);
 
       sessionStorage.setItem('reportData', JSON.stringify(reportData));
 
