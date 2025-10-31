@@ -19,7 +19,6 @@ import { useAppSettings } from "@/contexts/app-settings-context";
 interface GenerateReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onGenerate?: (options: { layout: string; selectedBrands: string[]; selectedPackSizes: string[]; }) => void;
   brands: string[];
   packSizes: string[];
   batteries: Battery[];
@@ -33,7 +32,7 @@ export function GenerateReportModal({
   batteries,
 }: GenerateReportModalProps) {
   const { appSettings } = useAppSettings();
-  const [layout, setLayout] = useState("grid");
+  
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedPackSizes, setSelectedPackSizes] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -46,10 +45,7 @@ export function GenerateReportModal({
     });
   }, [batteries, selectedBrands, selectedPackSizes]);
 
-  const layoutOptions = [
-    { value: "grid", label: "Grade" },
-    { value: "single", label: "Página Única" },
-  ];
+
 
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -72,7 +68,6 @@ export function GenerateReportModal({
 
       const reportData = {
         batteries: batteriesToReport,
-        layout,
         selectedBrands,
         selectedPackSizes,
       };
@@ -133,36 +128,7 @@ export function GenerateReportModal({
             <form id="reportForm" className="space-y-6 py-4">
 
 
-            <div className="space-y-4">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Opções de Layout</div>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                {layoutOptions.map(({ value, label }) => (
-                  <div key={value} className="flex-1">
-                    <input 
-                      type="radio" 
-                      id={`layout-${value}`} 
-                      name="layout" 
-                      value={value} 
-                      className="sr-only" 
-                      checked={layout === value} 
-                      onChange={() => setLayout(value)} 
-                    />
-                    <label 
-                      htmlFor={`layout-${value}`} 
-                      className={`flex items-center justify-center py-2 px-3 border-2 rounded-md cursor-pointer text-sm font-medium transition ${
-                        layout === value 
-                          ? "border-polar-7 bg-polar-7 text-white" 
-                          : "border-polar-4 bg-polar-3 text-polar-6 hover:bg-polar-4 hover:text-polar-7"
-                      }`}
-                    >
-                      {label}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
 
-            <div className="border-t my-6 border-polar-4"></div>
 
             <div className="space-y-4">
               <div className="flex justify-between items-center">

@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 export function ReportView() {
   const reportRef = useRef<HTMLDivElement>(null);
   const [reportData, setReportData] = useState<Battery[] | null>(null);
-  const [reportOptions, setReportOptions] = useState<{ layout: string; selectedBrands: string[]; selectedPackSizes: string[]; } | null>(null);
+  const [reportOptions, setReportOptions] = useState<{ selectedBrands: string[]; selectedPackSizes: string[]; } | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -24,10 +24,10 @@ export function ReportView() {
     const reportDataString = localStorage.getItem('reportData');
     console.log('reportDataString:', reportDataString);
     if (reportDataString) {
-      const { batteries, layout, selectedBrands, selectedPackSizes } = JSON.parse(reportDataString);
+      const { batteries, selectedBrands, selectedPackSizes } = JSON.parse(reportDataString);
       console.log('Parsed batteries:', batteries);
       setReportData(batteries);
-      setReportOptions({ layout, selectedBrands, selectedPackSizes });
+      setReportOptions({ selectedBrands, selectedPackSizes });
     }
     setLoading(false);
   }, []);
@@ -374,7 +374,7 @@ export function ReportView() {
 
   
 
-                  layout={reportOptions.layout as 'grid' | 'single'}
+                  layout={'grid'}
 
   
 
