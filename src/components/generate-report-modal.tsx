@@ -130,9 +130,7 @@ export function GenerateReportModal({
 
 
 
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Marcas de Bateria</div>
+<div className="space-y-4 p-4 rounded-lg bg-polar-2">
                 <label 
                   className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-polar-7"
                   onClick={handleSelectAllBrands}
@@ -172,7 +170,7 @@ export function GenerateReportModal({
 
             <div className="border-t my-6 border-polar-4"></div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 p-4 rounded-lg bg-polar-2">
               <div className="flex justify-between items-center">
                 <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Filtro de Tamanho do Pacote</div>
                 <label 
