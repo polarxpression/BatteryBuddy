@@ -48,14 +48,14 @@ export const RestockReport = forwardRef<HTMLDivElement, RestockReportProps>(({ i
           }`}>
             {itemsForExternalPurchase.map((battery) => (
                         <Card key={battery.id} className="transition-shadow duration-300 ease-in-out rounded-lg battery-card">
-              <CardHeader className="p-0">
+              <CardHeader className="p-0 flex justify-center items-center h-40">
                 <BatteryImageOrIcon
                   imageUrl={battery.imageUrl}
                   alt={`${battery.brand} ${battery.model}`}
                   batteryType={battery.type || ''}
                   width={160}
                   height={160}
-                  className="w-full h-40 object-contain"
+                  className="object-contain"
                 />
               </CardHeader>
               <CardContent className="p-4">
