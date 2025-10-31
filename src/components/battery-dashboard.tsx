@@ -511,5 +511,38 @@ export function BatteryDashboard() {
 
 
     </div>
+    <footer>
+
+      <div class="footer-container">
+
+        <address class="contact">
+          <h3>Contato</h3>
+
+          <a href="mailto:profissional.braun@outlook.com" class="contact-button">
+            <i class="fa-solid fa-envelope"></i> Email
+          </a>
+
+          <div class="social-icons">
+            <a href="https://github.com/polarfreez">
+              <i class="fa-brands fa-github"></i>
+            </a>
+            <a href="https://twitter.com/rafaaa2105">
+              <i class="fa-brands fa-x-twitter"></i>
+            </a>
+            <a href="https://instagram.com/rafaaa2105/">
+              <i class="fa-brands fa-instagram"></i>
+            </a>
+          </div>
+
+        </address>
+
+      </div>
+
+      <div class="copyright">
+        &copy; 2024 Polar<br />
+        Todos os direitos reservados.
+      </div>
+
+    </footer>
   );
 }
