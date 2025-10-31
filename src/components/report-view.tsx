@@ -16,6 +16,7 @@ export function ReportView() {
   const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+    console.log('localStorage:', localStorage);
     const reportDataString = localStorage.getItem('reportData');
     console.log('reportDataString:', reportDataString);
     if (reportDataString) {
