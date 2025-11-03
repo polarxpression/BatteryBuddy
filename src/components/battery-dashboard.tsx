@@ -56,6 +56,7 @@ import { Label } from "./ui/label";
 import { useAppSettings } from "@/contexts/app-settings-context";
 import { filterBatteries } from "@/lib/search";
 import FallingSnow from "./falling-snow";
+import { Footer } from "./footer";
 
 export function BatteryDashboard() {
   const { toast } = useToast();
@@ -509,11 +510,7 @@ export function BatteryDashboard() {
         batteries={batteries.filter(b => selectedBatteries.includes(b.id))}
       />
 
-      <footer className="text-center py-4">
-        <div className="text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Battery Buddy. All rights reserved.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
