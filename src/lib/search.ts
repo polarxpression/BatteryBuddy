@@ -20,11 +20,16 @@ function tokenize(query: string): string[] {
 }
 
 function parse(tokens: string[]): [SearchNode, string[]] {
-  const nodes: SearchNode[] = [];
-  let operator: 'AND' | 'OR' = 'AND';
+  if (tokens.length === 0) {
+    return [{ type: 'TERM', payload: '' }, []];
+  }
 
-  while (tokens.length > 0) {
+  const nodes: SearchNode[] = [];
+  const operator: 'AND' | 'OR' = 'AND';
+
+  while (tokens.length > 0 && tokens[0] !== ')') {
     const token = tokens.shift()!;
+    if (!token) continue;
 
     if (token === '(') {
       const [node, remainingTokens] = parse(tokens);
@@ -32,7 +37,14 @@ function parse(tokens: string[]): [SearchNode, string[]] {
       tokens = remainingTokens;
       if (tokens[0] === ')') tokens.shift(); // Consume closing parenthesis
     } else if (token === '~') {
-      operator = 'OR';
+      const left = nodes.pop();
+      const [right, remaining] = parse([tokens.shift()!]);
+      if (left) {
+        nodes.push({ type: 'OR', payload: [left, right] });
+      } else {
+        nodes.push(right);
+      }
+      tokens = remaining.concat(tokens);
     } else if (token === '-') {
       const [node, remainingTokens] = parse(tokens.splice(0, 1));
       nodes.push({ type: 'NOT', payload: [node] });
