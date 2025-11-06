@@ -35,8 +35,15 @@ export function BatteryInventoryTable({
   onQuantityChange,
   onSelectionChange,
 }: BatteryInventoryTableProps) {
-  const [sortColumn, setSortColumn] = useState<keyof Battery | null>(null);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortPriority, setSortPriority] = useState<Array<keyof Battery>>(['brand', 'model', 'type', 'packSize', 'quantity', 'location']);
+  const [sortDirections, setSortDirections] = useState<{[key in keyof Battery]?: 'asc' | 'desc'}>({
+    brand: 'asc',
+    model: 'asc',
+    type: 'asc',
+    packSize: 'asc',
+    quantity: 'asc',
+    location: 'asc'
+  });
   const [selectedBatteries, setSelectedBatteries] = useState<string[]>([]);
   const { t } = useTranslation();
   const { appSettings } = useAppSettings();
@@ -46,29 +53,40 @@ export function BatteryInventoryTable({
   }, [selectedBatteries, onSelectionChange]);
 
   const sortedBatteries = [...batteries].sort((a, b) => {
-    if (!sortColumn) return 0;
+    for (const column of sortPriority) {
+        const aValue = a[column];
+        const bValue = b[column];
+        const direction = sortDirections[column] || 'asc';
 
-    const aValue = a[sortColumn];
-    const bValue = b[sortColumn];
+        let comparison = 0;
+        if (aValue === null || aValue === undefined) comparison = 1;
+        else if (bValue === null || bValue === undefined) comparison = -1;
+        else if (typeof aValue === 'string' && typeof bValue === 'string') {
+            comparison = aValue.localeCompare(bValue);
+        } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+            comparison = aValue - bValue;
+        }
 
-    if (typeof aValue === "string" && typeof bValue === "string") {
-      return sortDirection === "asc"
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
+        if (comparison !== 0) {
+            return direction === 'asc' ? comparison : -comparison;
+        }
     }
-    if (typeof aValue === "number" && typeof bValue === "number") {
-      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
-    }
-    // Fallback for other types or mixed types
     return 0;
   });
 
   const handleSort = (column: keyof Battery) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    if (sortPriority[0] === column) {
+        setSortDirections(prevDirections => ({
+            ...prevDirections,
+            [column]: prevDirections[column] === 'asc' ? 'desc' : 'asc'
+        }));
     } else {
-      setSortColumn(column);
-      setSortDirection("asc");
+        const newPriority = [column, ...sortPriority.filter(p => p !== column)];
+        setSortPriority(newPriority);
+        setSortDirections(prevDirections => ({
+            ...prevDirections,
+            [column]: 'asc'
+        }));
     }
   };
 

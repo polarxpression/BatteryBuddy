@@ -33,6 +33,13 @@ export const translations = {
   
   'location:gondola': 'Gôndola',
   'location:stock': 'Estoque',
+
+  'brand': 'Marca',
+  'model': 'Modelo',
+  'type': 'Tipo',
+  'packSize': 'Embalagem',
+  'quantity': 'Quantidade',
+  'location': 'Localização',
 };
 
 export type TranslationKey = keyof typeof translations;
